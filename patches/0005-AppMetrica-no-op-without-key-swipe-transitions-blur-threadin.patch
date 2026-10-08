@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 15:44:05 +0300
-Subject: [CORE] AppMetrica no-op without key, swipe transitions, blur
- threading, local signing
+Subject: AppMetrica no-op without key, swipe transitions, blur threading,
+ local signing
 
 ---
  .../appmetrica/AppMetricaActivation.kt        | 17 ++++++++++++++
@@ -19,7 +19,7 @@ Subject: [CORE] AppMetrica no-op without key, swipe transitions, blur
 
 diff --git a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaActivation.kt b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaActivation.kt
 new file mode 100644
-index 000000000..d9f23b29b
+index 00000000..d9f23b29
 --- /dev/null
 +++ b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaActivation.kt
 @@ -0,0 +1,17 @@
@@ -41,7 +41,7 @@ index 000000000..d9f23b29b
 +    var isActivated: Boolean = false
 +}
 diff --git a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsInitializer.kt b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsInitializer.kt
-index 8251c906a..061535235 100644
+index 8251c906..06153523 100644
 --- a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsInitializer.kt
 +++ b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsInitializer.kt
 @@ -8,7 +8,9 @@ import io.appmetrica.analytics.PredefinedDeviceTypes
@@ -64,7 +64,7 @@ index 8251c906a..061535235 100644
  }
  
 diff --git a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsTracker.kt b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsTracker.kt
-index 809c7a5e0..c71c931e2 100644
+index 809c7a5e..c71c931e 100644
 --- a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsTracker.kt
 +++ b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsTracker.kt
 @@ -9,9 +9,11 @@ import javax.inject.Inject
@@ -88,7 +88,7 @@ index 809c7a5e0..c71c931e2 100644
          if (message.isEmpty()) return
          if (!throwable.isReportableError()) return
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
-index 9564ab9f6..8d8b082ba 100644
+index 9564ab9f..8d8b082b 100644
 --- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
 @@ -121,8 +121,7 @@ private val OceanPalette = YummyTvPalette(
@@ -136,7 +136,7 @@ index 9564ab9f6..8d8b082ba 100644
  
  private fun YummyTvPalette.toDarkColorScheme() = darkColorScheme(
 diff --git a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
-index 87f09b11b..296e987c8 100644
+index 87f09b11..296e987c 100644
 --- a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
 +++ b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
 @@ -31,6 +31,8 @@ class HomeState {
@@ -149,7 +149,7 @@ index 87f09b11b..296e987c8 100644
          val hiddenRecommendationIds: PersistentSet<Int> = persistentSetOf(),
          /** Тайтлы, для которых сейчас выполняется запрос на скрытие или возврат. */
 diff --git a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
-index 2498f50fc..c3d902265 100644
+index 2498f50f..c3d90226 100644
 --- a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
 +++ b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
 @@ -130,6 +130,9 @@ class HomeViewModel @Inject internal constructor(
@@ -163,7 +163,7 @@ index 2498f50fc..c3d902265 100644
          observeHiddenRecommendations()
          observeSupportPrompt()
 diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
-index 4f0a0e68a..6f1dff991 100644
+index 4f0a0e68..6f1dff99 100644
 --- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
 +++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
 @@ -221,6 +221,7 @@ fun HomeMobileScreen(
@@ -175,7 +175,7 @@ index 4f0a0e68a..6f1dff991 100644
                              )
                          }
 diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
-index 5e8b23fd9..ba4f53f48 100644
+index 5e8b23fd..ba4f53f4 100644
 --- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
 +++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
 @@ -40,6 +40,7 @@ private val HERO_POSTER_SHAPE = RoundedCornerShape(10.dp)
@@ -196,7 +196,7 @@ index 5e8b23fd9..ba4f53f48 100644
              )
              Box(
 diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
-index f67d4381f..3cd6650d9 100644
+index f67d4381..3cd6650d 100644
 --- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
 +++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
 @@ -50,6 +50,7 @@ private object HeroPageSize : PageSize {

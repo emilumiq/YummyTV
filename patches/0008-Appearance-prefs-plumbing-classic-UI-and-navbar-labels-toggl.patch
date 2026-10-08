@@ -1,8 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 19:53:33 +0300
-Subject: [CORE] Appearance prefs plumbing: classic UI and navbar labels
- toggles
+Subject: Appearance prefs plumbing: classic UI and navbar labels toggles
 
 ---
  .../afk/yummy/tv/core/model/settings/AppTheme.kt   |  6 ------
@@ -15,7 +14,7 @@ Subject: [CORE] Appearance prefs plumbing: classic UI and navbar labels
  7 files changed, 32 insertions(+), 6 deletions(-)
 
 diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
-index cc7e7d28f..e0423e369 100644
+index cc7e7d28..e0423e36 100644
 --- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
 +++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
 @@ -7,12 +7,6 @@ enum class AppTheme {
@@ -32,7 +31,7 @@ index cc7e7d28f..e0423e369 100644
       * Системная палитра Material You: цвета берутся из обоев/акцента системы (Android 12+).
       * Доступна только на мобильном интерфейсе; на более старых версиях тема откатывается
 diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
-index 6929b61f5..5864b08a9 100644
+index 6929b61f..5864b08a 100644
 --- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
 +++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
 @@ -3,6 +3,8 @@ package su.afk.yummy.tv.core.model.settings
@@ -45,7 +44,7 @@ index 6929b61f5..5864b08a9 100644
      val posterCardSize: PosterCardSize,
      val yaniNickname: String,
 diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
-index b2cacdbb7..298bc555a 100644
+index b2cacdbb..298bc555 100644
 --- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
 +++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
 @@ -4,6 +4,8 @@ data class SettingsSnapshot(
@@ -58,7 +57,7 @@ index b2cacdbb7..298bc555a 100644
      val posterCardSize: PosterCardSize,
      val showTopTitleYear: Boolean,
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
-index 9cefe36cb..b66c9b388 100644
+index 9cefe36c..b66c9b38 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
 @@ -26,6 +26,10 @@ interface AppearanceSettingsStore {
@@ -82,7 +81,7 @@ index 9cefe36cb..b66c9b388 100644
      suspend fun setLibraryTabOrder(order: List<LibraryTabKind>)
      suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
-index b24029bce..c93aed397 100644
+index b24029bc..c93aed39 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
 @@ -71,6 +71,8 @@ internal object SettingsPreferenceKeys {
@@ -95,7 +94,7 @@ index b24029bce..c93aed397 100644
      val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
      val yaniUserIdKey = intPreferencesKey("yani_user_id")
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
-index 32f1c50f2..79cd8fb74 100644
+index 32f1c50f..79cd8fb7 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
 @@ -16,6 +16,8 @@ import su.afk.yummy.tv.core.model.settings.PosterQuality
@@ -134,7 +133,7 @@ index 32f1c50f2..79cd8fb74 100644
          store.edit { prefs ->
              prefs[detailsButtonOrderKey] = order.normalizedDetailsButtonOrder()
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
-index 120a293d6..8d3bb5ac6 100644
+index 120a293d..8d3bb5ac 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
 @@ -22,6 +22,8 @@ import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore

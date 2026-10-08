@@ -1,14 +1,14 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 20:49:00 +0300
-Subject: [CORE] Fix stable patch headers for binary files
+Subject: Fix stable patch headers for binary files
 
 ---
  scripts/lib.ts | 9 +++++++--
  1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/scripts/lib.ts b/scripts/lib.ts
-index 88a912240..8c528833a 100644
+index 88a91224..8c528833 100644
 --- a/scripts/lib.ts
 +++ b/scripts/lib.ts
 @@ -34,8 +34,13 @@ export async function writePinnedUpstreamCommit(commit: string): Promise<void> {

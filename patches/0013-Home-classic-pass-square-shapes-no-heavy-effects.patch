@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 19:54:01 +0300
-Subject: [HOME] Home classic pass: square shapes, no heavy effects
+Subject: Home classic pass: square shapes, no heavy effects
 
 ---
  .../designsystem/components/RatingBadge.kt    |  7 ++-
@@ -20,7 +20,7 @@ Subject: [HOME] Home classic pass: square shapes, no heavy effects
  create mode 100644 docs/project-overview.md
 
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/RatingBadge.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/RatingBadge.kt
-index 72cb4941a..f7567d906 100644
+index 72cb4941..f7567d90 100644
 --- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/RatingBadge.kt
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/RatingBadge.kt
 @@ -14,10 +14,12 @@ import androidx.compose.runtime.Composable
@@ -49,7 +49,7 @@ index 72cb4941a..f7567d906 100644
      ) {
          Icon(
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/MobileSectionHeader.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/MobileSectionHeader.kt
-index 4f94c8781..2f309d182 100644
+index 4f94c878..2f309d18 100644
 --- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/MobileSectionHeader.kt
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/MobileSectionHeader.kt
 @@ -15,10 +15,12 @@ import androidx.compose.runtime.Composable
@@ -78,7 +78,7 @@ index 4f94c8781..2f309d182 100644
          )
          Text(
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobilePosterCard.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobilePosterCard.kt
-index cbb3c8e34..7ad2836f1 100644
+index cbb3c8e3..7ad2836f 100644
 --- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobilePosterCard.kt
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobilePosterCard.kt
 @@ -20,11 +20,13 @@ import androidx.compose.material3.Text
@@ -121,7 +121,7 @@ index cbb3c8e34..7ad2836f1 100644
                      )
                  }
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileProgressMediaCard.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileProgressMediaCard.kt
-index 7b0d3ebe8..d1dcdb4b2 100644
+index 7b0d3ebe..d1dcdb4b 100644
 --- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileProgressMediaCard.kt
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileProgressMediaCard.kt
 @@ -22,11 +22,13 @@ import androidx.compose.runtime.Composable
@@ -153,7 +153,7 @@ index 7b0d3ebe8..d1dcdb4b2 100644
      ) {
          Box(
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileTitleListCard.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileTitleListCard.kt
-index 410427d80..bc65846ed 100644
+index 410427d8..bc65846e 100644
 --- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileTitleListCard.kt
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileTitleListCard.kt
 @@ -20,11 +20,13 @@ import androidx.compose.runtime.Composable
@@ -186,7 +186,7 @@ index 410427d80..bc65846ed 100644
              .clickable(onClick = onClick),
 diff --git a/docs/changelog.md b/docs/changelog.md
 new file mode 100644
-index 000000000..b2c238cd2
+index 00000000..b2c238cd
 --- /dev/null
 +++ b/docs/changelog.md
 @@ -0,0 +1,49 @@
@@ -241,7 +241,7 @@ index 000000000..b2c238cd2
 +- Agent rules: English-only, patchset model, comment discipline (`AGENTS.md`).
 diff --git a/docs/project-overview.md b/docs/project-overview.md
 new file mode 100644
-index 000000000..cc03ccf5b
+index 00000000..cc03ccf5
 --- /dev/null
 +++ b/docs/project-overview.md
 @@ -0,0 +1,37 @@
@@ -283,7 +283,7 @@ index 000000000..cc03ccf5b
 +  from `local.properties` into `BuildConfig`, bindings cached in Room
 +  (`tracker_binding`, one row per animeId — seasons are separate titles).
 diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
-index ba4f53f48..95d65739e 100644
+index ba4f53f4..95d65739 100644
 --- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
 +++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
 @@ -24,11 +24,13 @@ import androidx.compose.ui.draw.clip
@@ -343,7 +343,7 @@ index ba4f53f48..95d65739e 100644
                  )
                  Column(
 diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
-index 3cd6650d9..c5cfe9919 100644
+index 3cd6650d..c5cfe991 100644
 --- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
 +++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
 @@ -24,6 +24,7 @@ import androidx.compose.ui.unit.Density
@@ -399,7 +399,7 @@ index 3cd6650d9..c5cfe9919 100644
          }
      }
 diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeItemCard.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeItemCard.kt
-index c144e46a3..32cdb3e81 100644
+index c144e46a..32cdb3e8 100644
 --- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeItemCard.kt
 +++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeItemCard.kt
 @@ -8,8 +8,10 @@ import androidx.compose.material3.Text
@@ -424,7 +424,7 @@ index c144e46a3..32cdb3e81 100644
                              .padding(horizontal = 6.dp, vertical = 3.dp),
                      )
 diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSearchEntry.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSearchEntry.kt
-index 1f6ed12e8..78bd5dcbe 100644
+index 1f6ed12e..78bd5dcb 100644
 --- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSearchEntry.kt
 +++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSearchEntry.kt
 @@ -14,8 +14,10 @@ import androidx.compose.material3.Text

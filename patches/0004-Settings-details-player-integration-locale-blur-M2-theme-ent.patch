@@ -1,8 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 15:43:58 +0300
-Subject: [TRACKER] Settings/details/player integration, locale, blur, M2 theme
- entries
+Subject: Settings/details/player integration, locale, blur, M2 theme entries
 
 ---
  .gitignore                                    |  2 ++
@@ -83,7 +82,7 @@ Subject: [TRACKER] Settings/details/player integration, locale, blur, M2 theme
  create mode 100644 feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvTrackersContent.kt
 
 diff --git a/.gitignore b/.gitignore
-index ea6db619f..28a457656 100644
+index ea6db619..28a45765 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -6,6 +6,8 @@
@@ -96,7 +95,7 @@ index ea6db619f..28a457656 100644
  .DS_Store
  captures
 diff --git a/app/build.gradle.kts b/app/build.gradle.kts
-index 8990910cb..fdd19a03a 100644
+index 8990910c..fdd19a03 100644
 --- a/app/build.gradle.kts
 +++ b/app/build.gradle.kts
 @@ -1,4 +1,5 @@
@@ -154,7 +153,7 @@ index 8990910cb..fdd19a03a 100644
      implementation(project(":feature:video-download:data"))
      implementation(project(":feature:video-download:domain"))
 diff --git a/app/proguard-rules.pro b/app/proguard-rules.pro
-index f59cb1887..42f2631ce 100644
+index f59cb188..42f2631c 100644
 --- a/app/proguard-rules.pro
 +++ b/app/proguard-rules.pro
 @@ -10,6 +10,15 @@
@@ -174,7 +173,7 @@ index f59cb1887..42f2631ce 100644
  # рефлексией по именам из манифеста. R8 вырезал конструкторы регистраторов, MlKitContext
  # оставался пустым, и GmsBarcodeScanning.getClient падал с NPE при открытии «Войти на ТВ».
 diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
-index 67b38a781..d1244e835 100644
+index 67b38a78..d1244e83 100644
 --- a/app/src/main/AndroidManifest.xml
 +++ b/app/src/main/AndroidManifest.xml
 @@ -157,6 +157,16 @@
@@ -195,7 +194,7 @@ index 67b38a781..d1244e835 100644
              </intent-filter>
          </activity>
 diff --git a/app/src/main/kotlin/su/afk/yummy/tv/android/InterfaceRouterActivity.kt b/app/src/main/kotlin/su/afk/yummy/tv/android/InterfaceRouterActivity.kt
-index 22fdebbb7..80aeda053 100644
+index 22fdebbb..80aeda05 100644
 --- a/app/src/main/kotlin/su/afk/yummy/tv/android/InterfaceRouterActivity.kt
 +++ b/app/src/main/kotlin/su/afk/yummy/tv/android/InterfaceRouterActivity.kt
 @@ -1,5 +1,6 @@
@@ -226,7 +225,7 @@ index 22fdebbb7..80aeda053 100644
          super.onCreate(savedInstanceState)
  
 diff --git a/app/src/main/kotlin/su/afk/yummy/tv/android/MobileActivity.kt b/app/src/main/kotlin/su/afk/yummy/tv/android/MobileActivity.kt
-index 4b1aa2510..eda00512d 100644
+index 4b1aa251..eda00512 100644
 --- a/app/src/main/kotlin/su/afk/yummy/tv/android/MobileActivity.kt
 +++ b/app/src/main/kotlin/su/afk/yummy/tv/android/MobileActivity.kt
 @@ -1,5 +1,6 @@
@@ -257,7 +256,7 @@ index 4b1aa2510..eda00512d 100644
          super.onCreate(savedInstanceState)
          WindowCompat.setDecorFitsSystemWindows(window, false)
 diff --git a/app/src/main/kotlin/su/afk/yummy/tv/android/TvActivity.kt b/app/src/main/kotlin/su/afk/yummy/tv/android/TvActivity.kt
-index 166fd2769..0c88b36b4 100644
+index 166fd276..0c88b36b 100644
 --- a/app/src/main/kotlin/su/afk/yummy/tv/android/TvActivity.kt
 +++ b/app/src/main/kotlin/su/afk/yummy/tv/android/TvActivity.kt
 @@ -1,5 +1,6 @@
@@ -289,7 +288,7 @@ index 166fd2769..0c88b36b4 100644
          WindowCompat.setDecorFitsSystemWindows(window, false)
 diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppLocale.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppLocale.kt
 new file mode 100644
-index 000000000..c01ddcf74
+index 00000000..c01ddcf7
 --- /dev/null
 +++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppLocale.kt
 @@ -0,0 +1,12 @@
@@ -306,7 +305,7 @@ index 000000000..c01ddcf74
 +    UKRAINIAN("uk"),
 +}
 diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
-index e0423e369..cc7e7d28f 100644
+index e0423e36..cc7e7d28 100644
 --- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
 +++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
 @@ -7,6 +7,12 @@ enum class AppTheme {
@@ -323,7 +322,7 @@ index e0423e369..cc7e7d28f 100644
       * Системная палитра Material You: цвета берутся из обоев/акцента системы (Android 12+).
       * Доступна только на мобильном интерфейсе; на более старых версиях тема откатывается
 diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/DetailsButtonAction.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/DetailsButtonAction.kt
-index b4126f96f..e12d7e48c 100644
+index b4126f96..e12d7e48 100644
 --- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/DetailsButtonAction.kt
 +++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/DetailsButtonAction.kt
 @@ -15,5 +15,6 @@ enum class DetailsButtonAction {
@@ -334,7 +333,7 @@ index b4126f96f..e12d7e48c 100644
      SCREENSHOTS,
  }
 diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
-index f189d3d5b..b2cacdbb7 100644
+index f189d3d5..b2cacdbb 100644
 --- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
 +++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
 @@ -3,6 +3,7 @@ package su.afk.yummy.tv.core.model.settings
@@ -346,7 +345,7 @@ index f189d3d5b..b2cacdbb7 100644
      val posterCardSize: PosterCardSize,
      val showTopTitleYear: Boolean,
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/di/PreferencesModule.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/di/PreferencesModule.kt
-index 9d6ac29b6..03199e30a 100644
+index 9d6ac29b..03199e30 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/di/PreferencesModule.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/di/PreferencesModule.kt
 @@ -8,6 +8,8 @@ import su.afk.yummy.tv.core.preferences.auth.SecureYaniAuthPreferences
@@ -373,7 +372,7 @@ index 9d6ac29b6..03199e30a 100644
      fun bindYaniAuthPreferences(impl: SecureYaniAuthPreferences): YaniAuthPreferences
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocaleContext.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocaleContext.kt
 new file mode 100644
-index 000000000..ca7e64ea5
+index 00000000..ca7e64ea
 --- /dev/null
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocaleContext.kt
 @@ -0,0 +1,33 @@
@@ -412,7 +411,7 @@ index 000000000..ca7e64ea5
 +}
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocalePreferences.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocalePreferences.kt
 new file mode 100644
-index 000000000..0f2dd4d65
+index 00000000..0f2dd4d6
 --- /dev/null
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocalePreferences.kt
 @@ -0,0 +1,11 @@
@@ -429,7 +428,7 @@ index 000000000..0f2dd4d65
 +}
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/SharedPreferencesAppLocalePreferences.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/SharedPreferencesAppLocalePreferences.kt
 new file mode 100644
-index 000000000..5601d2ade
+index 00000000..5601d2ad
 --- /dev/null
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/SharedPreferencesAppLocalePreferences.kt
 @@ -0,0 +1,25 @@
@@ -459,7 +458,7 @@ index 000000000..5601d2ade
 +    }
 +}
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
-index 2fd327958..9cefe36cb 100644
+index 2fd32795..9cefe36c 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
 @@ -24,6 +24,8 @@ interface AppearanceSettingsStore {
@@ -488,7 +487,7 @@ index 2fd327958..9cefe36cb 100644
          )
      }
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
-index 6b27ab2de..b24029bce 100644
+index 6b27ab2d..b24029bc 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
 @@ -70,6 +70,7 @@ internal object SettingsPreferenceKeys {
@@ -500,7 +499,7 @@ index 6b27ab2de..b24029bce 100644
      val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
      val yaniUserIdKey = intPreferencesKey("yani_user_id")
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
-index f0180cdb9..32f1c50f2 100644
+index f0180cdb..32f1c50f 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
 @@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
@@ -532,7 +531,7 @@ index f0180cdb9..32f1c50f2 100644
          store.edit { prefs ->
              prefs[detailsButtonOrderKey] = order.normalizedDetailsButtonOrder()
 diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
-index 640e7424b..120a293d6 100644
+index 640e7424..120a293d 100644
 --- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
 +++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
 @@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
@@ -552,7 +551,7 @@ index 640e7424b..120a293d6 100644
              posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
              showTopTitleYear = prefs[showTopTitleYearKey] ?: false,
 diff --git a/feature/details/presentation/build.gradle.kts b/feature/details/presentation/build.gradle.kts
-index 84af639df..f1a623d77 100644
+index 84af639d..f1a623d7 100644
 --- a/feature/details/presentation/build.gradle.kts
 +++ b/feature/details/presentation/build.gradle.kts
 @@ -29,6 +29,7 @@ dependencies {
@@ -564,7 +563,7 @@ index 84af639df..f1a623d77 100644
      implementation(project(":feature:video-download:domain"))
      implementation(project(":feature:watch-later:domain"))
 diff --git a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsState.kt b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsState.kt
-index fe2df55a0..175865540 100644
+index fe2df55a..17586554 100644
 --- a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsState.kt
 +++ b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsState.kt
 @@ -39,6 +39,7 @@ class DetailsState {
@@ -586,7 +585,7 @@ index fe2df55a0..175865540 100644
          data object LibraryToggled : Event
  
 diff --git a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsViewModel.kt b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsViewModel.kt
-index 1ccab8274..3aa8c689e 100644
+index 1ccab827..3aa8c689 100644
 --- a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsViewModel.kt
 +++ b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsViewModel.kt
 @@ -50,6 +50,7 @@ import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
@@ -628,7 +627,7 @@ index 1ccab8274..3aa8c689e 100644
                  viewModelScope.launch { toggleLibrary() }
  
 diff --git a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/handler/DetailsScreenDataHandler.kt b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/handler/DetailsScreenDataHandler.kt
-index 1733e6b64..711fb02aa 100644
+index 1733e6b6..711fb02a 100644
 --- a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/handler/DetailsScreenDataHandler.kt
 +++ b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/handler/DetailsScreenDataHandler.kt
 @@ -30,6 +30,7 @@ class DetailsScreenDataHandler @Inject constructor(
@@ -640,7 +639,7 @@ index 1733e6b64..711fb02aa 100644
      val askDubbingOnWatch: Flow<Boolean> = settingsStore.askDubbingOnWatch
  
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
-index a845e9323..2299adc7c 100644
+index a845e932..2299adc7 100644
 --- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
 @@ -143,6 +143,7 @@ fun DetailsMobileScreen(
@@ -652,7 +651,7 @@ index a845e9323..2299adc7c 100644
                  )
              }
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsMobileHero.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsMobileHero.kt
-index 5b18191bc..4c5c96183 100644
+index 5b18191b..4c5c9618 100644
 --- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsMobileHero.kt
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsMobileHero.kt
 @@ -63,7 +63,7 @@ internal fun DetailsMobileHero(
@@ -665,7 +664,7 @@ index 5b18191bc..4c5c96183 100644
          )
          Box(
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsSecondaryActions.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsSecondaryActions.kt
-index 254cf4401..86bd757c9 100644
+index 254cf440..86bd757c 100644
 --- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsSecondaryActions.kt
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsSecondaryActions.kt
 @@ -34,6 +34,7 @@ internal fun DetailsSecondaryActions(
@@ -685,7 +684,7 @@ index 254cf4401..86bd757c9 100644
      if (actions.isEmpty()) return
  
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/buildMobileActions.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/buildMobileActions.kt
-index 67649e2a3..c15f2b732 100644
+index 67649e2a..c15f2b73 100644
 --- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/buildMobileActions.kt
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/buildMobileActions.kt
 @@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
@@ -720,7 +719,7 @@ index 67649e2a3..c15f2b732 100644
              add(
                  MobileDetailsAction(
 diff --git a/feature/details/ui-mobile/src/main/res/values-ru/strings.xml b/feature/details/ui-mobile/src/main/res/values-ru/strings.xml
-index 02badb910..20640c825 100644
+index 02badb91..20640c82 100644
 --- a/feature/details/ui-mobile/src/main/res/values-ru/strings.xml
 +++ b/feature/details/ui-mobile/src/main/res/values-ru/strings.xml
 @@ -5,6 +5,7 @@
@@ -732,7 +731,7 @@ index 02badb910..20640c825 100644
      <string name="details_mobile_reviews_count">Отзывы (%1$d)</string>
      <string name="details_mobile_title">Детали</string>
 diff --git a/feature/details/ui-mobile/src/main/res/values-uk/strings.xml b/feature/details/ui-mobile/src/main/res/values-uk/strings.xml
-index 132c5ab72..80212c6d2 100644
+index 132c5ab7..80212c6d 100644
 --- a/feature/details/ui-mobile/src/main/res/values-uk/strings.xml
 +++ b/feature/details/ui-mobile/src/main/res/values-uk/strings.xml
 @@ -5,6 +5,7 @@
@@ -744,7 +743,7 @@ index 132c5ab72..80212c6d2 100644
      <string name="details_mobile_reviews_count">Відгуки (%1$d)</string>
      <string name="details_mobile_title">Деталі</string>
 diff --git a/feature/details/ui-mobile/src/main/res/values/strings.xml b/feature/details/ui-mobile/src/main/res/values/strings.xml
-index f07a0ea55..4a0305739 100644
+index f07a0ea5..4a030573 100644
 --- a/feature/details/ui-mobile/src/main/res/values/strings.xml
 +++ b/feature/details/ui-mobile/src/main/res/values/strings.xml
 @@ -5,6 +5,7 @@
@@ -756,7 +755,7 @@ index f07a0ea55..4a0305739 100644
      <string name="details_mobile_reviews_count">Reviews (%1$d)</string>
      <string name="details_mobile_title">Details</string>
 diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsTvScreen.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsTvScreen.kt
-index 9b68f77d6..8a1cb2f15 100644
+index 9b68f77d..8a1cb2f1 100644
 --- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsTvScreen.kt
 +++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsTvScreen.kt
 @@ -142,6 +142,8 @@ fun DetailsTvScreen(
@@ -769,7 +768,7 @@ index 9b68f77d6..8a1cb2f15 100644
              }
          }
 diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsBody.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsBody.kt
-index 0aec178f3..dc0c2bd62 100644
+index 0aec178f..dc0c2bd6 100644
 --- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsBody.kt
 +++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsBody.kt
 @@ -41,6 +41,8 @@ internal fun DetailsBody(
@@ -791,7 +790,7 @@ index 0aec178f3..dc0c2bd62 100644
      }
  }
 diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsButtonBar.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsButtonBar.kt
-index 4d5a759a6..c5842b4b1 100644
+index 4d5a759a..c5842b4b 100644
 --- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsButtonBar.kt
 +++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsButtonBar.kt
 @@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Favorite
@@ -825,7 +824,7 @@ index 4d5a759a6..c5842b4b1 100644
          listOf(
              ButtonData(
 diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsHero.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsHero.kt
-index 19383929a..ae26c6bca 100644
+index 19383929..ae26c6bc 100644
 --- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsHero.kt
 +++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsHero.kt
 @@ -74,6 +74,8 @@ internal fun DetailsHero(
@@ -855,7 +854,7 @@ index 19383929a..ae26c6bca 100644
                      height = buttonBarHeight,
                  )
 diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/HeroBackdrop.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/HeroBackdrop.kt
-index 43c09cf65..21bfb80d7 100644
+index 43c09cf6..21bfb80d 100644
 --- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/HeroBackdrop.kt
 +++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/HeroBackdrop.kt
 @@ -18,7 +18,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeDetails
@@ -877,7 +876,7 @@ index 43c09cf65..21bfb80d7 100644
      Box(
          modifier = Modifier
 diff --git a/feature/details/ui-tv/src/main/res/values-ru/strings.xml b/feature/details/ui-tv/src/main/res/values-ru/strings.xml
-index c03014134..ceb665654 100644
+index c0301413..ceb66565 100644
 --- a/feature/details/ui-tv/src/main/res/values-ru/strings.xml
 +++ b/feature/details/ui-tv/src/main/res/values-ru/strings.xml
 @@ -5,6 +5,7 @@
@@ -889,7 +888,7 @@ index c03014134..ceb665654 100644
      <string name="details_reviews_count">Рецензии (%1$d)</string>
      <string name="details_comments">Комментарии</string>
 diff --git a/feature/details/ui-tv/src/main/res/values-uk/strings.xml b/feature/details/ui-tv/src/main/res/values-uk/strings.xml
-index 343663c11..a0ad0941d 100644
+index 343663c1..a0ad0941 100644
 --- a/feature/details/ui-tv/src/main/res/values-uk/strings.xml
 +++ b/feature/details/ui-tv/src/main/res/values-uk/strings.xml
 @@ -5,6 +5,7 @@
@@ -901,7 +900,7 @@ index 343663c11..a0ad0941d 100644
      <string name="details_reviews_count">Рецензії (%1$d)</string>
      <string name="details_comments">Коментарі</string>
 diff --git a/feature/details/ui-tv/src/main/res/values/strings.xml b/feature/details/ui-tv/src/main/res/values/strings.xml
-index 9bd6ec220..318ea69fb 100644
+index 9bd6ec22..318ea69f 100644
 --- a/feature/details/ui-tv/src/main/res/values/strings.xml
 +++ b/feature/details/ui-tv/src/main/res/values/strings.xml
 @@ -5,6 +5,7 @@
@@ -913,7 +912,7 @@ index 9bd6ec220..318ea69fb 100644
      <string name="details_reviews_count">Reviews (%1$d)</string>
      <string name="details_comments">Comments</string>
 diff --git a/feature/player/presentation/build.gradle.kts b/feature/player/presentation/build.gradle.kts
-index 4f6e0fc1b..8e9a074f4 100644
+index 4f6e0fc1..8e9a074f 100644
 --- a/feature/player/presentation/build.gradle.kts
 +++ b/feature/player/presentation/build.gradle.kts
 @@ -25,6 +25,7 @@ dependencies {
@@ -925,7 +924,7 @@ index 4f6e0fc1b..8e9a074f4 100644
  
      implementation(libs.androidx.core.ktx)
 diff --git a/feature/player/presentation/src/main/kotlin/su/afk/yummy/tv/feature/player/PlayerViewModel.kt b/feature/player/presentation/src/main/kotlin/su/afk/yummy/tv/feature/player/PlayerViewModel.kt
-index 3af5a5173..953d4c819 100644
+index 3af5a517..953d4c81 100644
 --- a/feature/player/presentation/src/main/kotlin/su/afk/yummy/tv/feature/player/PlayerViewModel.kt
 +++ b/feature/player/presentation/src/main/kotlin/su/afk/yummy/tv/feature/player/PlayerViewModel.kt
 @@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
@@ -961,7 +960,7 @@ index 3af5a5173..953d4c819 100644
                      if (playbackProgressHandler.shouldSuggestNextEpisodeOnWatched()) {
                          nextState?.let(playbackProgressHandler::continueTargetRequest)
 diff --git a/feature/settings/api/src/main/kotlin/su/afk/yummy/tv/feature/settings/navigator/SettingsDestination.kt b/feature/settings/api/src/main/kotlin/su/afk/yummy/tv/feature/settings/navigator/SettingsDestination.kt
-index 6cc951657..f11317a3f 100644
+index 6cc95165..f11317a3 100644
 --- a/feature/settings/api/src/main/kotlin/su/afk/yummy/tv/feature/settings/navigator/SettingsDestination.kt
 +++ b/feature/settings/api/src/main/kotlin/su/afk/yummy/tv/feature/settings/navigator/SettingsDestination.kt
 @@ -23,6 +23,7 @@ enum class SettingsCategory {
@@ -973,7 +972,7 @@ index 6cc951657..f11317a3f 100644
  
  @Serializable
 diff --git a/feature/settings/presentation/build.gradle.kts b/feature/settings/presentation/build.gradle.kts
-index 9b729978a..7ebe3e537 100644
+index 9b729978..7ebe3e53 100644
 --- a/feature/settings/presentation/build.gradle.kts
 +++ b/feature/settings/presentation/build.gradle.kts
 @@ -18,6 +18,7 @@ dependencies {
@@ -985,7 +984,7 @@ index 9b729978a..7ebe3e537 100644
      implementation(project(":feature:video-download:domain"))
  
 diff --git a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
-index af8d04c21..323015e8c 100644
+index af8d04c2..323015e8 100644
 --- a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
 +++ b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
 @@ -6,6 +6,7 @@ import kotlinx.collections.immutable.ImmutableList
@@ -1036,7 +1035,7 @@ index af8d04c21..323015e8c 100644
          data object VideoExportDirectorySelectionFailed : Effect
  
 diff --git a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
-index 45d5a1a43..1060879ed 100644
+index 45d5a1a4..1060879e 100644
 --- a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
 +++ b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
 @@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.preferences.auth.TokenStorageMode
@@ -1115,7 +1114,7 @@ index 45d5a1a43..1060879ed 100644
                  analytics.eventDetailsButtonOrderReset()
                  settingsStore.setDetailsButtonOrder(SettingsStore.defaultDetailsButtonOrder)
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
-index a7f1c5baf..9eb67f92b 100644
+index a7f1c5ba..9eb67f92 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
 @@ -30,6 +30,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobilePlayb
@@ -1137,7 +1136,7 @@ index a7f1c5baf..9eb67f92b 100644
          }
      }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobileCategoryUi.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobileCategoryUi.kt
-index eb6dd5cf0..a434ad1c1 100644
+index eb6dd5cf..a434ad1c 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobileCategoryUi.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobileCategoryUi.kt
 @@ -9,6 +9,7 @@ import androidx.compose.material.icons.outlined.PlayCircle
@@ -1171,7 +1170,7 @@ index eb6dd5cf0..a434ad1c1 100644
 +        SettingsCategory.TRACKERS -> Icons.Outlined.Sync
      }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobilePicker.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobilePicker.kt
-index 7d0e33d70..8a4e1014f 100644
+index 7d0e33d7..8a4e1014 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobilePicker.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobilePicker.kt
 @@ -13,4 +13,5 @@ internal enum class SettingsMobilePicker {
@@ -1181,7 +1180,7 @@ index 7d0e33d70..8a4e1014f 100644
 +    APP_LOCALE,
  }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
-index 297f1b7c1..33278ee7e 100644
+index 297f1b7c..33278ee7 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
 @@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
@@ -1225,14 +1224,14 @@ index 297f1b7c1..33278ee7e 100644
 +    AppLocale.SYSTEM -> stringResource(R.string.settings_app_locale_system)
 +    AppLocale.ENGLISH -> "English"
 +    AppLocale.RUSSIAN -> "Русский"
-+    AppLocale.UKRAINIAN -> "Українська"
++    AppLocale.UKRAINIAN -> "��країнська"
 +}
 +
  /** Дружелюбная подпись папки кэша; неизвестные имена показываются как есть. */
  @Composable
  internal fun cacheStorageFolderLabel(id: String): String = when (id) {
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDialogsHost.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDialogsHost.kt
-index 13c05d5c0..a31ce27c5 100644
+index 13c05d5c..a31ce27c 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDialogsHost.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDialogsHost.kt
 @@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
@@ -1267,7 +1266,7 @@ index 13c05d5c0..a31ce27c5 100644
      }
  
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileEffects.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileEffects.kt
-index 411e99b33..427a26921 100644
+index 411e99b3..427a2692 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileEffects.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileEffects.kt
 @@ -1,5 +1,6 @@
@@ -1289,7 +1288,7 @@ index 411e99b33..427a26921 100644
                      videoExportDirectoryPicker.launch(null)
  
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
-index c06b6a55a..73b05e813 100644
+index c06b6a55..73b05e81 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
 @@ -76,6 +76,16 @@ internal fun SettingsMobileAppearanceContent(
@@ -1310,7 +1309,7 @@ index c06b6a55a..73b05e813 100644
          SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_library)) {
              SettingsMobileNavigationRow(
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileGeneralContent.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileGeneralContent.kt
-index 1a4be0086..8b5908766 100644
+index 1a4be008..8b590876 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileGeneralContent.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileGeneralContent.kt
 @@ -34,6 +34,11 @@ internal fun SettingsMobileGeneralContent(
@@ -1327,7 +1326,7 @@ index 1a4be0086..8b5908766 100644
                  hint = if (state.saveLastSearchEnabled) {
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileTrackersContent.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileTrackersContent.kt
 new file mode 100644
-index 000000000..7c19d006c
+index 00000000..7c19d006
 --- /dev/null
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileTrackersContent.kt
 @@ -0,0 +1,30 @@
@@ -1362,14 +1361,14 @@ index 000000000..7c19d006c
 +    }
 +}
 diff --git a/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml b/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
-index 49cb85179..317cae61b 100644
+index 49cb8517..317cae61 100644
 --- a/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
 +++ b/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
 @@ -17,6 +17,12 @@
      <string name="settings_mobile_category_storage_hint">Кэш превью, экспорт видео, размер кэша</string>
      <string name="settings_mobile_category_api">API</string>
      <string name="settings_mobile_category_api_hint">Токен приложения yani</string>
-+    <string name="settings_mobile_category_trackers">Трекеры</string>
++    <string name="settings_mobile_category_trackers">Трек��ры</string>
 +    <string name="settings_mobile_category_trackers_hint">Синхронизация AniList</string>
 +    <string name="settings_app_locale_title">Язык интерфейса</string>
 +    <string name="settings_app_locale_system">Системный</string>
@@ -1398,7 +1397,7 @@ index 49cb85179..317cae61b 100644
      <string name="settings_yani_application_token_hint">По умолчанию используется публичный токен. Укажите свой публичный токен из https://yummyani.me/dev/applications/, чтобы заменить его.</string>
      <string name="settings_version_label">Версия</string>
 diff --git a/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml b/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
-index 159e3672b..61e8b6153 100644
+index 159e3672..61e8b615 100644
 --- a/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
 +++ b/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
 @@ -17,6 +17,12 @@
@@ -1434,7 +1433,7 @@ index 159e3672b..61e8b6153 100644
      <string name="settings_yani_application_token_hint">За замовчуванням використовується публічний токен. Вкажіть свій публічний токен із https://yummyani.me/dev/applications/, щоб замінити його.</string>
      <string name="settings_version_label">Версія</string>
 diff --git a/feature/settings/ui-mobile/src/main/res/values/strings.xml b/feature/settings/ui-mobile/src/main/res/values/strings.xml
-index 48bf16d2f..ba77b64c3 100644
+index 48bf16d2..ba77b64c 100644
 --- a/feature/settings/ui-mobile/src/main/res/values/strings.xml
 +++ b/feature/settings/ui-mobile/src/main/res/values/strings.xml
 @@ -17,6 +17,12 @@
@@ -1470,7 +1469,7 @@ index 48bf16d2f..ba77b64c3 100644
      <string name="settings_yani_application_token_hint">A public token is used by default. Add your own public token from https://yummyani.me/dev/applications/ to override it.</string>
      <string name="settings_version_label">Version</string>
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsTvScreen.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsTvScreen.kt
-index 798e3ee19..bc6679b6b 100644
+index 798e3ee1..bc6679b6 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsTvScreen.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsTvScreen.kt
 @@ -1,5 +1,6 @@
@@ -1492,7 +1491,7 @@ index 798e3ee19..bc6679b6b 100644
                  is SettingsState.Effect.ShareLogs -> {
                      val send = Intent(Intent.ACTION_SEND).apply {
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTab.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTab.kt
-index bb1fee816..ae976c3fd 100644
+index bb1fee81..ae976c3f 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTab.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTab.kt
 @@ -13,5 +13,6 @@ internal enum class SettingsTab(@param:StringRes val labelRes: Int) {
@@ -1503,7 +1502,7 @@ index bb1fee816..ae976c3fd 100644
      ABOUT(R.string.settings_tv_category_about),
  }
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTvPicker.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTvPicker.kt
-index 7621c926c..361104e42 100644
+index 7621c926..361104e4 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTvPicker.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTvPicker.kt
 @@ -7,6 +7,7 @@ import su.afk.yummy.tv.feature.settings.R
@@ -1515,7 +1514,7 @@ index 7621c926c..361104e42 100644
      BACKGROUND(R.string.settings_tab_background),
      POSTER_SIZE(R.string.settings_poster_size_title),
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
-index 6f03d387e..7884158a7 100644
+index 6f03d387..7884158a 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
 @@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
@@ -1566,7 +1565,7 @@ index 6f03d387e..7884158a7 100644
  @Composable
  internal fun cacheStorageFolderLabel(id: String): String = when (id) {
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPanelHost.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPanelHost.kt
-index 70040a724..f73fe6ac9 100644
+index 70040a72..f73fe6ac 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPanelHost.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPanelHost.kt
 @@ -33,6 +33,7 @@ import su.afk.yummy.tv.feature.settings.view.category.SettingsTvPlaybackContent
@@ -1592,7 +1591,7 @@ index 70040a724..f73fe6ac9 100644
                          state,
                          tabFocusRequester,
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPickerPanel.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPickerPanel.kt
-index ab3f3c5ac..95bae4cb8 100644
+index ab3f3c5a..95bae4cb 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPickerPanel.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPickerPanel.kt
 @@ -19,6 +19,7 @@ import androidx.compose.ui.focus.focusRequester
@@ -1627,7 +1626,7 @@ index ab3f3c5ac..95bae4cb8 100644
                  values = availableAppThemes,
                  selected = state.appTheme,
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
-index 5d28b1bff..6bd2af29c 100644
+index 5d28b1bf..6bd2af29 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
 @@ -63,6 +63,18 @@ internal fun SettingsTvAppearanceContent(
@@ -1650,7 +1649,7 @@ index 5d28b1bff..6bd2af29c 100644
      SettingsBlockGap()
      SettingsSectionTitle(text = stringResource(R.string.settings_tv_section_new_episodes))
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvGeneralContent.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvGeneralContent.kt
-index a591785af..83a430540 100644
+index a591785a..83a43054 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvGeneralContent.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvGeneralContent.kt
 @@ -31,6 +31,8 @@ internal fun SettingsTvGeneralContent(
@@ -1664,7 +1663,7 @@ index a591785af..83a430540 100644
          hint = if (state.saveLastSearchEnabled) {
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvTrackersContent.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvTrackersContent.kt
 new file mode 100644
-index 000000000..8527566a1
+index 00000000..8527566a
 --- /dev/null
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvTrackersContent.kt
 @@ -0,0 +1,28 @@
@@ -1697,7 +1696,7 @@ index 000000000..8527566a1
 +    }
 +}
 diff --git a/feature/settings/ui-tv/src/main/res/values-ru/strings.xml b/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
-index c8724ff60..0f6e65a29 100644
+index c8724ff6..0f6e65a2 100644
 --- a/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
 +++ b/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
 @@ -8,6 +8,11 @@
@@ -1726,13 +1725,13 @@ index c8724ff60..0f6e65a29 100644
      <string name="settings_content_language_ukrainian">Украинский</string>
      <string name="settings_yani_application_token_label">X-Application</string>
 +    <string name="settings_anilist_title">AniList</string>
-+    <string name="settings_anilist_hint">Синхронизация прогресса просмотра с AniList</string>
++    <string name="settings_anilist_hint">Синхронизация ��рогресса просмотра с AniList</string>
 +    <string name="settings_details_button_anilist">AniList</string>
      <string name="settings_yani_application_token_placeholder">Токен приложения</string>
      <string name="settings_yani_application_token_hint">По умолчанию используется публичный токен. Укажите свой публичный токен из https://yummyani.me/dev/applications/, чтобы заменить его.\nОн нужен для авторизации приложения и отправляется в заголовке X-Application. Все запросы API используют JSON, включая тело запроса.</string>
      <string name="settings_account_signed_in">Аккаунт Yani</string>
 diff --git a/feature/settings/ui-tv/src/main/res/values-uk/strings.xml b/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
-index 06c80754d..3d65d9372 100644
+index 06c80754..3d65d937 100644
 --- a/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
 +++ b/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
 @@ -8,6 +8,11 @@
@@ -1767,7 +1766,7 @@ index 06c80754d..3d65d9372 100644
      <string name="settings_yani_application_token_hint">За замовчуванням використовується публічний токен. Вкажіть свій публічний токен із https://yummyani.me/dev/applications/, щоб замінити його.\nВін потрібен для авторизації застосунку та надсилається в заголовку X-Application. Усі запити API використовують JSON, включно з тілом запиту.</string>
      <string name="settings_account_signed_in">Акаунт Yani</string>
 diff --git a/feature/settings/ui-tv/src/main/res/values/strings.xml b/feature/settings/ui-tv/src/main/res/values/strings.xml
-index c1fc8e61b..6ff6dfe42 100644
+index c1fc8e61..6ff6dfe4 100644
 --- a/feature/settings/ui-tv/src/main/res/values/strings.xml
 +++ b/feature/settings/ui-tv/src/main/res/values/strings.xml
 @@ -8,6 +8,11 @@
@@ -1802,7 +1801,7 @@ index c1fc8e61b..6ff6dfe42 100644
      <string name="settings_yani_application_token_hint">A public token is used by default. Add your own public token from https://yummyani.me/dev/applications/ to override it.\nRequired for authorizing the app: the token is sent in the X-Application header. All API requests use JSON, including request bodies.</string>
      <string name="settings_account_signed_in">Yani account</string>
 diff --git a/gradle.properties b/gradle.properties
-index 9943d5998..d3422ec98 100644
+index 9943d599..d3422ec9 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -8,6 +8,9 @@ org.gradle.caching=true

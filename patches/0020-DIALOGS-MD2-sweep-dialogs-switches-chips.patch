@@ -1,0 +1,1349 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Fri, 9 Oct 2026 00:46:46 +0300
+Subject: [DIALOGS] MD2 sweep: dialogs, switches, chips
+
+---
+ feature/account/ui-mobile/build.gradle.kts    |   1 +
+ .../view/AccountMobileEpisodePushRow.kt       |   6 +-
+ .../view/AccountMobileLogoutConfirmDialog.kt  |  10 +-
+ .../mobile/view/ProfilePrivacySection.kt      |   4 +-
+ .../mobile/view/BloggerVideosFilters.kt       |  10 +-
+ feature/comments/ui-mobile/build.gradle.kts   |   1 +
+ .../comments/mobile/view/CommentsDialogs.kt   |  12 +--
+ .../details/classic/ClassicDetailsCard.kt     |  53 ----------
+ .../details/classic/ClassicDetailsEpisodes.kt |  81 ++++++++++++++
+ .../classic/ClassicDetailsFranchise.kt        | 100 ++++++++++++++++++
+ .../details/classic/ClassicDetailsHero.kt     |  20 ++++
+ .../details/classic/ClassicDetailsMeta.kt     |  19 +++-
+ .../details/classic/ClassicDetailsScreen.kt   |  21 ++--
+ .../classic/ClassicDetailsScreenshots.kt      |  63 +++++++++++
+ .../details/classic/ClassicDetailsSections.kt |  62 ++++++-----
+ .../rating/view/MobileRatingOverview.kt       |   4 +-
+ feature/messages/ui-mobile/build.gradle.kts   |   1 +
+ .../view/ChatManagementMobileDialogs.kt       |  22 ++--
+ .../mobile/view/EditMessageMobileDialog.kt    |  17 ++-
+ .../mobile/view/MessageHistoryMobileDialog.kt |  20 ++--
+ .../playersetup/ui-mobile/build.gradle.kts    |   1 +
+ .../mobile/view/PlayerSetupMobileToggleRow.kt |  11 +-
+ .../posts/mobile/list/PostsMobileScreen.kt    |   6 +-
+ feature/reviews/ui-mobile/build.gradle.kts    |   1 +
+ .../details/ReviewDetailsMobileScreen.kt      |  10 +-
+ .../video-download/ui-mobile/build.gradle.kts |   1 +
+ .../VideoDownloadDeleteConfirmationDialog.kt  |  10 +-
+ .../view/VideoExportAllConfirmationDialog.kt  |  10 +-
+ .../VideoExportReExportConfirmationDialog.kt  |  10 +-
+ 29 files changed, 418 insertions(+), 169 deletions(-)
+ delete mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsEpisodes.kt
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsFranchise.kt
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreenshots.kt
+
+diff --git a/feature/account/ui-mobile/build.gradle.kts b/feature/account/ui-mobile/build.gradle.kts
+index db4068c4..b515d7df 100644
+--- a/feature/account/ui-mobile/build.gradle.kts
++++ b/feature/account/ui-mobile/build.gradle.kts
+@@ -23,6 +23,7 @@ dependencies {
+     implementation(libs.coil.compose)
+     implementation(libs.androidx.material.icons.core)
+     implementation(libs.androidx.material.icons.extended)
++    implementation(project(":feature:classic:ui"))
+     implementation(libs.play.services.base)
+     implementation(libs.play.services.code.scanner)
+ }
+diff --git a/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/AccountMobileEpisodePushRow.kt b/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/AccountMobileEpisodePushRow.kt
+index 3bc3332c..f7d95e8f 100644
+--- a/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/AccountMobileEpisodePushRow.kt
++++ b/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/AccountMobileEpisodePushRow.kt
+@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.width
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Surface
+-import androidx.compose.material3.Switch
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+@@ -17,6 +16,7 @@ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.feature.account.mobile.R
++import su.afk.yummy.tv.feature.classic.ui.view.YummySwitch
+ 
+ /**
+  * Приглашение разрешить пуши о новых сериях по подпискам — над «Мои подписки». Показывается,
+@@ -52,9 +52,9 @@ internal fun AccountMobileEpisodePushRow(
+                 )
+             }
+             Spacer(modifier = Modifier.width(16.dp))
+-            Switch(
++            YummySwitch(
+                 checked = false,
+-                onCheckedChange = null,
++                onCheckedChange = {},
+             )
+         }
+     }
+diff --git a/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/AccountMobileLogoutConfirmDialog.kt b/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/AccountMobileLogoutConfirmDialog.kt
+index 56a9bea1..6a91f419 100644
+--- a/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/AccountMobileLogoutConfirmDialog.kt
++++ b/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/AccountMobileLogoutConfirmDialog.kt
+@@ -1,28 +1,28 @@
+ package su.afk.yummy.tv.feature.account.mobile.view
+ 
+-import androidx.compose.material3.AlertDialog
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.res.stringResource
+ import su.afk.yummy.tv.feature.account.mobile.R
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ 
+ @Composable
+ internal fun AccountMobileLogoutConfirmDialog(
+     onConfirm: () -> Unit,
+     onDismiss: () -> Unit,
+ ) {
+-    AlertDialog(
++    YummyAlertDialog(
+         onDismissRequest = onDismiss,
+         title = { Text(stringResource(R.string.account_logout_confirm_title)) },
+         text = { Text(stringResource(R.string.account_logout_confirm_message)) },
+         confirmButton = {
+-            TextButton(onClick = onConfirm) {
++            YummyTextButton(onClick = onConfirm) {
+                 Text(stringResource(R.string.account_logout_confirm_action))
+             }
+         },
+         dismissButton = {
+-            TextButton(onClick = onDismiss) {
++            YummyTextButton(onClick = onDismiss) {
+                 Text(stringResource(R.string.account_logout_confirm_cancel))
+             }
+         },
+diff --git a/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/ProfilePrivacySection.kt b/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/ProfilePrivacySection.kt
+index 769fc516..81b2ee78 100644
+--- a/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/ProfilePrivacySection.kt
++++ b/feature/account/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/account/mobile/view/ProfilePrivacySection.kt
+@@ -11,7 +11,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
+ import androidx.compose.material3.ExposedDropdownMenuAnchorType
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.OutlinedTextField
+-import androidx.compose.material3.Switch
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.getValue
+@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.domain.account.model.ProfileListPrivacy
+ import su.afk.yummy.tv.feature.account.mobile.R
+ import su.afk.yummy.tv.feature.account.mobile.account.utils.label
++import su.afk.yummy.tv.feature.classic.ui.view.YummySwitch
+ 
+ @OptIn(ExperimentalMaterial3Api::class)
+ @Composable
+@@ -123,6 +123,6 @@ private fun ProfileSwitch(
+         horizontalArrangement = Arrangement.SpaceBetween,
+     ) {
+         Text(stringResource(labelRes), modifier = Modifier.weight(1f))
+-        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
++        YummySwitch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+     }
+ }
+diff --git a/feature/bloggers/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/bloggers/mobile/view/BloggerVideosFilters.kt b/feature/bloggers/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/bloggers/mobile/view/BloggerVideosFilters.kt
+index 52c86e53..f64eb70a 100644
+--- a/feature/bloggers/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/bloggers/mobile/view/BloggerVideosFilters.kt
++++ b/feature/bloggers/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/bloggers/mobile/view/BloggerVideosFilters.kt
+@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.rememberScrollState
+ import androidx.compose.foundation.shape.RoundedCornerShape
+ import androidx.compose.foundation.verticalScroll
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.material.icons.Icons
+ import androidx.compose.material.icons.automirrored.filled.OpenInNew
+ import androidx.compose.material.icons.filled.FilterList
+@@ -39,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.domain.bloggers.model.BloggerVideoSort
+ import su.afk.yummy.tv.feature.bloggers.list.BloggerVideosListState
+ import su.afk.yummy.tv.feature.bloggers.mobile.R
+@@ -175,7 +177,7 @@ private fun BloggerVideosFiltersSheet(
+                     selected = state.selectedCategory == "all",
+                     onClick = { onCategorySelected("all") },
+                     label = { Text(stringResource(R.string.blogger_videos_all)) },
+-                    shape = RoundedCornerShape(6.dp),
++                    shape = if (LocalClassicUi.current) RectangleShape else RoundedCornerShape(6.dp),
+                     colors = filterChipColors,
+                 )
+                 state.categories.forEach { category ->
+@@ -183,7 +185,7 @@ private fun BloggerVideosFiltersSheet(
+                         selected = state.selectedCategory == category.id,
+                         onClick = { onCategorySelected(category.id) },
+                         label = { Text(category.title) },
+-                        shape = RoundedCornerShape(6.dp),
++                        shape = if (LocalClassicUi.current) RectangleShape else RoundedCornerShape(6.dp),
+                         colors = filterChipColors,
+                     )
+                 }
+@@ -199,7 +201,7 @@ private fun BloggerVideosFiltersSheet(
+                     selected = state.selectedBloggerId == null,
+                     onClick = { onBloggerSelected(null) },
+                     label = { Text(stringResource(R.string.blogger_videos_all_bloggers)) },
+-                    shape = RoundedCornerShape(6.dp),
++                    shape = if (LocalClassicUi.current) RectangleShape else RoundedCornerShape(6.dp),
+                     colors = filterChipColors,
+                 )
+                 state.bloggers.forEach { blogger ->
+@@ -207,7 +209,7 @@ private fun BloggerVideosFiltersSheet(
+                         selected = state.selectedBloggerId == blogger.id,
+                         onClick = { onBloggerSelected(blogger.id) },
+                         label = { Text(blogger.nickname) },
+-                        shape = RoundedCornerShape(6.dp),
++                        shape = if (LocalClassicUi.current) RectangleShape else RoundedCornerShape(6.dp),
+                         colors = filterChipColors,
+                     )
+                 }
+diff --git a/feature/comments/ui-mobile/build.gradle.kts b/feature/comments/ui-mobile/build.gradle.kts
+index a190df2c..2c6508bd 100644
+--- a/feature/comments/ui-mobile/build.gradle.kts
++++ b/feature/comments/ui-mobile/build.gradle.kts
+@@ -20,4 +20,5 @@ dependencies {
+     implementation(libs.androidx.paging.compose)
+     implementation(libs.androidx.material.icons.extended)
+     implementation(libs.coil.compose)
++    implementation(project(":feature:classic:ui"))
+ }
+diff --git a/feature/comments/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/comments/mobile/view/CommentsDialogs.kt b/feature/comments/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/comments/mobile/view/CommentsDialogs.kt
+index 4d6bd4b5..414b8da4 100644
+--- a/feature/comments/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/comments/mobile/view/CommentsDialogs.kt
++++ b/feature/comments/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/comments/mobile/view/CommentsDialogs.kt
+@@ -11,12 +11,10 @@ import androidx.compose.foundation.shape.CircleShape
+ import androidx.compose.foundation.shape.RoundedCornerShape
+ import androidx.compose.material.icons.Icons
+ import androidx.compose.material.icons.filled.Flag
+-import androidx.compose.material3.AlertDialog
+ import androidx.compose.material3.ExperimentalMaterial3Api
+ import androidx.compose.material3.Icon
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+@@ -27,6 +25,8 @@ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
+ import su.afk.yummy.tv.domain.comments.model.Comment
+ import su.afk.yummy.tv.domain.comments.model.CommentReportReason
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.feature.comments.mobile.R
+ import su.afk.yummy.tv.feature.comments.mobile.utils.label
+ 
+@@ -42,12 +42,12 @@ internal fun CommentsDialogs(
+     onReportDismiss: () -> Unit,
+ ) {
+     if (pendingDelete != null) {
+-        AlertDialog(
++        YummyAlertDialog(
+             onDismissRequest = onDeleteDismiss,
+             title = { Text(stringResource(R.string.comments_delete_title)) },
+             text = { Text(stringResource(R.string.comments_delete_message)) },
+             confirmButton = {
+-                TextButton(
++                YummyTextButton(
+                     onClick = onDeleteConfirm,
+                     enabled = !isMutating,
+                 ) {
+@@ -55,7 +55,7 @@ internal fun CommentsDialogs(
+                 }
+             },
+             dismissButton = {
+-                TextButton(
++                YummyTextButton(
+                     onClick = onDeleteDismiss,
+                     enabled = !isMutating,
+                 ) {
+@@ -97,7 +97,7 @@ internal fun CommentsDialogs(
+                     )
+                 }
+             }
+-            TextButton(
++            YummyTextButton(
+                 onClick = onReportDismiss,
+                 enabled = !isMutating,
+                 modifier = Modifier.align(Alignment.End),
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt
+deleted file mode 100644
+index ebaaeac3..00000000
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt
++++ /dev/null
+@@ -1,53 +0,0 @@
+-package su.afk.yummy.tv.feature.details.mobile.details.classic
+-
+-import androidx.compose.foundation.layout.Arrangement
+-import androidx.compose.foundation.layout.Row
+-import androidx.compose.foundation.layout.fillMaxSize
+-import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.size
+-import androidx.compose.material.Icon
+-import androidx.compose.material.MaterialTheme
+-import androidx.compose.material.Surface
+-import androidx.compose.material.Text
+-import androidx.compose.runtime.Composable
+-import androidx.compose.ui.Alignment
+-import androidx.compose.ui.Modifier
+-import androidx.compose.ui.text.font.FontWeight
+-import androidx.compose.ui.text.style.TextOverflow
+-import androidx.compose.ui.unit.dp
+-import su.afk.yummy.tv.feature.details.mobile.details.model.MobileDetailsAction
+-
+-@Composable
+-internal fun ClassicDetailsCard(
+-    action: MobileDetailsAction,
+-    modifier: Modifier = Modifier,
+-) {
+-    Surface(
+-        onClick = action.onClick,
+-        modifier = modifier,
+-        color = MaterialTheme.colors.surface,
+-    ) {
+-        Row(
+-            modifier = Modifier
+-                .fillMaxSize()
+-                .padding(horizontal = 14.dp),
+-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+-            verticalAlignment = Alignment.CenterVertically,
+-        ) {
+-            Icon(
+-                imageVector = action.icon,
+-                contentDescription = null,
+-                tint = MaterialTheme.colors.primary,
+-                modifier = Modifier.size(20.dp),
+-            )
+-            Text(
+-                text = action.label,
+-                style = MaterialTheme.typography.body2,
+-                fontWeight = FontWeight.SemiBold,
+-                color = MaterialTheme.colors.onSurface,
+-                maxLines = 1,
+-                overflow = TextOverflow.Ellipsis,
+-            )
+-        }
+-    }
+-}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsEpisodes.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsEpisodes.kt
+new file mode 100644
+index 00000000..a15a5bad
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsEpisodes.kt
+@@ -0,0 +1,81 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.PaddingValues
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.lazy.LazyRow
++import androidx.compose.foundation.lazy.items
++import androidx.compose.material.ExperimentalMaterialApi
++import androidx.compose.material.Icon
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Surface
++import androidx.compose.material.Text
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.details.DetailsState
++import su.afk.yummy.tv.feature.details.mobile.R
++
++@OptIn(ExperimentalMaterialApi::class)
++@Composable
++internal fun ClassicDetailsEpisodes(
++    details: AnimeDetails,
++    onEvent: (DetailsState.Event) -> Unit,
++    modifier: Modifier = Modifier,
++) {
++    val total = details.episodes?.count ?: details.episodes?.aired ?: 0
++    if (total <= 0) return
++    Column(
++        modifier = modifier.fillMaxWidth(),
++        verticalArrangement = Arrangement.spacedBy(8.dp),
++    ) {
++        Row(
++            modifier = Modifier
++                .fillMaxWidth()
++                .clickable(onClick = { onEvent(DetailsState.Event.EpisodesSelected) }),
++            verticalAlignment = Alignment.CenterVertically,
++        ) {
++            Text(
++                text = stringResource(R.string.details_mobile_episodes),
++                style = MaterialTheme.typography.subtitle1,
++                fontWeight = FontWeight.Bold,
++                color = MaterialTheme.colors.onBackground,
++                modifier = Modifier.weight(1f),
++            )
++            Icon(
++                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
++                contentDescription = null,
++                tint = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
++            )
++        }
++        LazyRow(
++            contentPadding = PaddingValues(end = 16.dp),
++            horizontalArrangement = Arrangement.spacedBy(8.dp),
++        ) {
++            items((1..total).toList()) { number ->
++                Surface(
++                    onClick = { onEvent(DetailsState.Event.EpisodesSelected) },
++                    color = MaterialTheme.colors.surface,
++                ) {
++                    Text(
++                        text = number.toString(),
++                        style = MaterialTheme.typography.body2,
++                        fontWeight = FontWeight.SemiBold,
++                        color = MaterialTheme.colors.onSurface,
++                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
++                    )
++                }
++            }
++        }
++    }
++}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsFranchise.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsFranchise.kt
+new file mode 100644
+index 00000000..8ed8a998
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsFranchise.kt
+@@ -0,0 +1,100 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.background
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.aspectRatio
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.width
++import androidx.compose.material.Icon
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Text
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.layout.ContentScale
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.style.TextOverflow
++import androidx.compose.ui.unit.dp
++import coil3.compose.AsyncImage
++import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.details.DetailsState
++import su.afk.yummy.tv.feature.details.mobile.R
++import su.afk.yummy.tv.feature.details.mobile.details.utils.bestUrl
++
++@Composable
++internal fun ClassicDetailsFranchise(
++    details: AnimeDetails,
++    onEvent: (DetailsState.Event) -> Unit,
++    modifier: Modifier = Modifier,
++) {
++    if (details.viewingOrder.isEmpty()) return
++    Column(
++        modifier = modifier.fillMaxWidth(),
++        verticalArrangement = Arrangement.spacedBy(4.dp),
++    ) {
++        Text(
++            text = stringResource(R.string.details_mobile_viewing_order),
++            style = MaterialTheme.typography.subtitle1,
++            fontWeight = FontWeight.Bold,
++            color = MaterialTheme.colors.onBackground,
++            modifier = Modifier.padding(horizontal = 16.dp),
++        )
++        details.viewingOrder.forEach { item ->
++            Row(
++                modifier = Modifier
++                    .fillMaxWidth()
++                    .clickable(onClick = {
++                        onEvent(DetailsState.Event.AnimeSelected(item.animeId))
++                    })
++                    .padding(horizontal = 16.dp, vertical = 8.dp),
++                horizontalArrangement = Arrangement.spacedBy(12.dp),
++                verticalAlignment = Alignment.CenterVertically,
++            ) {
++                AsyncImage(
++                    model = item.poster.bestUrl(),
++                    contentDescription = null,
++                    contentScale = ContentScale.Crop,
++                    modifier = Modifier
++                        .width(52.dp)
++                        .aspectRatio(2f / 3f)
++                        .background(MaterialTheme.colors.surface),
++                )
++                Column(modifier = Modifier.weight(1f)) {
++                    Text(
++                        text = item.title,
++                        style = MaterialTheme.typography.body1,
++                        fontWeight = FontWeight.SemiBold,
++                        color = MaterialTheme.colors.onSurface,
++                        maxLines = 2,
++                        overflow = TextOverflow.Ellipsis,
++                    )
++                    listOfNotNull(
++                        item.relation?.takeIf { it.isNotBlank() },
++                        item.type?.takeIf { it.isNotBlank() },
++                        item.episodesCount?.takeIf { it > 0 }?.let { "$it ep." },
++                    ).joinToString(" • ").takeIf { it.isNotBlank() }?.let { line ->
++                        Text(
++                            text = line,
++                            style = MaterialTheme.typography.caption,
++                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++                            maxLines = 1,
++                            overflow = TextOverflow.Ellipsis,
++                        )
++                    }
++                }
++                Icon(
++                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
++                    contentDescription = null,
++                    tint = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
++                )
++            }
++        }
++    }
++}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt
+index 47017de0..15f15a9d 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt
+@@ -124,6 +124,26 @@ internal fun ClassicDetailsHero(
+                 )
+             }
+         }
++        ClassicDetailsMeta(
++            details = details,
++            modifier = Modifier
++                .fillMaxWidth()
++                .padding(horizontal = 16.dp)
++                .padding(top = 10.dp),
++        )
++        if (details.description.isNotBlank()) {
++            Text(
++                text = details.description,
++                style = MaterialTheme.typography.body2,
++                color = MaterialTheme.colors.onBackground.copy(alpha = 0.85f),
++                maxLines = 6,
++                overflow = TextOverflow.Ellipsis,
++                modifier = Modifier
++                    .fillMaxWidth()
++                    .padding(horizontal = 16.dp)
++                    .padding(top = 10.dp),
++            )
++        }
+         Button(
+             onClick = { onEvent(DetailsState.Event.WatchSelected) },
+             modifier = Modifier
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt
+index b0fca2a2..84139725 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt
+@@ -7,10 +7,12 @@ import androidx.compose.material.MaterialTheme
+ import androidx.compose.material.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.mobile.R
+ import su.afk.yummy.tv.feature.details.mobile.details.utils.formatAiredProgress
+ import su.afk.yummy.tv.feature.details.mobile.details.utils.formatViews
+ 
+@@ -27,8 +29,14 @@ internal fun ClassicDetailsMeta(
+         details.views?.let { add(it.formatViews()) }
+     }.joinToString(" • ")
+     val genresLine = details.genres.take(5).joinToString(" • ") { it.title }
++    val studiosLine = details.studios.map { it.title }.filter { it.isNotBlank() }
++        .joinToString(", ")
+     val progressLine = details.episodes?.formatAiredProgress(details.status)
+-    if (metaLine.isBlank() && genresLine.isBlank() && progressLine == null) return
++    if (metaLine.isBlank() && genresLine.isBlank() && studiosLine.isBlank() &&
++        progressLine == null
++    ) {
++        return
++    }
+ 
+     Column(
+         modifier = modifier.fillMaxWidth(),
+@@ -53,6 +61,15 @@ internal fun ClassicDetailsMeta(
+                 overflow = TextOverflow.Ellipsis,
+             )
+         }
++        if (studiosLine.isNotBlank()) {
++            Text(
++                text = "${stringResource(R.string.details_mobile_studios)}: $studiosLine",
++                style = MaterialTheme.typography.body2,
++                color = MaterialTheme.colors.onBackground.copy(alpha = 0.66f),
++                maxLines = 2,
++                overflow = TextOverflow.Ellipsis,
++            )
++        }
+         progressLine?.let { progress ->
+             Text(
+                 text = progress,
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt
+index 6e6c2617..497160b8 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt
+@@ -18,7 +18,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+ import su.afk.yummy.tv.core.model.anime.AnimeDetails
+ import su.afk.yummy.tv.feature.details.details.DetailsState
+ import su.afk.yummy.tv.feature.details.mobile.R
+-import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsDescriptionSection
+ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
+ 
+ @Composable
+@@ -42,23 +41,23 @@ internal fun ClassicDetailsScreen(
+                 onEvent = onEvent,
+             )
+         }
+-        item(key = "meta") {
+-            ClassicDetailsMeta(
+-                details = details,
+-                modifier = Modifier.padding(horizontal = 16.dp),
+-            )
+-        }
+         item(key = "sections") {
+             ClassicDetailsSections(
+                 state = state,
+                 details = details,
+                 onEvent = onEvent,
+-                modifier = Modifier.padding(horizontal = 16.dp),
+             )
+         }
+-        item(key = "description") {
+-            DetailsDescriptionSection(
+-                description = details.description,
++        item(key = "screenshots") {
++            ClassicDetailsScreenshots(details = details, onEvent = onEvent)
++        }
++        item(key = "franchise") {
++            ClassicDetailsFranchise(details = details, onEvent = onEvent)
++        }
++        item(key = "episodes") {
++            ClassicDetailsEpisodes(
++                details = details,
++                onEvent = onEvent,
+                 modifier = Modifier.padding(horizontal = 16.dp),
+             )
+         }
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreenshots.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreenshots.kt
+new file mode 100644
+index 00000000..4d6ac8d1
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreenshots.kt
+@@ -0,0 +1,63 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.background
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.PaddingValues
++import androidx.compose.foundation.layout.aspectRatio
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.width
++import androidx.compose.foundation.lazy.LazyRow
++import androidx.compose.foundation.lazy.items
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.layout.ContentScale
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.unit.dp
++import coil3.compose.AsyncImage
++import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.details.DetailsState
++import su.afk.yummy.tv.feature.details.mobile.R
++
++@Composable
++internal fun ClassicDetailsScreenshots(
++    details: AnimeDetails,
++    onEvent: (DetailsState.Event) -> Unit,
++    modifier: Modifier = Modifier,
++) {
++    if (details.screenshots.isEmpty()) return
++    Column(
++        modifier = modifier.fillMaxWidth(),
++        verticalArrangement = Arrangement.spacedBy(8.dp),
++    ) {
++        Text(
++            text = stringResource(R.string.details_mobile_screenshots),
++            style = MaterialTheme.typography.subtitle1,
++            fontWeight = FontWeight.Bold,
++            color = MaterialTheme.colors.onBackground,
++            modifier = Modifier.padding(horizontal = 16.dp),
++        )
++        LazyRow(
++            contentPadding = PaddingValues(horizontal = 16.dp),
++            horizontalArrangement = Arrangement.spacedBy(8.dp),
++        ) {
++            items(details.screenshots, key = { it.id ?: it.full.orEmpty() }) { shot ->
++                AsyncImage(
++                    model = shot.small ?: shot.full,
++                    contentDescription = shot.episode,
++                    contentScale = ContentScale.Crop,
++                    modifier = Modifier
++                        .width(200.dp)
++                        .aspectRatio(16f / 9f)
++                        .background(MaterialTheme.colors.surface)
++                        .clickable(onClick = { onEvent(DetailsState.Event.ScreenshotsSelected) }),
++                )
++            }
++        }
++    }
++}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
+index 2a517f86..b73068b1 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
+@@ -1,25 +1,29 @@
+ package su.afk.yummy.tv.feature.details.mobile.details.classic
+ 
++import androidx.compose.foundation.clickable
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Column
+-import androidx.compose.foundation.layout.ExperimentalLayoutApi
+-import androidx.compose.foundation.layout.FlowRow
+-import androidx.compose.foundation.layout.Spacer
++import androidx.compose.foundation.layout.Row
+ import androidx.compose.foundation.layout.fillMaxWidth
+-import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.material.Icon
+ import androidx.compose.material.MaterialTheme
+ import androidx.compose.material.Text
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+ import androidx.compose.runtime.Composable
++import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.core.model.anime.AnimeDetails
+ import su.afk.yummy.tv.feature.details.details.DetailsState
+ import su.afk.yummy.tv.feature.details.mobile.R
+ import su.afk.yummy.tv.feature.details.mobile.details.view.buildMobileActions
+ 
+-@OptIn(ExperimentalLayoutApi::class)
+ @Composable
+ internal fun ClassicDetailsSections(
+     state: DetailsState.State,
+@@ -47,33 +51,43 @@ internal fun ClassicDetailsSections(
+ 
+     Column(
+         modifier = modifier.fillMaxWidth(),
+-        verticalArrangement = Arrangement.spacedBy(10.dp),
++        verticalArrangement = Arrangement.spacedBy(4.dp),
+     ) {
+         Text(
+             text = stringResource(R.string.details_mobile_sections),
+             style = MaterialTheme.typography.subtitle1,
+             fontWeight = FontWeight.Bold,
+             color = MaterialTheme.colors.onBackground,
++            modifier = Modifier.padding(horizontal = 16.dp),
+         )
+-        FlowRow(
+-            modifier = Modifier.fillMaxWidth(),
+-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+-            verticalArrangement = Arrangement.spacedBy(8.dp),
+-            maxItemsInEachRow = 2,
+-        ) {
+-            actions.forEach { action ->
+-                ClassicDetailsCard(
+-                    action = action,
+-                    modifier = Modifier
+-                        .weight(1f)
+-                        .height(56.dp),
++        actions.forEach { action ->
++            Row(
++                modifier = Modifier
++                    .fillMaxWidth()
++                    .clickable(onClick = action.onClick)
++                    .padding(horizontal = 16.dp, vertical = 13.dp),
++                horizontalArrangement = Arrangement.spacedBy(14.dp),
++                verticalAlignment = Alignment.CenterVertically,
++            ) {
++                Icon(
++                    imageVector = action.icon,
++                    contentDescription = null,
++                    tint = MaterialTheme.colors.primary,
++                    modifier = Modifier.size(22.dp),
+                 )
+-            }
+-            if (actions.size % 2 != 0) {
+-                Spacer(
+-                    modifier = Modifier
+-                        .weight(1f)
+-                        .height(56.dp),
++                Text(
++                    text = action.label,
++                    style = MaterialTheme.typography.body1,
++                    fontWeight = FontWeight.Medium,
++                    color = MaterialTheme.colors.onSurface,
++                    maxLines = 1,
++                    overflow = TextOverflow.Ellipsis,
++                    modifier = Modifier.weight(1f),
++                )
++                Icon(
++                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
++                    contentDescription = null,
++                    tint = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
+                 )
+             }
+         }
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/rating/view/MobileRatingOverview.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/rating/view/MobileRatingOverview.kt
+index 0c263203..9757d7f5 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/rating/view/MobileRatingOverview.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/rating/view/MobileRatingOverview.kt
+@@ -21,10 +21,12 @@ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.domain.account.model.AnimeRatingSummary
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.feature.details.mobile.R
+ import su.afk.yummy.tv.feature.details.mobile.rating.utils.formatRating
+ import su.afk.yummy.tv.feature.details.mobile.rating.utils.weightedAverage
+@@ -42,7 +44,7 @@ internal fun MobileRatingOverview(
+ 
+     Card(
+         modifier = modifier.fillMaxWidth(),
+-        shape = RoundedCornerShape(8.dp),
++        shape = if (LocalClassicUi.current) RectangleShape else RoundedCornerShape(8.dp),
+         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+     ) {
+         Column(
+diff --git a/feature/messages/ui-mobile/build.gradle.kts b/feature/messages/ui-mobile/build.gradle.kts
+index 58fa1205..1a045a9f 100644
+--- a/feature/messages/ui-mobile/build.gradle.kts
++++ b/feature/messages/ui-mobile/build.gradle.kts
+@@ -19,4 +19,5 @@ dependencies {
+     implementation(libs.androidx.activity.compose)
+     implementation(libs.androidx.material.icons.extended)
+     implementation(libs.coil.compose)
++    implementation(project(":feature:classic:ui"))
+ }
+diff --git a/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/ChatManagementMobileDialogs.kt b/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/ChatManagementMobileDialogs.kt
+index 33b24b51..81902135 100644
+--- a/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/ChatManagementMobileDialogs.kt
++++ b/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/ChatManagementMobileDialogs.kt
+@@ -1,10 +1,10 @@
+ package su.afk.yummy.tv.feature.messages.mobile.view
+ 
+-import androidx.compose.material3.AlertDialog
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.feature.messages.mobile.R
+ 
+ @Composable
+@@ -22,17 +22,17 @@ internal fun ChatManagementMobileDialogs(
+     onBanDismiss: () -> Unit,
+ ) {
+     if (showDeleteConfirmation) {
+-        AlertDialog(
++        YummyAlertDialog(
+             onDismissRequest = onDeleteDismiss,
+             title = { Text(stringResource(R.string.messages_delete_title)) },
+             text = { Text(stringResource(R.string.messages_delete_confirmation)) },
+             confirmButton = {
+-                TextButton(onClick = onDeleteConfirm, enabled = !isMutating) {
++                YummyTextButton(onClick = onDeleteConfirm, enabled = !isMutating) {
+                     Text(stringResource(R.string.messages_delete))
+                 }
+             },
+             dismissButton = {
+-                TextButton(onClick = onDeleteDismiss, enabled = !isMutating) {
++                YummyTextButton(onClick = onDeleteDismiss, enabled = !isMutating) {
+                     Text(stringResource(R.string.messages_cancel))
+                 }
+             },
+@@ -40,17 +40,17 @@ internal fun ChatManagementMobileDialogs(
+     }
+ 
+     if (showClaimConfirmation) {
+-        AlertDialog(
++        YummyAlertDialog(
+             onDismissRequest = onClaimDismiss,
+             title = { Text(stringResource(R.string.messages_claim_title)) },
+             text = { Text(stringResource(R.string.messages_claim_description)) },
+             confirmButton = {
+-                TextButton(onClick = onClaimConfirm, enabled = !isMutating) {
++                YummyTextButton(onClick = onClaimConfirm, enabled = !isMutating) {
+                     Text(stringResource(R.string.messages_claim))
+                 }
+             },
+             dismissButton = {
+-                TextButton(onClick = onClaimDismiss, enabled = !isMutating) {
++                YummyTextButton(onClick = onClaimDismiss, enabled = !isMutating) {
+                     Text(stringResource(R.string.messages_cancel))
+                 }
+             },
+@@ -58,7 +58,7 @@ internal fun ChatManagementMobileDialogs(
+     }
+ 
+     if (showBanConfirmation) {
+-        AlertDialog(
++        YummyAlertDialog(
+             onDismissRequest = onBanDismiss,
+             title = {
+                 Text(stringResource(if (isBanned) R.string.messages_unban_title else R.string.messages_ban_title))
+@@ -72,12 +72,12 @@ internal fun ChatManagementMobileDialogs(
+                 )
+             },
+             confirmButton = {
+-                TextButton(onClick = onBanConfirm, enabled = !isMutating) {
++                YummyTextButton(onClick = onBanConfirm, enabled = !isMutating) {
+                     Text(stringResource(if (isBanned) R.string.messages_unban else R.string.messages_ban))
+                 }
+             },
+             dismissButton = {
+-                TextButton(onClick = onBanDismiss, enabled = !isMutating) {
++                YummyTextButton(onClick = onBanDismiss, enabled = !isMutating) {
+                     Text(stringResource(R.string.messages_cancel))
+                 }
+             },
+diff --git a/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/EditMessageMobileDialog.kt b/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/EditMessageMobileDialog.kt
+index 7dbb238a..230516d1 100644
+--- a/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/EditMessageMobileDialog.kt
++++ b/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/EditMessageMobileDialog.kt
+@@ -2,16 +2,16 @@ package su.afk.yummy.tv.feature.messages.mobile.view
+ 
+ import androidx.compose.foundation.layout.Column
+ import androidx.compose.foundation.layout.imePadding
+-import androidx.compose.material3.AlertDialog
+-import androidx.compose.material3.Button
+ import androidx.compose.material3.MaterialTheme
+-import androidx.compose.material3.OutlinedTextField
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.window.DialogProperties
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyButton
++import su.afk.yummy.tv.feature.classic.ui.view.YummyOutlinedTextField
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.feature.messages.mobile.R
+ 
+ @Composable
+@@ -22,14 +22,13 @@ internal fun EditMessageMobileDialog(
+     onConfirm: () -> Unit,
+     onDismiss: () -> Unit,
+ ) {
+-    AlertDialog(
++    YummyAlertDialog(
+         onDismissRequest = onDismiss,
+         properties = DialogProperties(decorFitsSystemWindows = false),
+         title = { Text(stringResource(R.string.messages_edit_title)) },
+         text = {
+             Column(modifier = Modifier.imePadding()) {
+-                OutlinedTextField(
+-                    shape = MaterialTheme.shapes.large,
++                YummyOutlinedTextField(
+                     value = text,
+                     onValueChange = onTextChange,
+                     enabled = enabled,
+@@ -39,12 +38,12 @@ internal fun EditMessageMobileDialog(
+             }
+         },
+         confirmButton = {
+-            Button(onClick = onConfirm, enabled = enabled && text.isNotBlank()) {
++            YummyButton(onClick = onConfirm, enabled = enabled && text.isNotBlank()) {
+                 Text(stringResource(R.string.messages_save))
+             }
+         },
+         dismissButton = {
+-            TextButton(onClick = onDismiss, enabled = enabled) {
++            YummyTextButton(onClick = onDismiss, enabled = enabled) {
+                 Text(stringResource(R.string.messages_cancel))
+             }
+         },
+diff --git a/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/MessageHistoryMobileDialog.kt b/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/MessageHistoryMobileDialog.kt
+index f71882fc..024d9907 100644
+--- a/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/MessageHistoryMobileDialog.kt
++++ b/feature/messages/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/messages/mobile/view/MessageHistoryMobileDialog.kt
+@@ -8,12 +8,8 @@ import androidx.compose.foundation.layout.heightIn
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.foundation.lazy.itemsIndexed
+-import androidx.compose.material3.AlertDialog
+-import androidx.compose.material3.CircularProgressIndicator
+-import androidx.compose.material3.HorizontalDivider
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+@@ -21,6 +17,10 @@ import androidx.compose.ui.platform.LocalContext
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.domain.messages.model.MessageHistoryEntry
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyCircularProgress
++import su.afk.yummy.tv.feature.classic.ui.view.YummyDivider
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.feature.messages.mobile.R
+ import su.afk.yummy.tv.feature.messages.mobile.utils.formatMessageDate
+ import su.afk.yummy.tv.feature.messages.mobile.utils.label
+@@ -33,7 +33,7 @@ internal fun MessageHistoryMobileDialog(
+     onRetry: () -> Unit,
+     onDismiss: () -> Unit,
+ ) {
+-    AlertDialog(
++    YummyAlertDialog(
+         onDismissRequest = onDismiss,
+         title = { Text(stringResource(R.string.messages_history_title)) },
+         text = {
+@@ -44,24 +44,26 @@ internal fun MessageHistoryMobileDialog(
+                 contentAlignment = Alignment.Center,
+             ) {
+                 when {
+-                    isLoading -> CircularProgressIndicator()
++                    isLoading -> YummyCircularProgress()
+                     hasError -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                         Text(stringResource(R.string.messages_history_error))
+-                        TextButton(onClick = onRetry) { Text(stringResource(R.string.messages_retry)) }
++                        YummyTextButton(onClick = onRetry) {
++                            Text(stringResource(R.string.messages_retry))
++                        }
+                     }
+ 
+                     entries.isEmpty() -> Text(stringResource(R.string.messages_history_empty))
+                     else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                         itemsIndexed(entries) { index, entry ->
+                             MessageHistoryRow(entry)
+-                            if (index < entries.lastIndex) HorizontalDivider()
++                            if (index < entries.lastIndex) YummyDivider()
+                         }
+                     }
+                 }
+             }
+         },
+         confirmButton = {
+-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.messages_close)) }
++            YummyTextButton(onClick = onDismiss) { Text(stringResource(R.string.messages_close)) }
+         },
+     )
+ }
+diff --git a/feature/playersetup/ui-mobile/build.gradle.kts b/feature/playersetup/ui-mobile/build.gradle.kts
+index 226681e6..863f6638 100644
+--- a/feature/playersetup/ui-mobile/build.gradle.kts
++++ b/feature/playersetup/ui-mobile/build.gradle.kts
+@@ -17,4 +17,5 @@ dependencies {
+     implementation(libs.bundles.compose.screen)
+     implementation(libs.bundles.navigation.serialization)
+     implementation(libs.androidx.material.icons.extended)
++    implementation(project(":feature:classic:ui"))
+ }
+diff --git a/feature/playersetup/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/playersetup/mobile/view/PlayerSetupMobileToggleRow.kt b/feature/playersetup/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/playersetup/mobile/view/PlayerSetupMobileToggleRow.kt
+index 8cc049c2..ae88320d 100644
+--- a/feature/playersetup/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/playersetup/mobile/view/PlayerSetupMobileToggleRow.kt
++++ b/feature/playersetup/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/playersetup/mobile/view/PlayerSetupMobileToggleRow.kt
+@@ -8,14 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.width
+ import androidx.compose.material3.MaterialTheme
+-import androidx.compose.material3.Switch
+-import androidx.compose.material3.SwitchDefaults
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.feature.classic.ui.view.YummySwitch
+ 
+ @Composable
+ internal fun PlayerSetupMobileToggleRow(
+@@ -46,13 +45,9 @@ internal fun PlayerSetupMobileToggleRow(
+             )
+         }
+         Spacer(modifier = Modifier.width(16.dp))
+-        Switch(
++        YummySwitch(
+             checked = enabled,
+-            onCheckedChange = null,
+-            colors = SwitchDefaults.colors(
+-                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+-                checkedTrackColor = MaterialTheme.colorScheme.primary,
+-            ),
++            onCheckedChange = {},
+         )
+     }
+ }
+diff --git a/feature/posts/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/posts/mobile/list/PostsMobileScreen.kt b/feature/posts/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/posts/mobile/list/PostsMobileScreen.kt
+index 2dd52b34..616f1068 100644
+--- a/feature/posts/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/posts/mobile/list/PostsMobileScreen.kt
++++ b/feature/posts/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/posts/mobile/list/PostsMobileScreen.kt
+@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.foundation.lazy.LazyRow
+ import androidx.compose.foundation.lazy.items
+ import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.material3.ExperimentalMaterial3Api
+ import androidx.compose.material3.FilterChip
+ import androidx.compose.material3.FilterChipDefaults
+@@ -31,6 +32,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
+ import androidx.paging.compose.itemKey
+ import kotlinx.coroutines.flow.Flow
+ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.components.StateMessage
+ import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
+ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+@@ -113,7 +115,7 @@ fun PostsMobileScreen(
+                                 selected = state.selectedCategory == null,
+                                 onClick = { onEvent(PostsListState.Event.CategorySelected(null)) },
+                                 label = { Text(stringResource(R.string.posts_all)) },
+-                                shape = RoundedCornerShape(6.dp),
++                                shape = if (LocalClassicUi.current) RectangleShape else RoundedCornerShape(6.dp),
+                                 colors = categoryChipColors,
+                             )
+                         }
+@@ -124,7 +126,7 @@ fun PostsMobileScreen(
+                                     onEvent(PostsListState.Event.CategorySelected(category.uri))
+                                 },
+                                 label = { Text(category.title) },
+-                                shape = RoundedCornerShape(6.dp),
++                                shape = if (LocalClassicUi.current) RectangleShape else RoundedCornerShape(6.dp),
+                                 colors = categoryChipColors,
+                             )
+                         }
+diff --git a/feature/reviews/ui-mobile/build.gradle.kts b/feature/reviews/ui-mobile/build.gradle.kts
+index c3447cfb..a81bac5e 100644
+--- a/feature/reviews/ui-mobile/build.gradle.kts
++++ b/feature/reviews/ui-mobile/build.gradle.kts
+@@ -19,4 +19,5 @@ dependencies {
+     implementation(libs.androidx.paging.compose)
+     implementation(libs.androidx.material.icons.extended)
+     implementation(libs.coil.compose)
++    implementation(project(":feature:classic:ui"))
+ }
+diff --git a/feature/reviews/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/reviews/mobile/details/ReviewDetailsMobileScreen.kt b/feature/reviews/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/reviews/mobile/details/ReviewDetailsMobileScreen.kt
+index 35c70ff3..d5505efb 100644
+--- a/feature/reviews/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/reviews/mobile/details/ReviewDetailsMobileScreen.kt
++++ b/feature/reviews/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/reviews/mobile/details/ReviewDetailsMobileScreen.kt
+@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.foundation.lazy.items
+ import androidx.compose.material.icons.Icons
+ import androidx.compose.material.icons.filled.ChatBubbleOutline
+-import androidx.compose.material3.AlertDialog
+ import androidx.compose.material3.ExperimentalMaterial3Api
+ import androidx.compose.material3.FilledTonalButton
+ import androidx.compose.material3.Icon
+@@ -19,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.OutlinedButton
+ import androidx.compose.material3.Surface
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.getValue
+@@ -32,6 +30,8 @@ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.unit.dp
+ import kotlinx.coroutines.flow.Flow
+ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+ import su.afk.yummy.tv.core.designsystem.mobile.layout.isInListDetailPane
+ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+@@ -66,17 +66,17 @@ fun ReviewDetailsMobileScreen(
+     }
+ 
+     if (confirmDelete) {
+-        AlertDialog(
++        YummyAlertDialog(
+             onDismissRequest = { confirmDelete = false },
+             title = { Text(stringResource(R.string.review_delete_confirm)) },
+             confirmButton = {
+-                TextButton(onClick = {
++                YummyTextButton(onClick = {
+                     confirmDelete = false
+                     onEvent(ReviewDetailsState.Event.DeleteConfirmed)
+                 }) { Text(stringResource(R.string.review_delete)) }
+             },
+             dismissButton = {
+-                TextButton(onClick = { confirmDelete = false }) {
++                YummyTextButton(onClick = { confirmDelete = false }) {
+                     Text(stringResource(R.string.review_cancel))
+                 }
+             },
+diff --git a/feature/video-download/ui-mobile/build.gradle.kts b/feature/video-download/ui-mobile/build.gradle.kts
+index fd8812e4..77446114 100644
+--- a/feature/video-download/ui-mobile/build.gradle.kts
++++ b/feature/video-download/ui-mobile/build.gradle.kts
+@@ -20,4 +20,5 @@ dependencies {
+     implementation(libs.androidx.material.icons.core)
+     implementation(libs.androidx.material.icons.extended)
+     implementation(libs.coil.compose)
++    implementation(project(":feature:classic:ui"))
+ }
+diff --git a/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoDownloadDeleteConfirmationDialog.kt b/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoDownloadDeleteConfirmationDialog.kt
+index a2d1629b..dae5e3ec 100644
+--- a/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoDownloadDeleteConfirmationDialog.kt
++++ b/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoDownloadDeleteConfirmationDialog.kt
+@@ -1,11 +1,11 @@
+ package su.afk.yummy.tv.feature.videodownload.mobile.view
+ 
+-import androidx.compose.material3.AlertDialog
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.feature.videodownload.mobile.R
+ 
+ @Composable
+@@ -15,7 +15,7 @@ internal fun VideoDownloadDeleteConfirmationDialog(
+     onConfirm: () -> Unit,
+     onDismiss: () -> Unit,
+ ) {
+-    AlertDialog(
++    YummyAlertDialog(
+         onDismissRequest = onDismiss,
+         title = {
+             Text(stringResource(R.string.video_download_delete_confirm_title, episode))
+@@ -24,7 +24,7 @@ internal fun VideoDownloadDeleteConfirmationDialog(
+             Text(stringResource(R.string.video_download_delete_confirm_message, animeTitle))
+         },
+         confirmButton = {
+-            TextButton(onClick = onConfirm) {
++            YummyTextButton(onClick = onConfirm) {
+                 Text(
+                     text = stringResource(R.string.video_download_delete_confirm),
+                     color = MaterialTheme.colorScheme.error,
+@@ -32,7 +32,7 @@ internal fun VideoDownloadDeleteConfirmationDialog(
+             }
+         },
+         dismissButton = {
+-            TextButton(onClick = onDismiss) {
++            YummyTextButton(onClick = onDismiss) {
+                 Text(stringResource(R.string.video_download_delete_cancel))
+             }
+         },
+diff --git a/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoExportAllConfirmationDialog.kt b/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoExportAllConfirmationDialog.kt
+index 303e0e54..e5b97bec 100644
+--- a/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoExportAllConfirmationDialog.kt
++++ b/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoExportAllConfirmationDialog.kt
+@@ -1,10 +1,10 @@
+ package su.afk.yummy.tv.feature.videodownload.mobile.view
+ 
+-import androidx.compose.material3.AlertDialog
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.feature.videodownload.mobile.R
+ 
+ @Composable
+@@ -13,19 +13,19 @@ internal fun VideoExportAllConfirmationDialog(
+     onConfirm: () -> Unit,
+     onDismiss: () -> Unit,
+ ) {
+-    AlertDialog(
++    YummyAlertDialog(
+         onDismissRequest = onDismiss,
+         title = { Text(stringResource(R.string.video_export_all_dialog_title)) },
+         text = {
+             Text(stringResource(R.string.video_export_all_dialog_message, count))
+         },
+         confirmButton = {
+-            TextButton(onClick = onConfirm) {
++            YummyTextButton(onClick = onConfirm) {
+                 Text(stringResource(R.string.video_export_all_dialog_confirm))
+             }
+         },
+         dismissButton = {
+-            TextButton(onClick = onDismiss) {
++            YummyTextButton(onClick = onDismiss) {
+                 Text(stringResource(R.string.video_export_all_dialog_cancel))
+             }
+         },
+diff --git a/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoExportReExportConfirmationDialog.kt b/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoExportReExportConfirmationDialog.kt
+index dd17705d..321b45b8 100644
+--- a/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoExportReExportConfirmationDialog.kt
++++ b/feature/video-download/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/videodownload/mobile/view/VideoExportReExportConfirmationDialog.kt
+@@ -1,10 +1,10 @@
+ package su.afk.yummy.tv.feature.videodownload.mobile.view
+ 
+-import androidx.compose.material3.AlertDialog
+ import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.feature.videodownload.mobile.R
+ 
+ @Composable
+@@ -14,7 +14,7 @@ internal fun VideoExportReExportConfirmationDialog(
+     onConfirm: () -> Unit,
+     onDismiss: () -> Unit,
+ ) {
+-    AlertDialog(
++    YummyAlertDialog(
+         onDismissRequest = onDismiss,
+         title = { Text(stringResource(R.string.video_export_reexport_dialog_title)) },
+         text = {
+@@ -27,12 +27,12 @@ internal fun VideoExportReExportConfirmationDialog(
+             )
+         },
+         confirmButton = {
+-            TextButton(onClick = onConfirm) {
++            YummyTextButton(onClick = onConfirm) {
+                 Text(stringResource(R.string.video_export_reexport_dialog_confirm))
+             }
+         },
+         dismissButton = {
+-            TextButton(onClick = onDismiss) {
++            YummyTextButton(onClick = onDismiss) {
+                 Text(stringResource(R.string.video_export_reexport_dialog_cancel))
+             }
+         },

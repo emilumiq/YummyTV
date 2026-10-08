@@ -4,6 +4,15 @@ Newest first. Each entry maps to one commit on `yummy` / one patch dir.
 
 ## Unreleased (on top of 162eb9af)
 
+- Home feed customization: season hero and blogger videos toggles; hidden
+  bottom-bar tabs (multi-toggle, bar never empties); home gates both.
+- MD2 sweep (mobile): `YummySwitch/FilterChip/AssistChip` wrappers, alert
+  dialogs migrated (home, account, video-download, comments, messages,
+  reviews), playersetup/account switches, square chip shapes.
+- Tracker mobile+tv are dual-path: M3 widgets when classic is off, M2 when on
+  (`YummyScaffold/TopBar/Button/TextField/Menu/Dialog/Progress/...`); hardcoded
+  Twitter-blue theme deleted.
+
 - Classic details (mobile): separate Jellyfin-like layout — square poster and
   cards, plain backdrop without blur, static rating, no animations; wired via
   screen-level branch in `DetailsMobileScreen`.

@@ -1,0 +1,348 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Fri, 9 Oct 2026 00:46:36 +0300
+Subject: [CLASSIC] Wrapper growth, theme fixes, compile fixes
+
+---
+ .../feature/classic/ui/ClassicThemeWrapper.kt |  5 +-
+ .../feature/classic/ui/theme/ClassicScheme.kt |  5 +-
+ .../classic/ui/view/YummyAlertDialog.kt       |  4 ++
+ .../tv/feature/classic/ui/view/YummyChip.kt   | 62 +++++++++++++++++++
+ .../classic/ui/view/YummyExposedDropdown.kt   |  5 +-
+ .../classic/ui/view/YummyOutlinedTextField.kt |  9 +++
+ .../feature/classic/ui/view/YummyScaffold.kt  |  5 +-
+ .../tv/feature/classic/ui/view/YummySwitch.kt | 29 +++++++++
+ .../tv/feature/classic/ui/view/YummyTopBar.kt | 46 ++++++++------
+ 9 files changed, 145 insertions(+), 25 deletions(-)
+ create mode 100644 feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyChip.kt
+ create mode 100644 feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummySwitch.kt
+
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/ClassicThemeWrapper.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/ClassicThemeWrapper.kt
+index 29009d15..d1b938d3 100644
+--- a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/ClassicThemeWrapper.kt
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/ClassicThemeWrapper.kt
+@@ -29,8 +29,11 @@ fun ClassicThemeWrapper(
+                 } else {
+                     // Unconverted M3 screens keep working but look classic:
+                     // flat surfaces instead of tonal blobs, square corners.
++                    // Dynamic keeps wallpaper tones, squaring applies regardless.
+                     MaterialTheme(
+-                        colorScheme = MaterialTheme.colorScheme.toClassic(),
++                        colorScheme = MaterialTheme.colorScheme.toClassic(
++                            keepWallpaperTones = appTheme == AppTheme.DYNAMIC,
++                        ),
+                         shapes = classicShapes(),
+                     ) {
+                         content()
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/theme/ClassicScheme.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/theme/ClassicScheme.kt
+index 0ae61838..9cc774c6 100644
+--- a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/theme/ClassicScheme.kt
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/theme/ClassicScheme.kt
+@@ -5,9 +5,12 @@ import androidx.compose.material3.ColorScheme
+ import androidx.compose.material3.Shapes
+ import androidx.compose.ui.unit.dp
+ 
+-fun ColorScheme.toClassic(): ColorScheme {
++fun ColorScheme.toClassic(keepWallpaperTones: Boolean = false): ColorScheme {
+     // Flatten tonal color blobs into neutral surfaces; contrast pairs stay valid,
+     // so selected states keep readable text on both dark and light schemes.
++    // Dynamic (Material You) palettes keep their wallpaper tones: flattening them
++    // would erase the wallpaper identity, square shapes still apply.
++    if (keepWallpaperTones) return this
+     val flatContainer = surfaceVariant
+     val onFlatContainer = onSurfaceVariant
+     return copy(
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyAlertDialog.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyAlertDialog.kt
+index bc9f21cf..ab10232e 100644
+--- a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyAlertDialog.kt
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyAlertDialog.kt
+@@ -2,12 +2,14 @@ package su.afk.yummy.tv.feature.classic.ui.view
+ 
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.window.DialogProperties
+ import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ 
+ @Composable
+ fun YummyAlertDialog(
+     onDismissRequest: () -> Unit,
+     modifier: Modifier = Modifier,
++    properties: DialogProperties = DialogProperties(),
+     title: @Composable (() -> Unit)? = null,
+     text: @Composable (() -> Unit)? = null,
+     confirmButton: @Composable () -> Unit,
+@@ -17,6 +19,7 @@ fun YummyAlertDialog(
+         androidx.compose.material.AlertDialog(
+             onDismissRequest = onDismissRequest,
+             modifier = modifier,
++            properties = properties,
+             title = title,
+             text = text,
+             confirmButton = confirmButton,
+@@ -26,6 +29,7 @@ fun YummyAlertDialog(
+         androidx.compose.material3.AlertDialog(
+             onDismissRequest = onDismissRequest,
+             modifier = modifier,
++            properties = properties,
+             title = title,
+             text = text,
+             confirmButton = confirmButton,
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyChip.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyChip.kt
+new file mode 100644
+index 00000000..927bf4d5
+--- /dev/null
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyChip.kt
+@@ -0,0 +1,62 @@
++package su.afk.yummy.tv.feature.classic.ui.view
++
++import androidx.compose.foundation.layout.RowScope
++import androidx.compose.material.ExperimentalMaterialApi
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
++
++@OptIn(ExperimentalMaterialApi::class)
++@Composable
++fun YummyFilterChip(
++    selected: Boolean,
++    onClick: () -> Unit,
++    label: @Composable () -> Unit,
++    modifier: Modifier = Modifier,
++    enabled: Boolean = true,
++) {
++    if (LocalClassicUi.current) {
++        androidx.compose.material.FilterChip(
++            selected = selected,
++            onClick = onClick,
++            modifier = modifier,
++            enabled = enabled,
++        ) {
++            label()
++        }
++    } else {
++        androidx.compose.material3.FilterChip(
++            selected = selected,
++            onClick = onClick,
++            label = label,
++            modifier = modifier,
++            enabled = enabled,
++        )
++    }
++}
++
++@OptIn(ExperimentalMaterialApi::class)
++@Composable
++fun YummyAssistChip(
++    onClick: () -> Unit,
++    label: @Composable () -> Unit,
++    modifier: Modifier = Modifier,
++    enabled: Boolean = true,
++) {
++    if (LocalClassicUi.current) {
++        androidx.compose.material.Chip(
++            onClick = onClick,
++            modifier = modifier,
++            enabled = enabled,
++        ) {
++            label()
++        }
++    } else {
++        androidx.compose.material3.AssistChip(
++            onClick = onClick,
++            label = label,
++            modifier = modifier,
++            enabled = enabled,
++        )
++    }
++}
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyExposedDropdown.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyExposedDropdown.kt
+index 6b2b0ad1..03c4b70b 100644
+--- a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyExposedDropdown.kt
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyExposedDropdown.kt
+@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.classic.ui.view
+ 
+ import androidx.compose.material.ExperimentalMaterialApi
+ import androidx.compose.material3.ExperimentalMaterial3Api
++import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.mutableStateOf
+@@ -36,7 +37,7 @@ fun YummyExposedDropdown(
+                 },
+                 modifier = Modifier.fillMaxWidth(),
+             )
+-            androidx.compose.material.ExposedDropdownMenu(
++            ExposedDropdownMenu(
+                 expanded = expanded,
+                 onDismissRequest = { expanded = false },
+             ) {
+@@ -71,7 +72,7 @@ fun YummyExposedDropdown(
+                     .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable)
+                     .fillMaxWidth(),
+             )
+-            androidx.compose.material3.ExposedDropdownMenu(
++            ExposedDropdownMenu(
+                 expanded = expanded,
+                 onDismissRequest = { expanded = false },
+             ) {
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedTextField.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedTextField.kt
+index f544c0e0..d309ac51 100644
+--- a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedTextField.kt
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedTextField.kt
+@@ -11,6 +11,9 @@ fun YummyOutlinedTextField(
+     modifier: Modifier = Modifier,
+     readOnly: Boolean = false,
+     singleLine: Boolean = false,
++    enabled: Boolean = true,
++    minLines: Int = 1,
++    maxLines: Int = Int.MAX_VALUE,
+     label: @Composable (() -> Unit)? = null,
+ ) {
+     if (LocalClassicUi.current) {
+@@ -20,6 +23,9 @@ fun YummyOutlinedTextField(
+             modifier = modifier,
+             readOnly = readOnly,
+             singleLine = singleLine,
++            enabled = enabled,
++            minLines = minLines,
++            maxLines = maxLines,
+             label = label,
+         )
+     } else {
+@@ -29,6 +35,9 @@ fun YummyOutlinedTextField(
+             modifier = modifier,
+             readOnly = readOnly,
+             singleLine = singleLine,
++            enabled = enabled,
++            minLines = minLines,
++            maxLines = maxLines,
+             label = label,
+         )
+     }
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyScaffold.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyScaffold.kt
+index 6591b853..c26ee108 100644
+--- a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyScaffold.kt
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyScaffold.kt
+@@ -1,6 +1,7 @@
+ package su.afk.yummy.tv.feature.classic.ui.view
+ 
+ import androidx.compose.foundation.layout.PaddingValues
++import androidx.compose.foundation.layout.statusBarsPadding
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Modifier
+ import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+@@ -11,9 +12,11 @@ fun YummyScaffold(
+     topBar: @Composable () -> Unit = {},
+     content: @Composable (PaddingValues) -> Unit,
+ ) {
++    // M2 ignores window insets while M3 consumes them internally: pad the frame
++    // here so callers never think about it and modern never gets it twice.
+     if (LocalClassicUi.current) {
+         androidx.compose.material.Scaffold(
+-            modifier = modifier,
++            modifier = modifier.statusBarsPadding(),
+             topBar = topBar,
+             content = content,
+         )
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummySwitch.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummySwitch.kt
+new file mode 100644
+index 00000000..d7ef0db0
+--- /dev/null
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummySwitch.kt
+@@ -0,0 +1,29 @@
++package su.afk.yummy.tv.feature.classic.ui.view
++
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
++
++@Composable
++fun YummySwitch(
++    checked: Boolean,
++    onCheckedChange: (Boolean) -> Unit,
++    modifier: Modifier = Modifier,
++    enabled: Boolean = true,
++) {
++    if (LocalClassicUi.current) {
++        androidx.compose.material.Switch(
++            checked = checked,
++            onCheckedChange = onCheckedChange,
++            modifier = modifier,
++            enabled = enabled,
++        )
++    } else {
++        androidx.compose.material3.Switch(
++            checked = checked,
++            onCheckedChange = onCheckedChange,
++            modifier = modifier,
++            enabled = enabled,
++        )
++    }
++}
+diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTopBar.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTopBar.kt
+index 73c19541..b66a07f1 100644
+--- a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTopBar.kt
++++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTopBar.kt
+@@ -17,36 +17,42 @@ fun YummyTopBar(
+     actions: @Composable RowScope.() -> Unit = {},
+ ) {
+     if (LocalClassicUi.current) {
++        val navigationIcon: @Composable (() -> Unit)? = if (onBack == null) {
++            null
++        } else {
++            {
++                androidx.compose.material.IconButton(onClick = onBack) {
++                    androidx.compose.material.Icon(
++                        Icons.AutoMirrored.Filled.ArrowBack,
++                        contentDescription = null,
++                    )
++                }
++            }
++        }
+         androidx.compose.material.TopAppBar(
+             title = title,
+             modifier = modifier,
+-            navigationIcon = onBack?.let { back ->
+-                {
+-                    androidx.compose.material.IconButton(onClick = back) {
+-                        androidx.compose.material.Icon(
+-                            Icons.AutoMirrored.Filled.ArrowBack,
+-                            contentDescription = null,
+-                        )
+-                    }
+-                }
+-            },
++            navigationIcon = navigationIcon,
+             actions = actions,
+             backgroundColor = androidx.compose.material.MaterialTheme.colors.surface,
+         )
+     } else {
++        val navigationIcon: @Composable (() -> Unit)? = if (onBack == null) {
++            null
++        } else {
++            {
++                androidx.compose.material3.IconButton(onClick = onBack) {
++                    androidx.compose.material3.Icon(
++                        Icons.AutoMirrored.Filled.ArrowBack,
++                        contentDescription = null,
++                    )
++                }
++            }
++        }
+         androidx.compose.material3.TopAppBar(
+             title = title,
+             modifier = modifier,
+-            navigationIcon = onBack?.let { back ->
+-                {
+-                    androidx.compose.material3.IconButton(onClick = back) {
+-                        androidx.compose.material3.Icon(
+-                            Icons.AutoMirrored.Filled.ArrowBack,
+-                            contentDescription = null,
+-                        )
+-                    }
+-                }
+-            },
++            navigationIcon = navigationIcon ?: {},
+             actions = actions,
+             colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                 containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,

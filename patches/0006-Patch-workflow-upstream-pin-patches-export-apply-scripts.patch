@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 15:45:02 +0300
-Subject: [CORE] Patch workflow: upstream pin, patches export, apply scripts
+Subject: Patch workflow: upstream pin, patches export, apply scripts
 
 ---
  PATCHES.md                                    |   30 +
@@ -28,7 +28,7 @@ Subject: [CORE] Patch workflow: upstream pin, patches export, apply scripts
 
 diff --git a/PATCHES.md b/PATCHES.md
 new file mode 100644
-index 000000000..a0a369491
+index 00000000..a0a36949
 --- /dev/null
 +++ b/PATCHES.md
 @@ -0,0 +1,30 @@
@@ -64,7 +64,7 @@ index 000000000..a0a369491
 +- Сборка только через `gradle-fhs` внутри `nix develop` (см. `flake.nix`).
 diff --git a/patches/0001-CORE-Nix-development-environment-flake-direnv.patch b/patches/0001-CORE-Nix-development-environment-flake-direnv.patch
 new file mode 100644
-index 000000000..23a759caf
+index 00000000..23a759ca
 --- /dev/null
 +++ b/patches/0001-CORE-Nix-development-environment-flake-direnv.patch
 @@ -0,0 +1,239 @@
@@ -309,7 +309,7 @@ index 000000000..23a759caf
 ++}
 diff --git a/patches/0002-TRACKER-AniList-sync-core-api-domain-data-Room-bindi.patch b/patches/0002-TRACKER-AniList-sync-core-api-domain-data-Room-bindi.patch
 new file mode 100644
-index 000000000..74867479e
+index 00000000..74867479
 --- /dev/null
 +++ b/patches/0002-TRACKER-AniList-sync-core-api-domain-data-Room-bindi.patch
 @@ -0,0 +1,2424 @@
@@ -2739,7 +2739,7 @@ index 000000000..74867479e
 ++include(":feature:tracker:ui-tv")
 diff --git a/patches/0003-TRACKER-AniList-screens-M2-classic-navigation-entrie.patch b/patches/0003-TRACKER-AniList-screens-M2-classic-navigation-entrie.patch
 new file mode 100644
-index 000000000..d9d2d4f1c
+index 00000000..d9d2d4f1
 --- /dev/null
 +++ b/patches/0003-TRACKER-AniList-screens-M2-classic-navigation-entrie.patch
 @@ -0,0 +1,3051 @@
@@ -5796,7 +5796,7 @@ index 000000000..d9d2d4f1c
 ++</resources>
 diff --git a/patches/0004-TRACKER-Settings-details-player-integration-locale-b.patch b/patches/0004-TRACKER-Settings-details-player-integration-locale-b.patch
 new file mode 100644
-index 000000000..0e3867fb8
+index 00000000..0e3867fb
 --- /dev/null
 +++ b/patches/0004-TRACKER-Settings-details-player-integration-locale-b.patch
 @@ -0,0 +1,1828 @@
@@ -7630,7 +7630,7 @@ index 000000000..0e3867fb8
 + # Свои имена — в ~/.gradle/gradle.properties или -Pyummytv.profile.avds=...
 diff --git a/patches/0005-CORE-AppMetrica-no-op-without-key-swipe-transitions-.patch b/patches/0005-CORE-AppMetrica-no-op-without-key-swipe-transitions-.patch
 new file mode 100644
-index 000000000..c259eebd2
+index 00000000..c259eebd
 --- /dev/null
 +++ b/patches/0005-CORE-AppMetrica-no-op-without-key-swipe-transitions-.patch
 @@ -0,0 +1,219 @@
@@ -7855,7 +7855,7 @@ index 000000000..c259eebd2
 +                     val offset = pagerState.getOffsetDistanceInPages(page).absoluteValue
 diff --git a/scripts/apply-patches.sh b/scripts/apply-patches.sh
 new file mode 100755
-index 000000000..0fd1ea5a5
+index 00000000..0fd1ea5a
 --- /dev/null
 +++ b/scripts/apply-patches.sh
 @@ -0,0 +1,12 @@
@@ -7873,7 +7873,7 @@ index 000000000..0fd1ea5a5
 +echo "applied $(wc -l < series) patches onto $upstream into $branch"
 diff --git a/scripts/export-patches.sh b/scripts/export-patches.sh
 new file mode 100755
-index 000000000..40487740e
+index 00000000..40487740
 --- /dev/null
 +++ b/scripts/export-patches.sh
 @@ -0,0 +1,11 @@
@@ -7890,7 +7890,7 @@ index 000000000..40487740e
 +echo "exported $(wc -l < series) patches onto $(cat upstream-commit)"
 diff --git a/series b/series
 new file mode 100644
-index 000000000..e8a7898d1
+index 00000000..e8a7898d
 --- /dev/null
 +++ b/series
 @@ -0,0 +1,5 @@
@@ -7901,7 +7901,7 @@ index 000000000..e8a7898d1
 +0005-CORE-AppMetrica-no-op-without-key-swipe-transitions-.patch
 diff --git a/upstream-commit b/upstream-commit
 new file mode 100644
-index 000000000..457fe3bcd
+index 00000000..457fe3bc
 --- /dev/null
 +++ b/upstream-commit
 @@ -0,0 +1 @@

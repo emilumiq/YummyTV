@@ -1,0 +1,515 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Fri, 9 Oct 2026 00:46:46 +0300
+Subject: [MAIN] Labels in graph, classic swipe, M2 bar, home gates
+
+---
+ .../su/afk/yummy/tv/feature/home/HomeState.kt |   4 +
+ .../yummy/tv/feature/home/HomeViewModel.kt    |   6 ++
+ feature/home/ui-mobile/build.gradle.kts       |   1 +
+ .../feature/home/mobile/HomeMobileScreen.kt   |  20 ++--
+ .../mobile/view/HomeAnnouncementDialog.kt     |   7 +-
+ .../mobile/view/HomeSupportPromptDialog.kt    |  17 ++-
+ .../su/afk/yummy/tv/feature/main/MainState.kt |   1 +
+ .../yummy/tv/feature/main/MainViewModel.kt    |   1 +
+ .../tv/feature/main/mobile/MobileMainGraph.kt |  21 +++-
+ .../mobile/navigation/MobileNavTransitions.kt |  22 ++++
+ .../mobile/view/MobileMainNavigationBar.kt    | 100 ++++++++++++++----
+ .../mobile/view/MobileMainNavigationRail.kt   |   7 +-
+ .../main/mobile/view/MobileMainScaffold.kt    |  10 +-
+ .../tracker/mobile/TrackerAuthMobileScreen.kt |   2 -
+ .../tracker/mobile/TrackerMobileScreen.kt     |   2 -
+ 15 files changed, 162 insertions(+), 59 deletions(-)
+
+diff --git a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
+index 296e987c..52674052 100644
+--- a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
++++ b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
+@@ -33,6 +33,10 @@ class HomeState {
+         val bloggerVideosError: String? = null,
+         /** Blurred poster backdrops in the hero carousel. */
+         val backdropBlurEnabled: Boolean = true,
++        /** Season anime hero carousel block. */
++        val homeSeasonHeroEnabled: Boolean = true,
++        /** Blogger videos section block. */
++        val homeBloggerVideosEnabled: Boolean = true,
+         /** Тайтлы, скрытые из блока рекомендаций в текущей сессии. */
+         val hiddenRecommendationIds: PersistentSet<Int> = persistentSetOf(),
+         /** Тайтлы, для которых сейчас выполняется запрос на скрытие или возврат. */
+diff --git a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
+index c3d90226..bff411df 100644
+--- a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
++++ b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
+@@ -133,6 +133,12 @@ class HomeViewModel @Inject internal constructor(
+         settingsStore.backdropBlurEnabled
+             .onEach { enabled -> setState { copy(backdropBlurEnabled = enabled) } }
+             .launchIn(viewModelScope)
++        settingsStore.homeSeasonHeroEnabled
++            .onEach { enabled -> setState { copy(homeSeasonHeroEnabled = enabled) } }
++            .launchIn(viewModelScope)
++        settingsStore.homeBloggerVideosEnabled
++            .onEach { enabled -> setState { copy(homeBloggerVideosEnabled = enabled) } }
++            .launchIn(viewModelScope)
+         loadRecentlyAired()
+         observeHiddenRecommendations()
+         observeSupportPrompt()
+diff --git a/feature/home/ui-mobile/build.gradle.kts b/feature/home/ui-mobile/build.gradle.kts
+index 2da928ad..4b25cf4e 100644
+--- a/feature/home/ui-mobile/build.gradle.kts
++++ b/feature/home/ui-mobile/build.gradle.kts
+@@ -21,6 +21,7 @@ dependencies {
+     implementation(project(":feature:home:presentation"))
+     implementation(project(":feature:player:api"))
+     implementation(project(":feature:settings:api"))
++    implementation(project(":feature:classic:ui"))
+ 
+     implementation(libs.bundles.compose.screen)
+     implementation(libs.androidx.activity.compose)
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
+index 6f1dff99..5dedfc06 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
+@@ -212,7 +212,7 @@ fun HomeMobileScreen(
+                     }
+                 }
+ 
+-                if (feed != null && feed.heroItems.isNotEmpty()) {
++                if (state.homeSeasonHeroEnabled && feed != null && feed.heroItems.isNotEmpty()) {
+                     item(key = "hero") {
+                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                             MobileSectionHeader(
+@@ -271,7 +271,7 @@ fun HomeMobileScreen(
+                         }
+                     }
+ 
+-                if (state.bloggerVideos.isNotEmpty()) {
++                if (state.homeBloggerVideosEnabled && state.bloggerVideos.isNotEmpty()) {
+                     item(key = "blogger_videos") {
+                         MobileHomeBloggerVideosSection(
+                             title = stringResource(R.string.home_mobile_blogger_videos),
+@@ -283,13 +283,15 @@ fun HomeMobileScreen(
+                     }
+                 }
+ 
+-                state.bloggerVideosError?.let { message ->
+-                    item(key = "blogger_videos_error") {
+-                        MobileMessage(
+-                            title = message,
+-                            actionLabel = stringResource(R.string.home_mobile_retry),
+-                            onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
+-                        )
++                if (state.homeBloggerVideosEnabled) {
++                    state.bloggerVideosError?.let { message ->
++                        item(key = "blogger_videos_error") {
++                            MobileMessage(
++                                title = message,
++                                actionLabel = stringResource(R.string.home_mobile_retry),
++                                onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
++                            )
++                        }
+                     }
+                 }
+ 
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeAnnouncementDialog.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeAnnouncementDialog.kt
+index ea732461..425704ad 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeAnnouncementDialog.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeAnnouncementDialog.kt
+@@ -2,11 +2,12 @@
+ 
+ package su.afk.yummy.tv.feature.home.mobile.view
+ 
+-import androidx.compose.material3.AlertDialog
+ import androidx.compose.material3.Text
+ import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.feature.classic.ui.view.YummyAlertDialog
++import su.afk.yummy.tv.feature.classic.ui.view.YummyTextButton
+ import su.afk.yummy.tv.feature.home.mobile.R
+ 
+ @Composable
+@@ -16,12 +17,12 @@ internal fun HomeAnnouncementDialog(
+     buttonText: String?,
+     onDismiss: () -> Unit,
+ ) {
+-    AlertDialog(
++    YummyAlertDialog(
+         onDismissRequest = onDismiss,
+         title = title?.takeIf { it.isNotBlank() }?.let { { Text(it) } },
+         text = { Text(message) },
+         confirmButton = {
+-            TextButton(onClick = onDismiss) {
++            YummyTextButton(onClick = onDismiss) {
+                 Text(
+                     buttonText?.takeIf { it.isNotBlank() }
+                         ?: stringResource(R.string.home_announcement_ok),
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSupportPromptDialog.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSupportPromptDialog.kt
+index fee9ec93..312807ae 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSupportPromptDialog.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSupportPromptDialog.kt
+@@ -2,25 +2,20 @@
+ 
+ package su.afk.yummy.tv.feature.home.mobile.view
+ 
+-import androidx.compose.material3.AlertDialog
+-import androidx.compose.material3.Text
+-import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.feature.classic.ui.view.YummyDialog
+ import su.afk.yummy.tv.feature.home.mobile.R
+ 
+ @Composable
+ internal fun HomeSupportPromptDialog(
+     onDismiss: () -> Unit,
+ ) {
+-    AlertDialog(
++    YummyDialog(
+         onDismissRequest = onDismiss,
+-        title = { Text(stringResource(R.string.home_support_prompt_title)) },
+-        text = { Text(stringResource(R.string.home_support_prompt_message)) },
+-        confirmButton = {
+-            TextButton(onClick = onDismiss) {
+-                Text(stringResource(R.string.home_support_prompt_ok))
+-            }
+-        },
++        title = stringResource(R.string.home_support_prompt_title),
++        text = stringResource(R.string.home_support_prompt_message),
++        confirmLabel = stringResource(R.string.home_support_prompt_ok),
++        onConfirm = onDismiss,
+     )
+ }
+diff --git a/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainState.kt b/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainState.kt
+index b70ebac4..7c2ab49a 100644
+--- a/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainState.kt
++++ b/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainState.kt
+@@ -16,6 +16,7 @@ class MainState {
+         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
+         val classicUiEnabled: Boolean = false,
+         val navigationBarLabelsEnabled: Boolean = false,
++        val hiddenRootTabs: Set<String> = emptySet(),
+         val posterQuality: PosterQuality = PosterQuality.STANDARD,
+         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
+         val yaniNickname: String = "",
+diff --git a/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainViewModel.kt b/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainViewModel.kt
+index eda382c8..3f1d1218 100644
+--- a/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainViewModel.kt
++++ b/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainViewModel.kt
+@@ -95,6 +95,7 @@ class MainViewModel @Inject internal constructor(
+                         backgroundStyle = snapshot.backgroundStyle,
+                         classicUiEnabled = snapshot.classicUiEnabled,
+                         navigationBarLabelsEnabled = snapshot.navigationBarLabelsEnabled,
++                        hiddenRootTabs = snapshot.hiddenRootTabs,
+                         posterQuality = snapshot.posterQuality,
+                         posterCardSize = snapshot.posterCardSize,
+                         yaniNickname = snapshot.yaniNickname,
+diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/MobileMainGraph.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/MobileMainGraph.kt
+index 2e77d345..2ad4f026 100644
+--- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/MobileMainGraph.kt
++++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/MobileMainGraph.kt
+@@ -26,6 +26,8 @@ import su.afk.yummy.tv.feature.main.MainViewModel
+ import su.afk.yummy.tv.feature.main.api.MainGraph
+ import su.afk.yummy.tv.feature.main.mobile.model.mobileMenuItems
+ import su.afk.yummy.tv.feature.main.mobile.navigation.MobileNavigationHolder
++import su.afk.yummy.tv.feature.main.mobile.navigation.classicNavPopTransitionSpec
++import su.afk.yummy.tv.feature.main.mobile.navigation.classicNavTransitionSpec
+ import su.afk.yummy.tv.feature.main.mobile.navigation.mobileNavPopTransitionSpec
+ import su.afk.yummy.tv.feature.main.mobile.navigation.mobileNavTransitionSpec
+ import su.afk.yummy.tv.feature.main.mobile.navigation.rememberMobileListDetailSceneStrategy
+@@ -81,9 +83,14 @@ class MobileMainGraph @Inject internal constructor(
+                         atTabRoot && navManager.currentRoot == RootTab.ACCOUNT
+                     },
+                 ) {
++                    // Hidden tabs drop out of the bar; never leave it empty.
++                    val allMenuItems = mobileMenuItems(state.unreadNotificationsCount)
++                    val menuItems = allMenuItems
++                        .filter { it.destination.name !in state.hiddenRootTabs }
++                        .ifEmpty { allMenuItems }
+                     MobileMainScaffold(
+                         selectedDestination = navManager.currentRoot,
+-                        menuItems = mobileMenuItems(state.unreadNotificationsCount),
++                        menuItems = menuItems,
+                         showBottomBar = atTabRoot && !isRequiredUpdateDestination &&
+                             !isFullscreenDestination,
+                         showRail = showRail,
+@@ -100,8 +107,16 @@ class MobileMainGraph @Inject internal constructor(
+                             extraSceneStrategies = listOf(
+                                 rememberMobileListDetailSceneStrategy(currentDestination),
+                             ),
+-                            transitionSpec = mobileNavTransitionSpec,
+-                            popTransitionSpec = mobileNavPopTransitionSpec,
++                            transitionSpec = if (state.classicUiEnabled) {
++                                classicNavTransitionSpec
++                            } else {
++                                mobileNavTransitionSpec
++                            },
++                            popTransitionSpec = if (state.classicUiEnabled) {
++                                classicNavPopTransitionSpec
++                            } else {
++                                mobileNavPopTransitionSpec
++                            },
+                         )
+                     }
+                 }
+diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
+index 4c399c1b..7e8e7f62 100644
+--- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
++++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
+@@ -39,3 +39,25 @@ private const val MOBILE_NAV_TRANSITION_MILLIS = 300
+ private const val MOBILE_NAV_FADE_IN_MILLIS = 220
+ private const val MOBILE_NAV_FADE_OUT_MILLIS = 120
+ private const val MOBILE_NAV_EXIT_SHIFT_DIVISOR = 4
++
++/** Classic: plain swipe like stock apps — full slides, no fade overlays. */
++internal val classicNavTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
++    slideInHorizontally(
++        animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
++        initialOffsetX = { it },
++    ) togetherWith slideOutHorizontally(
++        animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
++        targetOffsetX = { -it },
++    )
++}
++
++/** Classic pop: mirror swipe, no fade. */
++internal val classicNavPopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
++    slideInHorizontally(
++        animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
++        initialOffsetX = { -it },
++    ) togetherWith slideOutHorizontally(
++        animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
++        targetOffsetX = { it },
++    )
++}
+diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationBar.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationBar.kt
+index 5af18f04..87f2ac71 100644
+--- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationBar.kt
++++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationBar.kt
+@@ -1,21 +1,31 @@
+ package su.afk.yummy.tv.feature.main.mobile.view
+ 
+ import androidx.compose.foundation.background
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.Row
+ import androidx.compose.foundation.layout.WindowInsets
++import androidx.compose.foundation.layout.fillMaxHeight
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
+ import androidx.compose.foundation.layout.navigationBarsPadding
++import androidx.compose.material3.LocalContentColor
++import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.NavigationBar
+ import androidx.compose.material3.NavigationBarItem
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
++import androidx.compose.runtime.CompositionLocalProvider
++import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.focus.FocusRequester
+ import androidx.compose.ui.focus.focusProperties
+ import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.platform.testTag
+ import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
+ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
+ import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
+@@ -29,35 +39,79 @@ internal fun <T> MobileMainNavigationBar(
+     showLabels: Boolean,
+     onDestinationSelected: (T) -> Unit,
+ ) {
++    val classic = LocalClassicUi.current
++    val height = MobileBottomBarDefaults.barHeight(classic, showLabels)
+     Box(
+         modifier = Modifier
+             .fillMaxWidth()
+             .background(containerColor)
+             .navigationBarsPadding(),
+     ) {
+-        NavigationBar(
+-            modifier = Modifier.height(
+-                if (showLabels) MobileBottomBarDefaults.LabeledBarHeight
+-                else MobileBottomBarDefaults.BarHeight
+-            ),
+-            containerColor = containerColor,
+-            windowInsets = WindowInsets(0.dp),
+-        ) {
+-            menuItems.forEach { item ->
+-                val selected = item.destination == selectedDestination
+-                NavigationBarItem(
+-                    modifier = Modifier
+-                        .testTag("main_tab")
+-                        .clickablePointer()
+-                        .focusProperties {
+-                            upFocusRequester?.takeIf { selected }?.let { up = it }
+-                        },
+-                    selected = selected,
+-                    onClick = { onDestinationSelected(item.destination) },
+-                    icon = { MobileMainNavigationIcon(item) },
+-                    label = { Text(item.label) }.takeIf { showLabels },
+-                    alwaysShowLabel = showLabels,
+-                )
++        if (classic) {
++            // Flat MD2-style bar without the M3 pill indicator: evenly weighted
++            // icon (+label) cells, selected one tinted with the accent color.
++            Row(
++                modifier = Modifier.height(height),
++            ) {
++                for (item in menuItems) {
++                    val selected = item.destination == selectedDestination
++                    val contentColor = if (selected) {
++                        MaterialTheme.colorScheme.primary
++                    } else {
++                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
++                    }
++                    CompositionLocalProvider(LocalContentColor provides contentColor) {
++                        Column(
++                            modifier = Modifier
++                                .weight(1f)
++                                .fillMaxHeight()
++                                .testTag("main_tab")
++                                .clickablePointer()
++                                .focusProperties {
++                                    upFocusRequester?.takeIf { selected }?.let { up = it }
++                                }
++                                .clickable { onDestinationSelected(item.destination) },
++                            horizontalAlignment = Alignment.CenterHorizontally,
++                            verticalArrangement = Arrangement.Center,
++                        ) {
++                            MobileMainNavigationIcon(item)
++                            if (showLabels) {
++                                Text(
++                                    text = item.label,
++                                    style = MaterialTheme.typography.labelMedium,
++                                )
++                            }
++                        }
++                    }
++                }
++            }
++        } else {
++            NavigationBar(
++                modifier = Modifier.height(height),
++                containerColor = containerColor,
++                windowInsets = WindowInsets(0.dp),
++            ) {
++                menuItems.forEach { item ->
++                    val selected = item.destination == selectedDestination
++                    val label: @Composable (() -> Unit)? = if (showLabels) {
++                        { Text(item.label) }
++                    } else {
++                        null
++                    }
++                    NavigationBarItem(
++                        modifier = Modifier
++                            .testTag("main_tab")
++                            .clickablePointer()
++                            .focusProperties {
++                                upFocusRequester?.takeIf { selected }?.let { up = it }
++                            },
++                        selected = selected,
++                        onClick = { onDestinationSelected(item.destination) },
++                        icon = { MobileMainNavigationIcon(item) },
++                        label = label,
++                        alwaysShowLabel = showLabels,
++                    )
++                }
+             }
+         }
+     }
+diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationRail.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationRail.kt
+index ad1888a7..b72b2603 100644
+--- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationRail.kt
++++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationRail.kt
+@@ -33,6 +33,11 @@ internal fun <T> MobileMainNavigationRail(
+             verticalArrangement = Arrangement.spacedBy(RailItemSpacing, Alignment.CenterVertically),
+         ) {
+             menuItems.forEach { item ->
++                val label: @Composable (() -> Unit)? = if (showLabels) {
++                    { Text(item.label) }
++                } else {
++                    null
++                }
+                 NavigationRailItem(
+                     modifier = Modifier
+                         .testTag("main_tab")
+@@ -40,7 +45,7 @@ internal fun <T> MobileMainNavigationRail(
+                     selected = item.destination == selectedDestination,
+                     onClick = { onDestinationSelected(item.destination) },
+                     icon = { MobileMainNavigationIcon(item) },
+-                    label = { Text(item.label) }.takeIf { showLabels },
++                    label = label,
+                     alwaysShowLabel = showLabels,
+                 )
+             }
+diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainScaffold.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainScaffold.kt
+index 0d37b773..d2825b60 100644
+--- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainScaffold.kt
++++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainScaffold.kt
+@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.core.designsystem.components.GlobalToastOverlay
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
+ import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileNavigationLayout
+ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
+@@ -91,11 +92,10 @@ internal fun <T> MobileMainScaffold(
+         CompositionLocalProvider(LocalMobileNavigationLayout provides layout) {
+             // Низ контента уже занят баром вместе с системным инсетом: без консьюма imePadding
+             // в экранах табов отступал бы на полную высоту клавиатуры и оставлял пустую полосу.
+-            val barHeight = if (showNavigationLabels) {
+-                MobileBottomBarDefaults.LabeledBarHeight
+-            } else {
+-                MobileBottomBarDefaults.BarHeight
+-            }
++            val barHeight = MobileBottomBarDefaults.barHeight(
++                LocalClassicUi.current,
++                showNavigationLabels,
++            )
+             val barInsets = if (layout == MobileNavigationLayout.BottomBar) {
+                 WindowInsets.navigationBars.add(WindowInsets(bottom = barHeight))
+             } else {
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
+index 8deb6d8e..5d8221bf 100644
+--- a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
+@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.tracker.mobile
+ import androidx.compose.foundation.layout.Box
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.statusBarsPadding
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+@@ -35,7 +34,6 @@ fun TrackerAuthMobileScreen(
+     }
+ 
+     YummyScaffold(
+-        modifier = Modifier.statusBarsPadding(),
+         topBar = {
+             YummyTopBar(
+                 title = { Text(stringResource(R.string.tracker_title)) },
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
+index 32582fe8..32507032 100644
+--- a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
+@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.size
+-import androidx.compose.foundation.layout.statusBarsPadding
+ import androidx.compose.foundation.layout.width
+ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.foundation.shape.RoundedCornerShape
+@@ -71,7 +70,6 @@ fun TrackerMobileScreen(
+ ) {
+     YummyScaffold(
+         // M2 Scaffold ignores window insets: pad the whole frame from the status bar.
+-        modifier = Modifier.statusBarsPadding(),
+         topBar = {
+             YummyTopBar(
+                 title = {

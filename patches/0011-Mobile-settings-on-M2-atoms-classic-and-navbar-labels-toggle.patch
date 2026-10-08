@@ -1,8 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 19:53:57 +0300
-Subject: [SETTINGS] Mobile settings on M2 atoms, classic and navbar-labels
- toggles
+Subject: Mobile settings on M2 atoms, classic and navbar-labels toggles
 
 ---
  .../tv/feature/settings/SettingsState.kt      |   8 +
@@ -37,7 +36,7 @@ Subject: [SETTINGS] Mobile settings on M2 atoms, classic and navbar-labels
  29 files changed, 367 insertions(+), 276 deletions(-)
 
 diff --git a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
-index 323015e8c..318e194d7 100644
+index 323015e8..318e194d 100644
 --- a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
 +++ b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
 @@ -40,6 +40,8 @@ class SettingsState {
@@ -63,7 +62,7 @@ index 323015e8c..318e194d7 100644
          data class AppLocaleSelected(val locale: AppLocale) : Event
  
 diff --git a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
-index 1060879ed..25dd90411 100644
+index 1060879e..25dd9041 100644
 --- a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
 +++ b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
 @@ -73,6 +73,8 @@ class SettingsViewModel @Inject internal constructor(
@@ -91,7 +90,7 @@ index 1060879ed..25dd90411 100644
                  analytics.eventPosterQualitySelected(event.quality)
                  settingsStore.setPosterQuality(event.quality)
 diff --git a/feature/settings/ui-mobile/build.gradle.kts b/feature/settings/ui-mobile/build.gradle.kts
-index c42e07b88..138afabdf 100644
+index c42e07b8..138afabd 100644
 --- a/feature/settings/ui-mobile/build.gradle.kts
 +++ b/feature/settings/ui-mobile/build.gradle.kts
 @@ -28,4 +28,5 @@ dependencies {
@@ -101,7 +100,7 @@ index c42e07b88..138afabdf 100644
 +    implementation(libs.androidx.material2)
  }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
-index 9eb67f92b..8e630fbc7 100644
+index 9eb67f92..8e630fbc 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
 @@ -3,8 +3,17 @@ package su.afk.yummy.tv.feature.settings.mobile
@@ -200,7 +199,7 @@ index 9eb67f92b..8e630fbc7 100644
      SettingsMobileDialogsHost(dialogs = dialogs, state = state, onEvent = onEvent)
  }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileScreen.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileScreen.kt
-index 9c389691a..d0a95155c 100644
+index 9c389691..d0a95155 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileScreen.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileScreen.kt
 @@ -3,9 +3,18 @@ package su.afk.yummy.tv.feature.settings.mobile
@@ -424,7 +423,7 @@ index 9c389691a..d0a95155c 100644
              }
          }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
-index 33278ee7e..b391062f3 100644
+index 33278ee7..b391062f 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
 @@ -91,7 +91,6 @@ internal fun AppTheme.label(): String = stringResource(
@@ -444,7 +443,7 @@ index 33278ee7e..b391062f3 100644
      },
  )
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/CacheStorageMobileDialog.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/CacheStorageMobileDialog.kt
-index 17156f6de..cea6c7492 100644
+index 17156f6d..cea6c749 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/CacheStorageMobileDialog.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/CacheStorageMobileDialog.kt
 @@ -7,11 +7,11 @@ import androidx.compose.foundation.layout.Row
@@ -504,7 +503,7 @@ index 17156f6de..cea6c7492 100644
      }
  }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/MobileInterfaceModeConfirmationDialog.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/MobileInterfaceModeConfirmationDialog.kt
-index 211e85e52..83581e866 100644
+index 211e85e5..83581e86 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/MobileInterfaceModeConfirmationDialog.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/MobileInterfaceModeConfirmationDialog.kt
 @@ -1,8 +1,8 @@
@@ -520,7 +519,7 @@ index 211e85e52..83581e866 100644
  import androidx.compose.ui.res.stringResource
  import su.afk.yummy.tv.feature.settings.mobile.R
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/ReleaseNoteMobileItem.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/ReleaseNoteMobileItem.kt
-index 37238bbc8..d60292979 100644
+index 37238bbc..d6029297 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/ReleaseNoteMobileItem.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/ReleaseNoteMobileItem.kt
 @@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.Row
@@ -606,7 +605,7 @@ index 37238bbc8..d60292979 100644
          color = color,
          modifier = Modifier
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/ReleaseNotesMobileSheet.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/ReleaseNotesMobileSheet.kt
-index f0bf37706..63916f76f 100644
+index f0bf3770..63916f76 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/ReleaseNotesMobileSheet.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/ReleaseNotesMobileSheet.kt
 @@ -7,29 +7,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
@@ -667,7 +666,7 @@ index f0bf37706..63916f76f 100644
      )
  }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileAboutRow.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileAboutRow.kt
-index 02d462130..0c788ba23 100644
+index 02d46213..0c788ba2 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileAboutRow.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileAboutRow.kt
 @@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
@@ -707,7 +706,7 @@ index 02d462130..0c788ba23 100644
              maxLines = 2,
              overflow = TextOverflow.Ellipsis,
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileActionRow.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileActionRow.kt
-index e8d2bbd89..d6c6cfb1b 100644
+index e8d2bbd8..d6c6cfb1 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileActionRow.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileActionRow.kt
 @@ -6,11 +6,11 @@ import androidx.compose.foundation.layout.Column
@@ -756,7 +755,7 @@ index e8d2bbd89..d6c6cfb1b 100644
      }
  }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDetailsButtonOrder.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDetailsButtonOrder.kt
-index e5049b78e..08acf924b 100644
+index e5049b78..08acf924 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDetailsButtonOrder.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDetailsButtonOrder.kt
 @@ -5,14 +5,14 @@ import androidx.compose.foundation.layout.Column
@@ -799,7 +798,7 @@ index e5049b78e..08acf924b 100644
          }
          IconButton(onClick = onMoveUp, enabled = canMoveUp) {
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileMultiPickerSheet.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileMultiPickerSheet.kt
-index f1cf22397..3ec627f15 100644
+index f1cf2239..3ec627f1 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileMultiPickerSheet.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileMultiPickerSheet.kt
 @@ -11,10 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
@@ -899,7 +898,7 @@ index f1cf22397..3ec627f15 100644
              }
          }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileNavigationRow.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileNavigationRow.kt
-index 5cc45f531..2232e4af8 100644
+index 5cc45f53..2232e4af 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileNavigationRow.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileNavigationRow.kt
 @@ -2,19 +2,19 @@ package su.afk.yummy.tv.feature.settings.mobile.view
@@ -976,7 +975,7 @@ index 5cc45f531..2232e4af8 100644
      }
  }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileOptionRow.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileOptionRow.kt
-index 8621eec3f..ce6b4782a 100644
+index 8621eec3..ce6b4782 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileOptionRow.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileOptionRow.kt
 @@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Row
@@ -1055,7 +1054,7 @@ index 8621eec3f..ce6b4782a 100644
 +/** Share of the row width the value may take; the rest stays with the label. */
  private const val VALUE_MAX_WIDTH_FRACTION = 0.45f
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobilePickerSheet.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobilePickerSheet.kt
-index 27069b429..cb4d3f889 100644
+index 27069b42..cb4d3f88 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobilePickerSheet.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobilePickerSheet.kt
 @@ -11,10 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
@@ -1155,7 +1154,7 @@ index 27069b429..cb4d3f889 100644
              }
          }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileSection.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileSection.kt
-index 97324cca6..f69d67738 100644
+index 97324cca..f69d6773 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileSection.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileSection.kt
 @@ -4,13 +4,16 @@ import androidx.compose.foundation.layout.Arrangement
@@ -1211,7 +1210,7 @@ index 97324cca6..f69d67738 100644
              Column(
                  modifier = Modifier.fillMaxWidth(),
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileSliderRow.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileSliderRow.kt
-index d2fa45124..391f67555 100644
+index d2fa4512..391f6755 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileSliderRow.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileSliderRow.kt
 @@ -4,10 +4,10 @@ import androidx.compose.foundation.layout.Column
@@ -1279,7 +1278,7 @@ index d2fa45124..391f67555 100644
          )
      }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileToggleRow.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileToggleRow.kt
-index 75e11c94e..4e0c047ed 100644
+index 75e11c94..4e0c047e 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileToggleRow.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileToggleRow.kt
 @@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.Spacer
@@ -1328,7 +1327,7 @@ index 75e11c94e..4e0c047ed 100644
          )
      }
 diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
-index 73b05e813..95a4dc6a6 100644
+index 73b05e81..95a4dc6a 100644
 --- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
 +++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
 @@ -86,6 +86,26 @@ internal fun SettingsMobileAppearanceContent(
@@ -1359,7 +1358,7 @@ index 73b05e813..95a4dc6a6 100644
          SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_library)) {
              SettingsMobileNavigationRow(
 diff --git a/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml b/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
-index 317cae61b..741a7d245 100644
+index 317cae61..741a7d24 100644
 --- a/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
 +++ b/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
 @@ -23,6 +23,10 @@
@@ -1392,7 +1391,7 @@ index 317cae61b..741a7d245 100644
      <string name="settings_mobile_volume_stabilization_label">Стабилизация громкости</string>
      <string name="settings_mobile_volume_stabilization_enabled">Выравнивает громкие и тихие сцены: тихие диалоги громче, громкие моменты тише</string>
 diff --git a/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml b/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
-index 61e8b6153..7c822f3a0 100644
+index 61e8b615..7c822f3a 100644
 --- a/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
 +++ b/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
 @@ -23,6 +23,10 @@
@@ -1419,13 +1418,13 @@ index 61e8b6153..7c822f3a0 100644
      <string name="settings_picture_in_picture_label">Плаваючий режим (PiP)</string>
      <string name="settings_picture_in_picture_enabled">Автоматично вмикати під час виходу із застосунку під час відтворення</string>
      <string name="settings_mobile_advanced_volume_label">Розширена гучність у плеєрі</string>
--    <string name="settings_mobile_advanced_volume_enabled">Плеєр має власну гучність (0–100%, крок 1%), незалежно від системи</string>
+-    <string name="settings_mobile_advanced_volume_enabled">Плеєр має власну гучність (0–100%, крок 1%), незалежно ��ід системи</string>
 +    <string name="settings_mobile_advanced_volume_enabled" formatted="false">Плеєр має власну гучність (0–100%, крок 1%), незалежно від системи</string>
      <string name="settings_mobile_advanced_volume_disabled">Гучність змінює системний звук як зазвичай</string>
      <string name="settings_mobile_volume_stabilization_label">Стабілізація гучності</string>
      <string name="settings_mobile_volume_stabilization_enabled">Вирівнює гучні й тихі сцени: тихі діалоги стають гучнішими, гучні моменти — тихішими</string>
 diff --git a/feature/settings/ui-mobile/src/main/res/values/strings.xml b/feature/settings/ui-mobile/src/main/res/values/strings.xml
-index ba77b64c3..22581f669 100644
+index ba77b64c..22581f66 100644
 --- a/feature/settings/ui-mobile/src/main/res/values/strings.xml
 +++ b/feature/settings/ui-mobile/src/main/res/values/strings.xml
 @@ -23,6 +23,10 @@
@@ -1458,7 +1457,7 @@ index ba77b64c3..22581f669 100644
      <string name="settings_mobile_volume_stabilization_label">Volume stabilization</string>
      <string name="settings_mobile_volume_stabilization_enabled">Evens out loud and quiet scenes: quiet dialogue is boosted, loud moments are tamed</string>
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
-index 7884158a7..df4d76837 100644
+index 7884158a..df4d7683 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
 @@ -93,7 +93,6 @@ internal fun AppTheme.label(): String = stringResource(
@@ -1478,7 +1477,7 @@ index 7884158a7..df4d76837 100644
      },
  )
 diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
-index 6bd2af29c..e0d6e7e52 100644
+index 6bd2af29..e0d6e7e5 100644
 --- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
 +++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
 @@ -75,6 +75,18 @@ internal fun SettingsTvAppearanceContent(
@@ -1501,7 +1500,7 @@ index 6bd2af29c..e0d6e7e52 100644
      SettingsBlockGap()
      SettingsSectionTitle(text = stringResource(R.string.settings_tv_section_new_episodes))
 diff --git a/feature/settings/ui-tv/src/main/res/values-ru/strings.xml b/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
-index 0f6e65a29..c08f520f2 100644
+index 0f6e65a2..c08f520f 100644
 --- a/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
 +++ b/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
 @@ -13,6 +13,8 @@
@@ -1532,7 +1531,7 @@ index 0f6e65a29..c08f520f2 100644
      <string name="settings_tv_volume_stabilization_label">Стабилизация громкости</string>
      <string name="settings_tv_volume_stabilization_enabled">Выравнивает громкие и тихие сцены: тихие диалоги громче, громкие моменты тише</string>
 diff --git a/feature/settings/ui-tv/src/main/res/values-uk/strings.xml b/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
-index 3d65d9372..968474738 100644
+index 3d65d937..96847473 100644
 --- a/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
 +++ b/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
 @@ -13,6 +13,8 @@
@@ -1563,7 +1562,7 @@ index 3d65d9372..968474738 100644
      <string name="settings_tv_volume_stabilization_label">Стабілізація гучності</string>
      <string name="settings_tv_volume_stabilization_enabled">Вирівнює гучні й тихі сцени: тихі діалоги гучніші, гучні моменти тихіші</string>
 diff --git a/feature/settings/ui-tv/src/main/res/values/strings.xml b/feature/settings/ui-tv/src/main/res/values/strings.xml
-index 6ff6dfe42..08a4fcb10 100644
+index 6ff6dfe4..08a4fcb1 100644
 --- a/feature/settings/ui-tv/src/main/res/values/strings.xml
 +++ b/feature/settings/ui-tv/src/main/res/values/strings.xml
 @@ -13,6 +13,8 @@

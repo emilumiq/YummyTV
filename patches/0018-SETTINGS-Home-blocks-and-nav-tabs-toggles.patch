@@ -1,0 +1,417 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Fri, 9 Oct 2026 00:46:36 +0300
+Subject: [SETTINGS] Home blocks and nav tabs toggles
+
+---
+ .../model/settings/MainSettingsSnapshot.kt    |  1 +
+ .../core/model/settings/SettingsSnapshot.kt   |  3 ++
+ .../settings/AppearanceSettingsStore.kt       |  9 +++++
+ .../settings/SettingsPreferenceKeys.kt        |  3 ++
+ .../DataStoreAppearanceSettingsStore.kt       | 21 ++++++++++
+ .../datastore/DataStoreSettingsStore.kt       |  7 ++++
+ .../tv/feature/settings/SettingsState.kt      | 12 ++++++
+ .../tv/feature/settings/SettingsViewModel.kt  | 17 ++++++++
+ .../settings/mobile/SettingsMobileScreen.kt   |  6 ++-
+ .../mobile/utils/SettingsMobileFormatters.kt  | 21 ++++++++++
+ .../SettingsMobileAppearanceContent.kt        | 39 +++++++++++++++++++
+ .../src/main/res/values-ru/strings.xml        | 13 +++++++
+ .../src/main/res/values-uk/strings.xml        | 13 +++++++
+ .../ui-mobile/src/main/res/values/strings.xml | 13 +++++++
+ 14 files changed, 176 insertions(+), 2 deletions(-)
+
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
+index 5864b08a..0d344554 100644
+--- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
+@@ -5,6 +5,7 @@ data class MainSettingsSnapshot(
+     val backgroundStyle: BackgroundStyle,
+     val classicUiEnabled: Boolean = false,
+     val navigationBarLabelsEnabled: Boolean = false,
++    val hiddenRootTabs: Set<String> = emptySet(),
+     val posterQuality: PosterQuality,
+     val posterCardSize: PosterCardSize,
+     val yaniNickname: String,
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
+index 298bc555..08b8756f 100644
+--- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
+@@ -6,6 +6,9 @@ data class SettingsSnapshot(
+     val backdropBlurEnabled: Boolean = true,
+     val classicUiEnabled: Boolean = false,
+     val navigationBarLabelsEnabled: Boolean = false,
++    val homeSeasonHeroEnabled: Boolean = true,
++    val homeBloggerVideosEnabled: Boolean = true,
++    val hiddenRootTabs: Set<String> = emptySet(),
+     val posterQuality: PosterQuality,
+     val posterCardSize: PosterCardSize,
+     val showTopTitleYear: Boolean,
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
+index b66c9b38..d017ef68 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
+@@ -30,6 +30,12 @@ interface AppearanceSettingsStore {
+     val classicUiEnabled: Flow<Boolean>
+     /** Text labels under bottom bar and rail icons. Off keeps icons only. */
+     val navigationBarLabelsEnabled: Flow<Boolean>
++    /** Season anime hero carousel on the home feed. */
++    val homeSeasonHeroEnabled: Flow<Boolean>
++    /** Blogger videos section on the home feed. */
++    val homeBloggerVideosEnabled: Flow<Boolean>
++    /** Root tab names hidden from the bottom bar. Empty shows all. */
++    val hiddenRootTabs: Flow<Set<String>>
+     val detailsButtonOrder: Flow<List<DetailsButtonAction>>
+ 
+     /** Порядок вкладок на экране библиотеки. */
+@@ -56,6 +62,9 @@ interface AppearanceSettingsStore {
+     suspend fun setBackdropBlurEnabled(enabled: Boolean)
+     suspend fun setClassicUiEnabled(enabled: Boolean)
+     suspend fun setNavigationBarLabelsEnabled(enabled: Boolean)
++    suspend fun setHomeSeasonHeroEnabled(enabled: Boolean)
++    suspend fun setHomeBloggerVideosEnabled(enabled: Boolean)
++    suspend fun setHiddenRootTabs(tabs: Set<String>)
+     suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>)
+     suspend fun setLibraryTabOrder(order: List<LibraryTabKind>)
+     suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
+index c93aed39..dd104a7b 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
+@@ -73,6 +73,9 @@ internal object SettingsPreferenceKeys {
+     val backdropBlurEnabledKey = booleanPreferencesKey("backdrop_blur_enabled")
+     val classicUiEnabledKey = booleanPreferencesKey("classic_ui_enabled")
+     val navigationBarLabelsKey = booleanPreferencesKey("navigation_bar_labels")
++    val homeSeasonHeroKey = booleanPreferencesKey("home_season_hero")
++    val homeBloggerVideosKey = booleanPreferencesKey("home_blogger_videos")
++    val hiddenRootTabsKey = stringSetPreferencesKey("hidden_root_tabs")
+     val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
+     val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
+     val yaniUserIdKey = intPreferencesKey("yani_user_id")
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
+index 79cd8fb7..c81061a8 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
+@@ -18,6 +18,9 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appTheme
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backdropBlurEnabledKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.classicUiEnabledKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navigationBarLabelsKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.hiddenRootTabsKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeBloggerVideosKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeSeasonHeroKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgroundStyleKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsButtonOrderKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
+@@ -82,6 +85,15 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
+     override val navigationBarLabelsEnabled: Flow<Boolean> =
+         store.boolean(navigationBarLabelsKey, false)
+ 
++    override val homeSeasonHeroEnabled: Flow<Boolean> =
++        store.boolean(homeSeasonHeroKey, true)
++
++    override val homeBloggerVideosEnabled: Flow<Boolean> =
++        store.boolean(homeBloggerVideosKey, true)
++
++    override val hiddenRootTabs: Flow<Set<String>> =
++        store.stringSet(hiddenRootTabsKey)
++
+     override val detailsButtonOrder: Flow<List<DetailsButtonAction>> =
+         store.data.map { prefs -> prefs[detailsButtonOrderKey].toDetailsButtonOrder() }
+ 
+@@ -133,6 +145,15 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
+     override suspend fun setNavigationBarLabelsEnabled(enabled: Boolean) =
+         store.setBoolean(navigationBarLabelsKey, enabled)
+ 
++    override suspend fun setHomeSeasonHeroEnabled(enabled: Boolean) =
++        store.setBoolean(homeSeasonHeroKey, enabled)
++
++    override suspend fun setHomeBloggerVideosEnabled(enabled: Boolean) =
++        store.setBoolean(homeBloggerVideosKey, enabled)
++
++    override suspend fun setHiddenRootTabs(tabs: Set<String>) =
++        store.edit { prefs -> prefs[hiddenRootTabsKey] = tabs }
++
+     override suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>) {
+         store.edit { prefs ->
+             prefs[detailsButtonOrderKey] = order.normalizedDetailsButtonOrder()
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
+index 8d3bb5ac..69bc2e37 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
+@@ -23,6 +23,9 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advanced
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backdropBlurEnabledKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.classicUiEnabledKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.hiddenRootTabsKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeBloggerVideosKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeSeasonHeroKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navigationBarLabelsKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbingOnWatchKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
+@@ -98,6 +101,9 @@ internal class DataStoreSettingsStore @Inject constructor(
+             backdropBlurEnabled = prefs[backdropBlurEnabledKey] ?: true,
+             classicUiEnabled = prefs[classicUiEnabledKey] ?: false,
+             navigationBarLabelsEnabled = prefs[navigationBarLabelsKey] ?: false,
++            homeSeasonHeroEnabled = prefs[homeSeasonHeroKey] ?: true,
++            homeBloggerVideosEnabled = prefs[homeBloggerVideosKey] ?: true,
++            hiddenRootTabs = prefs[hiddenRootTabsKey] ?: emptySet(),
+             posterQuality = prefs.enum(posterQualityKey, defaultPosterQuality),
+             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
+             showTopTitleYear = prefs[showTopTitleYearKey] ?: false,
+@@ -158,6 +164,7 @@ internal class DataStoreSettingsStore @Inject constructor(
+             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
+             classicUiEnabled = prefs[classicUiEnabledKey] ?: false,
+             navigationBarLabelsEnabled = prefs[navigationBarLabelsKey] ?: false,
++            hiddenRootTabs = prefs[hiddenRootTabsKey] ?: emptySet(),
+             posterQuality = prefs.enum(posterQualityKey, defaultPosterQuality),
+             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
+             yaniNickname = prefs[yaniNicknameKey].orEmpty(),
+diff --git a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
+index 318e194d..4f26ab1a 100644
+--- a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
++++ b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
+@@ -42,6 +42,9 @@ class SettingsState {
+         val backdropBlurEnabled: Boolean = true,
+         val classicUiEnabled: Boolean = false,
+         val navigationBarLabelsEnabled: Boolean = false,
++        val homeSeasonHeroEnabled: Boolean = true,
++        val homeBloggerVideosEnabled: Boolean = true,
++        val hiddenRootTabs: Set<String> = emptySet(),
+         val posterQuality: PosterQuality = PosterQuality.STANDARD,
+         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
+         val showTopTitleYear: Boolean = false,
+@@ -288,6 +291,15 @@ class SettingsState {
+         /** User toggled text labels under navigation bar icons. */
+         data object NavigationBarLabelsToggled : Event
+ 
++        /** User toggled the season anime hero on the home feed. */
++        data object HomeSeasonHeroToggled : Event
++
++        /** User toggled the blogger videos section on the home feed. */
++        data object HomeBloggerVideosToggled : Event
++
++        /** User toggled a root tab in or out of the bottom bar. */
++        data class RootTabVisibilityToggled(val tabName: String) : Event
++
+         /** User picked the interface language. */
+         data class AppLocaleSelected(val locale: AppLocale) : Event
+ 
+diff --git a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
+index 25dd9041..497b0a65 100644
+--- a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
++++ b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
+@@ -75,6 +75,9 @@ class SettingsViewModel @Inject internal constructor(
+                         backdropBlurEnabled = snapshot.backdropBlurEnabled,
+                         classicUiEnabled = snapshot.classicUiEnabled,
+                         navigationBarLabelsEnabled = snapshot.navigationBarLabelsEnabled,
++                        homeSeasonHeroEnabled = snapshot.homeSeasonHeroEnabled,
++                        homeBloggerVideosEnabled = snapshot.homeBloggerVideosEnabled,
++                        hiddenRootTabs = snapshot.hiddenRootTabs,
+                         posterQuality = snapshot.posterQuality,
+                         posterCardSize = snapshot.posterCardSize,
+                         showTopTitleYear = snapshot.showTopTitleYear,
+@@ -213,6 +216,20 @@ class SettingsViewModel @Inject internal constructor(
+                 settingsStore.setNavigationBarLabelsEnabled(!currentState.navigationBarLabelsEnabled)
+             }
+ 
++            SettingsState.Event.HomeSeasonHeroToggled -> viewModelScope.launch {
++                settingsStore.setHomeSeasonHeroEnabled(!currentState.homeSeasonHeroEnabled)
++            }
++
++            SettingsState.Event.HomeBloggerVideosToggled -> viewModelScope.launch {
++                settingsStore.setHomeBloggerVideosEnabled(!currentState.homeBloggerVideosEnabled)
++            }
++
++            is SettingsState.Event.RootTabVisibilityToggled -> viewModelScope.launch {
++                val hidden = currentState.hiddenRootTabs.toMutableSet()
++                if (!hidden.add(event.tabName)) hidden.remove(event.tabName)
++                settingsStore.setHiddenRootTabs(hidden)
++            }
++
+             is SettingsState.Event.PosterQualitySelected -> viewModelScope.launch {
+                 analytics.eventPosterQualitySelected(event.quality)
+                 settingsStore.setPosterQuality(event.quality)
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileScreen.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileScreen.kt
+index d0a95155..95a928b6 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileScreen.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileScreen.kt
+@@ -139,12 +139,14 @@ fun SettingsMobileScreen(
+                             hint = BuildConfig.VERSION_NAME,
+                         )
+                         state.analyticsDeviceId?.let { deviceId ->
++                            val analyticsIdLabel =
++                                stringResource(R.string.settings_mobile_analytics_id_label)
+                             SettingsMobileAboutRow(
+-                                label = stringResource(R.string.settings_mobile_analytics_id_label),
++                                label = analyticsIdLabel,
+                                 hint = deviceId,
+                                 onClick = {
+                                     if (context.copyToClipboard(
+-                                            stringResource(R.string.settings_mobile_analytics_id_label),
++                                            analyticsIdLabel,
+                                             deviceId.filterNot(Char::isWhitespace),
+                                         )
+                                     ) {
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
+index b391062f..307cf7fb 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
+@@ -20,6 +20,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
+ import su.afk.yummy.tv.core.model.settings.PosterQuality
+ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+ import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
++import su.afk.yummy.tv.core.navigation.root.RootTab
+ import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
+ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
+ import su.afk.yummy.tv.feature.settings.mobile.R
+@@ -443,3 +444,23 @@ internal fun LibraryTabKind.label(): String = stringResource(
+         LibraryTabKind.DROPPED -> R.string.settings_library_tab_dropped
+     },
+ )
++
++internal val barRootTabs: List<RootTab> = listOf(
++    RootTab.POSTS,
++    RootTab.TOP,
++    RootTab.HOME,
++    RootTab.LIBRARY,
++    RootTab.ACCOUNT,
++)
++
++@Composable
++internal fun RootTab.barLabel(): String = stringResource(
++    when (this) {
++        RootTab.POSTS -> R.string.settings_nav_tab_news
++        RootTab.TOP -> R.string.settings_nav_tab_top
++        RootTab.HOME -> R.string.settings_nav_tab_home
++        RootTab.LIBRARY -> R.string.settings_nav_tab_library
++        RootTab.ACCOUNT -> R.string.settings_nav_tab_profile
++        else -> R.string.settings_nav_tab_other
++    },
++)
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
+index 95a4dc6a..5dc79eae 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
+@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.feature.settings.SettingsState
+ import su.afk.yummy.tv.feature.settings.mobile.R
+ import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
++import su.afk.yummy.tv.feature.settings.mobile.utils.barLabel
++import su.afk.yummy.tv.feature.settings.mobile.utils.barRootTabs
+ import su.afk.yummy.tv.feature.settings.mobile.utils.hint
+ import su.afk.yummy.tv.feature.settings.mobile.utils.label
+ import su.afk.yummy.tv.feature.settings.mobile.utils.newEpisodesSourcesValue
+@@ -151,5 +153,42 @@ internal fun SettingsMobileAppearanceContent(
+                 )
+             }
+         }
++        SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_home)) {
++            SettingsMobileToggleRow(
++                label = stringResource(R.string.settings_home_hero_label),
++                hint = if (state.homeSeasonHeroEnabled) {
++                    stringResource(R.string.settings_home_hero_enabled)
++                } else {
++                    stringResource(R.string.settings_disabled)
++                },
++                enabled = state.homeSeasonHeroEnabled,
++                onClick = { onEvent(SettingsState.Event.HomeSeasonHeroToggled) },
++            )
++            SettingsMobileToggleRow(
++                label = stringResource(R.string.settings_home_bloggers_label),
++                hint = if (state.homeBloggerVideosEnabled) {
++                    stringResource(R.string.settings_home_bloggers_enabled)
++                } else {
++                    stringResource(R.string.settings_disabled)
++                },
++                enabled = state.homeBloggerVideosEnabled,
++                onClick = { onEvent(SettingsState.Event.HomeBloggerVideosToggled) },
++            )
++        }
++        SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_navbar)) {
++            barRootTabs.forEach { tab ->
++                val visible = tab.name !in state.hiddenRootTabs
++                SettingsMobileToggleRow(
++                    label = tab.barLabel(),
++                    hint = if (visible) {
++                        stringResource(R.string.settings_nav_tab_visible)
++                    } else {
++                        stringResource(R.string.settings_disabled)
++                    },
++                    enabled = visible,
++                    onClick = { onEvent(SettingsState.Event.RootTabVisibilityToggled(tab.name)) },
++                )
++            }
++        }
+     }
+ }
+diff --git a/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml b/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
+index 741a7d24..4fb3c3a3 100644
+--- a/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
++++ b/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
+@@ -27,6 +27,19 @@
+     <string name="settings_classic_ui_enabled">Компоненты Material Design 2</string>
+     <string name="settings_navbar_labels_label">Подписи в панели навигации</string>
+     <string name="settings_navbar_labels_enabled">Показывать текст под иконками</string>
++    <string name="settings_home_hero_label">Блок аниме сезона</string>
++    <string name="settings_home_hero_enabled">Показывать карусель на главной</string>
++    <string name="settings_home_bloggers_label">Блок видео блогеров</string>
++    <string name="settings_home_bloggers_enabled">Показывать блогеров на главной</string>
++    <string name="settings_nav_tab_news">Новости</string>
++    <string name="settings_nav_tab_top">Топ</string>
++    <string name="settings_nav_tab_home">Главная</string>
++    <string name="settings_nav_tab_library">Библиотека</string>
++    <string name="settings_nav_tab_profile">Профиль</string>
++    <string name="settings_nav_tab_other">Другое</string>
++    <string name="settings_nav_tab_visible">Показывать в панели навигации</string>
++    <string name="settings_mobile_section_home">Лента главной</string>
++    <string name="settings_mobile_section_navbar">Панель навигации</string>
+     <string name="settings_mobile_section_devices">Устройства</string>
+     <string name="settings_mobile_login_on_tv">Войти на ТВ</string>
+     <string name="settings_mobile_login_on_tv_hint">Передать текущую сессию в приложение на ТВ по локальной сети</string>
+diff --git a/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml b/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
+index 7c822f3a..1563f1fb 100644
+--- a/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
++++ b/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
+@@ -27,6 +27,19 @@
+     <string name="settings_classic_ui_enabled">Компоненти Material Design 2</string>
+     <string name="settings_navbar_labels_label">Підписи в панелі навігації</string>
+     <string name="settings_navbar_labels_enabled">Показувати текст під іконками</string>
++    <string name="settings_home_hero_label">Блок аніме сезону</string>
++    <string name="settings_home_hero_enabled">Показувати карусель на головній</string>
++    <string name="settings_home_bloggers_label">Блок відео блогерів</string>
++    <string name="settings_home_bloggers_enabled">Показувати блогерів на головній</string>
++    <string name="settings_nav_tab_news">Новини</string>
++    <string name="settings_nav_tab_top">Топ</string>
++    <string name="settings_nav_tab_home">Головна</string>
++    <string name="settings_nav_tab_library">Бібліотека</string>
++    <string name="settings_nav_tab_profile">Профіль</string>
++    <string name="settings_nav_tab_other">Інше</string>
++    <string name="settings_nav_tab_visible">Показувати в панелі навігації</string>
++    <string name="settings_mobile_section_home">Стрічка головної</string>
++    <string name="settings_mobile_section_navbar">Панель навігації</string>
+     <string name="settings_mobile_section_devices">Пристрої</string>
+     <string name="settings_mobile_login_on_tv">Увійти на ТВ</string>
+     <string name="settings_mobile_login_on_tv_hint">Передати поточну сесію в застосунок на ТВ локальною мережею</string>
+diff --git a/feature/settings/ui-mobile/src/main/res/values/strings.xml b/feature/settings/ui-mobile/src/main/res/values/strings.xml
+index 22581f66..8841e9cd 100644
+--- a/feature/settings/ui-mobile/src/main/res/values/strings.xml
++++ b/feature/settings/ui-mobile/src/main/res/values/strings.xml
+@@ -27,6 +27,19 @@
+     <string name="settings_classic_ui_enabled">Material Design 2 components</string>
+     <string name="settings_navbar_labels_label">Navigation bar labels</string>
+     <string name="settings_navbar_labels_enabled">Show text under icons</string>
++    <string name="settings_home_hero_label">Season anime block</string>
++    <string name="settings_home_hero_enabled">Show hero carousel on home</string>
++    <string name="settings_home_bloggers_label">Blogger videos block</string>
++    <string name="settings_home_bloggers_enabled">Show blogger videos on home</string>
++    <string name="settings_nav_tab_news">News</string>
++    <string name="settings_nav_tab_top">Top</string>
++    <string name="settings_nav_tab_home">Home</string>
++    <string name="settings_nav_tab_library">Library</string>
++    <string name="settings_nav_tab_profile">Profile</string>
++    <string name="settings_nav_tab_other">Other</string>
++    <string name="settings_nav_tab_visible">Shown in navigation bar</string>
++    <string name="settings_mobile_section_home">Home feed</string>
++    <string name="settings_mobile_section_navbar">Navigation bar</string>
+     <string name="settings_mobile_section_devices">Devices</string>
+     <string name="settings_mobile_login_on_tv">Sign in on TV</string>
+     <string name="settings_mobile_login_on_tv_hint">Transfer this session to the TV app over the local network</string>

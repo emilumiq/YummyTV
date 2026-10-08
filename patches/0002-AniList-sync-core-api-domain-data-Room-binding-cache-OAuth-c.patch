@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 15:43:21 +0300
-Subject: [TRACKER] AniList sync core: api/domain/data, Room binding cache,
- OAuth code flow
+Subject: AniList sync core: api/domain/data, Room binding cache, OAuth code
+ flow
 
 ---
  .../yummy/tv/core/storage/db/AppDatabase.kt   |   6 +-
@@ -118,7 +118,7 @@ Subject: [TRACKER] AniList sync core: api/domain/data, Room binding cache,
  create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListStatusUtils.kt
 
 diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/AppDatabase.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/AppDatabase.kt
-index 9a903b0d5..e99b9c93a 100644
+index 9a903b0d..e99b9c93 100644
 --- a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/AppDatabase.kt
 +++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/AppDatabase.kt
 @@ -85,6 +85,8 @@ import su.afk.yummy.tv.core.storage.search.SearchTypeEntry
@@ -148,7 +148,7 @@ index 9a903b0d5..e99b9c93a 100644
 +    abstract fun trackerBindingDao(): TrackerBindingDao
  }
 diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/Migrations.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/Migrations.kt
-index 3b38cd1ec..f4ebf8c23 100644
+index 3b38cd1e..f4ebf8c2 100644
 --- a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/Migrations.kt
 +++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/Migrations.kt
 @@ -50,4 +50,5 @@ internal val ALL_MIGRATIONS: Array<Migration> = arrayOf(
@@ -159,7 +159,7 @@ index 3b38cd1ec..f4ebf8c23 100644
  )
 diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/MigrationsSchema5.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/MigrationsSchema5.kt
 new file mode 100644
-index 000000000..cfaf00669
+index 00000000..cfaf0066
 --- /dev/null
 +++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/MigrationsSchema5.kt
 @@ -0,0 +1,32 @@
@@ -197,7 +197,7 @@ index 000000000..cfaf00669
 +}
 diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingDao.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingDao.kt
 new file mode 100644
-index 000000000..9babbafdc
+index 00000000..9babbafd
 --- /dev/null
 +++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingDao.kt
 @@ -0,0 +1,19 @@
@@ -222,7 +222,7 @@ index 000000000..9babbafdc
 +}
 diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingEntry.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingEntry.kt
 new file mode 100644
-index 000000000..d37b3f3d5
+index 00000000..d37b3f3d
 --- /dev/null
 +++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingEntry.kt
 @@ -0,0 +1,27 @@
@@ -255,7 +255,7 @@ index 000000000..d37b3f3d5
 +)
 diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStorage.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStorage.kt
 new file mode 100644
-index 000000000..a2094490c
+index 00000000..a2094490
 --- /dev/null
 +++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStorage.kt
 @@ -0,0 +1,11 @@
@@ -272,7 +272,7 @@ index 000000000..a2094490c
 +}
 diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStore.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStore.kt
 new file mode 100644
-index 000000000..c62732224
+index 00000000..c6273222
 --- /dev/null
 +++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStore.kt
 @@ -0,0 +1,13 @@
@@ -291,7 +291,7 @@ index 000000000..c62732224
 +}
 diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/di/TrackerBindingStorageModule.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/di/TrackerBindingStorageModule.kt
 new file mode 100644
-index 000000000..8a476f11c
+index 00000000..8a476f11
 --- /dev/null
 +++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/di/TrackerBindingStorageModule.kt
 @@ -0,0 +1,25 @@
@@ -322,7 +322,7 @@ index 000000000..8a476f11c
 +}
 diff --git a/feature/tracker/api/build.gradle.kts b/feature/tracker/api/build.gradle.kts
 new file mode 100644
-index 000000000..970e01bf6
+index 00000000..970e01bf
 --- /dev/null
 +++ b/feature/tracker/api/build.gradle.kts
 @@ -0,0 +1,14 @@
@@ -342,7 +342,7 @@ index 000000000..970e01bf6
 +}
 diff --git a/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/IMobileTrackerEntry.kt b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/IMobileTrackerEntry.kt
 new file mode 100644
-index 000000000..2f01a7d3f
+index 00000000..2f01a7d3
 --- /dev/null
 +++ b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/IMobileTrackerEntry.kt
 @@ -0,0 +1,9 @@
@@ -357,7 +357,7 @@ index 000000000..2f01a7d3f
 +interface IMobileTrackerEntry : NavRegistrar
 diff --git a/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITrackerNavigator.kt b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITrackerNavigator.kt
 new file mode 100644
-index 000000000..5187eadeb
+index 00000000..5187eade
 --- /dev/null
 +++ b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITrackerNavigator.kt
 @@ -0,0 +1,12 @@
@@ -375,7 +375,7 @@ index 000000000..5187eadeb
 +}
 diff --git a/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITvTrackerEntry.kt b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITvTrackerEntry.kt
 new file mode 100644
-index 000000000..14d691b0d
+index 00000000..14d691b0
 --- /dev/null
 +++ b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITvTrackerEntry.kt
 @@ -0,0 +1,9 @@
@@ -390,7 +390,7 @@ index 000000000..14d691b0d
 +interface ITvTrackerEntry : NavRegistrar
 diff --git a/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerDestination.kt b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerDestination.kt
 new file mode 100644
-index 000000000..6cc61f218
+index 00000000..6cc61f21
 --- /dev/null
 +++ b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerDestination.kt
 @@ -0,0 +1,23 @@
@@ -419,7 +419,7 @@ index 000000000..6cc61f218
 +}
 diff --git a/feature/tracker/data/build.gradle.kts b/feature/tracker/data/build.gradle.kts
 new file mode 100644
-index 000000000..d5c75b51c
+index 00000000..d5c75b51
 --- /dev/null
 +++ b/feature/tracker/data/build.gradle.kts
 @@ -0,0 +1,41 @@
@@ -466,7 +466,7 @@ index 000000000..d5c75b51c
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/deeplink/AniListAuthDeepLinkResolver.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/deeplink/AniListAuthDeepLinkResolver.kt
 new file mode 100644
-index 000000000..447a8099a
+index 00000000..447a8099
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/deeplink/AniListAuthDeepLinkResolver.kt
 @@ -0,0 +1,37 @@
@@ -509,7 +509,7 @@ index 000000000..447a8099a
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDataModule.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDataModule.kt
 new file mode 100644
-index 000000000..62f92a3de
+index 00000000..62f92a3d
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDataModule.kt
 @@ -0,0 +1,24 @@
@@ -539,7 +539,7 @@ index 000000000..62f92a3de
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDeepLinkModule.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDeepLinkModule.kt
 new file mode 100644
-index 000000000..1a1d63e24
+index 00000000..1a1d63e2
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDeepLinkModule.kt
 @@ -0,0 +1,18 @@
@@ -563,7 +563,7 @@ index 000000000..1a1d63e24
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALAddEntry.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALAddEntry.kt
 new file mode 100644
-index 000000000..8176588ac
+index 00000000..8176588a
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALAddEntry.kt
 @@ -0,0 +1,21 @@
@@ -590,7 +590,7 @@ index 000000000..8176588ac
 +)
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALCurrentUser.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALCurrentUser.kt
 new file mode 100644
-index 000000000..0f61db168
+index 00000000..0f61db16
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALCurrentUser.kt
 @@ -0,0 +1,28 @@
@@ -624,7 +624,7 @@ index 000000000..0f61db168
 +)
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALFuzzyDate.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALFuzzyDate.kt
 new file mode 100644
-index 000000000..beabec4c9
+index 00000000..beabec4c
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALFuzzyDate.kt
 @@ -0,0 +1,23 @@
@@ -653,7 +653,7 @@ index 000000000..beabec4c9
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALGraphqlRequest.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALGraphqlRequest.kt
 new file mode 100644
-index 000000000..675071d7b
+index 00000000..675071d7
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALGraphqlRequest.kt
 @@ -0,0 +1,11 @@
@@ -670,7 +670,7 @@ index 000000000..675071d7b
 +)
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALOAuth.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALOAuth.kt
 new file mode 100644
-index 000000000..74c01ccac
+index 00000000..74c01cca
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALOAuth.kt
 @@ -0,0 +1,21 @@
@@ -697,7 +697,7 @@ index 000000000..74c01ccac
 +fun ALOAuth.isExpired(): Boolean = System.currentTimeMillis() > expires
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearch.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearch.kt
 new file mode 100644
-index 000000000..35207ede7
+index 00000000..35207ede
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearch.kt
 @@ -0,0 +1,21 @@
@@ -724,7 +724,7 @@ index 000000000..35207ede7
 +)
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearchItem.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearchItem.kt
 new file mode 100644
-index 000000000..2288a951b
+index 00000000..2288a951
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearchItem.kt
 @@ -0,0 +1,74 @@
@@ -804,7 +804,7 @@ index 000000000..2288a951b
 +)
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALTokenResponse.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALTokenResponse.kt
 new file mode 100644
-index 000000000..287de3084
+index 00000000..287de308
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALTokenResponse.kt
 @@ -0,0 +1,21 @@
@@ -831,7 +831,7 @@ index 000000000..287de3084
 +)
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALUserList.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALUserList.kt
 new file mode 100644
-index 000000000..48a984272
+index 00000000..48a98427
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALUserList.kt
 @@ -0,0 +1,33 @@
@@ -870,7 +870,7 @@ index 000000000..48a984272
 +)
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/local/AniListSessionStore.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/local/AniListSessionStore.kt
 new file mode 100644
-index 000000000..93d6d9d6f
+index 00000000..93d6d9d6
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/local/AniListSessionStore.kt
 @@ -0,0 +1,93 @@
@@ -969,7 +969,7 @@ index 000000000..93d6d9d6f
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/mapper/AniListTrackMapper.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/mapper/AniListTrackMapper.kt
 new file mode 100644
-index 000000000..c7fd1a288
+index 00000000..c7fd1a28
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/mapper/AniListTrackMapper.kt
 @@ -0,0 +1,61 @@
@@ -1036,7 +1036,7 @@ index 000000000..c7fd1a288
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListApi.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListApi.kt
 new file mode 100644
-index 000000000..d7753b007
+index 00000000..d7753b00
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListApi.kt
 @@ -0,0 +1,325 @@
@@ -1367,7 +1367,7 @@ index 000000000..d7753b007
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListConfig.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListConfig.kt
 new file mode 100644
-index 000000000..502099c0a
+index 00000000..502099c0
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListConfig.kt
 @@ -0,0 +1,43 @@
@@ -1416,7 +1416,7 @@ index 000000000..502099c0a
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAnimeTrackRepositoryImpl.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAnimeTrackRepositoryImpl.kt
 new file mode 100644
-index 000000000..1b6f0585b
+index 00000000..1b6f0585
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAnimeTrackRepositoryImpl.kt
 @@ -0,0 +1,164 @@
@@ -1586,7 +1586,7 @@ index 000000000..1b6f0585b
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAuthRepositoryImpl.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAuthRepositoryImpl.kt
 new file mode 100644
-index 000000000..ec2712af8
+index 00000000..ec2712af
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAuthRepositoryImpl.kt
 @@ -0,0 +1,102 @@
@@ -1694,7 +1694,7 @@ index 000000000..ec2712af8
 +}
 diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/storage/mapper/TrackerBindingMapper.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/storage/mapper/TrackerBindingMapper.kt
 new file mode 100644
-index 000000000..155257567
+index 00000000..15525756
 --- /dev/null
 +++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/storage/mapper/TrackerBindingMapper.kt
 @@ -0,0 +1,43 @@
@@ -1743,7 +1743,7 @@ index 000000000..155257567
 +}
 diff --git a/feature/tracker/domain/build.gradle.kts b/feature/tracker/domain/build.gradle.kts
 new file mode 100644
-index 000000000..f048c1384
+index 00000000..f048c138
 --- /dev/null
 +++ b/feature/tracker/domain/build.gradle.kts
 @@ -0,0 +1,15 @@
@@ -1764,7 +1764,7 @@ index 000000000..f048c1384
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AniListScoreFormat.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AniListScoreFormat.kt
 new file mode 100644
-index 000000000..0eef11708
+index 00000000..0eef1170
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AniListScoreFormat.kt
 @@ -0,0 +1,22 @@
@@ -1792,7 +1792,7 @@ index 000000000..0eef11708
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrack.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrack.kt
 new file mode 100644
-index 000000000..eb618487a
+index 00000000..eb618487
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrack.kt
 @@ -0,0 +1,24 @@
@@ -1822,7 +1822,7 @@ index 000000000..eb618487a
 +)
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackSearch.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackSearch.kt
 new file mode 100644
-index 000000000..22342ff4b
+index 00000000..22342ff4
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackSearch.kt
 @@ -0,0 +1,19 @@
@@ -1847,7 +1847,7 @@ index 000000000..22342ff4b
 +)
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackStatus.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackStatus.kt
 new file mode 100644
-index 000000000..c8eaeee96
+index 00000000..c8eaeee9
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackStatus.kt
 @@ -0,0 +1,22 @@
@@ -1875,7 +1875,7 @@ index 000000000..c8eaeee96
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerAuthState.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerAuthState.kt
 new file mode 100644
-index 000000000..0e0fff730
+index 00000000..0e0fff73
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerAuthState.kt
 @@ -0,0 +1,13 @@
@@ -1894,7 +1894,7 @@ index 000000000..0e0fff730
 +)
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerCapabilities.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerCapabilities.kt
 new file mode 100644
-index 000000000..22580c7cd
+index 00000000..22580c7c
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerCapabilities.kt
 @@ -0,0 +1,32 @@
@@ -1932,7 +1932,7 @@ index 000000000..22580c7cd
 +)
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerOAuth.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerOAuth.kt
 new file mode 100644
-index 000000000..87780e8a4
+index 00000000..87780e8a
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerOAuth.kt
 @@ -0,0 +1,12 @@
@@ -1950,7 +1950,7 @@ index 000000000..87780e8a4
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerProvider.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerProvider.kt
 new file mode 100644
-index 000000000..57db1f639
+index 00000000..57db1f63
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerProvider.kt
 @@ -0,0 +1,10 @@
@@ -1966,7 +1966,7 @@ index 000000000..57db1f639
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/AnimeTrackRepository.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/AnimeTrackRepository.kt
 new file mode 100644
-index 000000000..89ab1f38f
+index 00000000..89ab1f38
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/AnimeTrackRepository.kt
 @@ -0,0 +1,39 @@
@@ -2011,7 +2011,7 @@ index 000000000..89ab1f38f
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/TrackerAuthRepository.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/TrackerAuthRepository.kt
 new file mode 100644
-index 000000000..103536502
+index 00000000..10353650
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/TrackerAuthRepository.kt
 @@ -0,0 +1,33 @@
@@ -2050,7 +2050,7 @@ index 000000000..103536502
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BeginAniListOAuthUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BeginAniListOAuthUseCase.kt
 new file mode 100644
-index 000000000..3eadfb20b
+index 00000000..3eadfb20
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BeginAniListOAuthUseCase.kt
 @@ -0,0 +1,15 @@
@@ -2071,7 +2071,7 @@ index 000000000..3eadfb20b
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BindAnimeTrackUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BindAnimeTrackUseCase.kt
 new file mode 100644
-index 000000000..9ec6bb43d
+index 00000000..9ec6bb43
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BindAnimeTrackUseCase.kt
 @@ -0,0 +1,31 @@
@@ -2108,7 +2108,7 @@ index 000000000..9ec6bb43d
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/HandleAniListCallbackUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/HandleAniListCallbackUseCase.kt
 new file mode 100644
-index 000000000..7a8fb139e
+index 00000000..7a8fb139
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/HandleAniListCallbackUseCase.kt
 @@ -0,0 +1,31 @@
@@ -2145,7 +2145,7 @@ index 000000000..7a8fb139e
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/LogoutTrackerUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/LogoutTrackerUseCase.kt
 new file mode 100644
-index 000000000..96d484c96
+index 00000000..96d484c9
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/LogoutTrackerUseCase.kt
 @@ -0,0 +1,14 @@
@@ -2165,7 +2165,7 @@ index 000000000..96d484c96
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/ObserveTrackerAuthStateUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/ObserveTrackerAuthStateUseCase.kt
 new file mode 100644
-index 000000000..bad96ad8e
+index 00000000..bad96ad8
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/ObserveTrackerAuthStateUseCase.kt
 @@ -0,0 +1,16 @@
@@ -2187,7 +2187,7 @@ index 000000000..bad96ad8e
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/RefreshAnimeTrackUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/RefreshAnimeTrackUseCase.kt
 new file mode 100644
-index 000000000..aabe70676
+index 00000000..aabe7067
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/RefreshAnimeTrackUseCase.kt
 @@ -0,0 +1,19 @@
@@ -2212,7 +2212,7 @@ index 000000000..aabe70676
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/SearchAnimeTracksUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/SearchAnimeTracksUseCase.kt
 new file mode 100644
-index 000000000..c95026ae5
+index 00000000..c95026ae
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/SearchAnimeTracksUseCase.kt
 @@ -0,0 +1,19 @@
@@ -2237,7 +2237,7 @@ index 000000000..c95026ae5
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/TrackEpisodeSeenUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/TrackEpisodeSeenUseCase.kt
 new file mode 100644
-index 000000000..f8f74dd11
+index 00000000..f8f74dd1
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/TrackEpisodeSeenUseCase.kt
 @@ -0,0 +1,18 @@
@@ -2261,7 +2261,7 @@ index 000000000..f8f74dd11
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/UpdateAnimeTrackUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/UpdateAnimeTrackUseCase.kt
 new file mode 100644
-index 000000000..7bbc202ce
+index 00000000..7bbc202c
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/UpdateAnimeTrackUseCase.kt
 @@ -0,0 +1,19 @@
@@ -2286,7 +2286,7 @@ index 000000000..7bbc202ce
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListScoreUtils.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListScoreUtils.kt
 new file mode 100644
-index 000000000..89f78f365
+index 00000000..89f78f36
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListScoreUtils.kt
 @@ -0,0 +1,73 @@
@@ -2365,7 +2365,7 @@ index 000000000..89f78f365
 +}
 diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListStatusUtils.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListStatusUtils.kt
 new file mode 100644
-index 000000000..c2edfc34e
+index 00000000..c2edfc34
 --- /dev/null
 +++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListStatusUtils.kt
 @@ -0,0 +1,26 @@
@@ -2396,7 +2396,7 @@ index 000000000..c2edfc34e
 +    else -> throw NotImplementedError("Unknown AniList status: $this")
 +}
 diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
-index 846fe4cc1..234e7c74b 100644
+index 846fe4cc..234e7c74 100644
 --- a/gradle/libs.versions.toml
 +++ b/gradle/libs.versions.toml
 @@ -106,6 +106,7 @@ compose-ui = { module = "androidx.compose.ui:ui" }
@@ -2408,7 +2408,7 @@ index 846fe4cc1..234e7c74b 100644
  compose-material3-adaptive-navigation3 = { module = "androidx.compose.material3.adaptive:adaptive-navigation3" }
  compose-material3-navigationSuite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite" }
 diff --git a/settings.gradle.kts b/settings.gradle.kts
-index 4ec921731..09fb7af95 100644
+index 4ec92173..09fb7af9 100644
 --- a/settings.gradle.kts
 +++ b/settings.gradle.kts
 @@ -203,3 +203,10 @@ include(":feature:update:domain")

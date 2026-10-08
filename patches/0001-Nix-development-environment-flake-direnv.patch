@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 15:43:07 +0300
-Subject: [CORE] Nix development environment (flake + direnv)
+Subject: Nix development environment (flake + direnv)
 
 ---
  .envrc     |   1 +
@@ -16,14 +16,14 @@ Subject: [CORE] Nix development environment (flake + direnv)
 
 diff --git a/.envrc b/.envrc
 new file mode 100644
-index 000000000..3550a30f2
+index 00000000..3550a30f
 --- /dev/null
 +++ b/.envrc
 @@ -0,0 +1 @@
 +use flake
 diff --git a/flake.lock b/flake.lock
 new file mode 100644
-index 000000000..fbd0b2cac
+index 00000000..fbd0b2ca
 --- /dev/null
 +++ b/flake.lock
 @@ -0,0 +1,61 @@
@@ -90,7 +90,7 @@ index 000000000..fbd0b2cac
 +}
 diff --git a/flake.nix b/flake.nix
 new file mode 100644
-index 000000000..d023625af
+index 00000000..d023625a
 --- /dev/null
 +++ b/flake.nix
 @@ -0,0 +1,109 @@
@@ -205,7 +205,7 @@ index 000000000..d023625af
 +}
 diff --git a/shell.nix b/shell.nix
 new file mode 100644
-index 000000000..97bfc41ee
+index 00000000..97bfc41e
 --- /dev/null
 +++ b/shell.nix
 @@ -0,0 +1,28 @@

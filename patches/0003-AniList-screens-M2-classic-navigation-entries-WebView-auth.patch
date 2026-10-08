@@ -1,8 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 15:43:32 +0300
-Subject: [TRACKER] AniList screens (M2 classic), navigation entries, WebView
- auth
+Subject: AniList screens (M2 classic), navigation entries, WebView auth
 
 ---
  feature/main/ui-mobile/build.gradle.kts       |   1 +
@@ -80,7 +79,7 @@ Subject: [TRACKER] AniList screens (M2 classic), navigation entries, WebView
  create mode 100644 feature/tracker/ui-tv/src/main/res/values/strings.xml
 
 diff --git a/feature/main/ui-mobile/build.gradle.kts b/feature/main/ui-mobile/build.gradle.kts
-index e3d7f7bff..462142fd0 100644
+index e3d7f7bf..462142fd 100644
 --- a/feature/main/ui-mobile/build.gradle.kts
 +++ b/feature/main/ui-mobile/build.gradle.kts
 @@ -37,6 +37,7 @@ dependencies {
@@ -92,7 +91,7 @@ index e3d7f7bff..462142fd0 100644
      implementation(project(":feature:update:api"))
      implementation(project(":feature:video-download:api"))
 diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
-index 1b69d3e6a..4c399c1bc 100644
+index 1b69d3e6..4c399c1b 100644
 --- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
 +++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
 @@ -5,41 +5,37 @@ import androidx.compose.animation.ContentTransform
@@ -157,7 +156,7 @@ index 1b69d3e6a..4c399c1bc 100644
 -private const val MOBILE_NAV_TRANSITION_SCALE = 0.94f
 +private const val MOBILE_NAV_EXIT_SHIFT_DIVISOR = 4
 diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavigationHolder.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavigationHolder.kt
-index 6c8467d7b..a0359ca5b 100644
+index 6c8467d7..a0359ca5 100644
 --- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavigationHolder.kt
 +++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavigationHolder.kt
 @@ -21,6 +21,7 @@ import su.afk.yummy.tv.feature.schedule.IMobileScheduleEntry
@@ -185,7 +184,7 @@ index 6c8467d7b..a0359ca5b 100644
          watchLater,
          playerSetup,
 diff --git a/feature/main/ui-tv/build.gradle.kts b/feature/main/ui-tv/build.gradle.kts
-index aef470cdb..b348d5d6c 100644
+index aef470cd..b348d5d6 100644
 --- a/feature/main/ui-tv/build.gradle.kts
 +++ b/feature/main/ui-tv/build.gradle.kts
 @@ -34,6 +34,7 @@ dependencies {
@@ -197,7 +196,7 @@ index aef470cdb..b348d5d6c 100644
      implementation(project(":feature:update:api"))
  
 diff --git a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavTransitions.kt b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavTransitions.kt
-index ed37d3728..c5d9e7aa8 100644
+index ed37d372..c5d9e7aa 100644
 --- a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavTransitions.kt
 +++ b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavTransitions.kt
 @@ -5,30 +5,29 @@ import androidx.compose.animation.ContentTransform
@@ -245,7 +244,7 @@ index ed37d3728..c5d9e7aa8 100644
 -private const val TV_NAV_TRANSITION_SCALE = 1.05f
 +private const val TV_NAV_TRAVEL_DIVISOR = 3
 diff --git a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavigationHolder.kt b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavigationHolder.kt
-index e379b06a1..dd111fde0 100644
+index e379b06a..dd111fde 100644
 --- a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavigationHolder.kt
 +++ b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavigationHolder.kt
 @@ -18,6 +18,7 @@ import su.afk.yummy.tv.feature.schedule.ITvScheduleEntry
@@ -274,7 +273,7 @@ index e379b06a1..dd111fde0 100644
          errorScreen,
 diff --git a/feature/tracker/presentation/build.gradle.kts b/feature/tracker/presentation/build.gradle.kts
 new file mode 100644
-index 000000000..4f90e9980
+index 00000000..4f90e998
 --- /dev/null
 +++ b/feature/tracker/presentation/build.gradle.kts
 @@ -0,0 +1,20 @@
@@ -300,7 +299,7 @@ index 000000000..4f90e9980
 +}
 diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt
 new file mode 100644
-index 000000000..8d5429211
+index 00000000..8d542921
 --- /dev/null
 +++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt
 @@ -0,0 +1,71 @@
@@ -377,7 +376,7 @@ index 000000000..8d5429211
 +}
 diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerViewModel.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerViewModel.kt
 new file mode 100644
-index 000000000..18af15698
+index 00000000..18af1569
 --- /dev/null
 +++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerViewModel.kt
 @@ -0,0 +1,207 @@
@@ -590,7 +589,7 @@ index 000000000..18af15698
 +}
 diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/di/TrackerNavigatorModule.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/di/TrackerNavigatorModule.kt
 new file mode 100644
-index 000000000..b1a8fab27
+index 00000000..b1a8fab2
 --- /dev/null
 +++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/di/TrackerNavigatorModule.kt
 @@ -0,0 +1,16 @@
@@ -612,7 +611,7 @@ index 000000000..b1a8fab27
 +}
 diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/navigator/TrackerNavigator.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/navigator/TrackerNavigator.kt
 new file mode 100644
-index 000000000..43ac5e634
+index 00000000..43ac5e63
 --- /dev/null
 +++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/navigator/TrackerNavigator.kt
 @@ -0,0 +1,19 @@
@@ -637,7 +636,7 @@ index 000000000..43ac5e634
 +}
 diff --git a/feature/tracker/ui-mobile/build.gradle.kts b/feature/tracker/ui-mobile/build.gradle.kts
 new file mode 100644
-index 000000000..98dc62f49
+index 00000000..98dc62f4
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/build.gradle.kts
 @@ -0,0 +1,23 @@
@@ -666,7 +665,7 @@ index 000000000..98dc62f49
 +}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
 new file mode 100644
-index 000000000..26c318304
+index 00000000..26c31830
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
 @@ -0,0 +1,97 @@
@@ -769,7 +768,7 @@ index 000000000..26c318304
 +}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
 new file mode 100644
-index 000000000..2a24b8c91
+index 00000000..2a24b8c9
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
 @@ -0,0 +1,491 @@
@@ -1266,7 +1265,7 @@ index 000000000..2a24b8c91
 +}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/di/TrackerMobileNavigationModule.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/di/TrackerMobileNavigationModule.kt
 new file mode 100644
-index 000000000..20c9a9e1a
+index 00000000..20c9a9e1
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/di/TrackerMobileNavigationModule.kt
 @@ -0,0 +1,16 @@
@@ -1288,7 +1287,7 @@ index 000000000..20c9a9e1a
 +}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/navigator/TrackerNavRegistrar.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/navigator/TrackerNavRegistrar.kt
 new file mode 100644
-index 000000000..518436854
+index 00000000..51843685
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/navigator/TrackerNavRegistrar.kt
 @@ -0,0 +1,59 @@
@@ -1353,7 +1352,7 @@ index 000000000..518436854
 +}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt
 new file mode 100644
-index 000000000..c15fa1641
+index 00000000..c15fa164
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt
 @@ -0,0 +1,22 @@
@@ -1381,7 +1380,7 @@ index 000000000..c15fa1641
 +}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerStatusLabels.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerStatusLabels.kt
 new file mode 100644
-index 000000000..fe0a1385e
+index 00000000..fe0a1385
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerStatusLabels.kt
 @@ -0,0 +1,18 @@
@@ -1405,7 +1404,7 @@ index 000000000..fe0a1385e
 +)
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt
 new file mode 100644
-index 000000000..77c677a7a
+index 00000000..77c677a7
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt
 @@ -0,0 +1,51 @@
@@ -1462,7 +1461,7 @@ index 000000000..77c677a7a
 +}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt
 new file mode 100644
-index 000000000..768be10d5
+index 00000000..768be10d
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt
 @@ -0,0 +1,181 @@
@@ -1649,7 +1648,7 @@ index 000000000..768be10d5
 +}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerLogo.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerLogo.kt
 new file mode 100644
-index 000000000..1d41281bf
+index 00000000..1d41281b
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerLogo.kt
 @@ -0,0 +1,38 @@
@@ -1744,7 +1743,7 @@ HcmV?d00001
 
 diff --git a/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml b/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml
 new file mode 100644
-index 000000000..af5109d35
+index 00000000..af5109d3
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml
 @@ -0,0 +1,33 @@
@@ -1783,7 +1782,7 @@ index 000000000..af5109d35
 +</resources>
 diff --git a/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml b/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml
 new file mode 100644
-index 000000000..c53a5f465
+index 00000000..c53a5f46
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml
 @@ -0,0 +1,33 @@
@@ -1822,7 +1821,7 @@ index 000000000..c53a5f465
 +</resources>
 diff --git a/feature/tracker/ui-mobile/src/main/res/values/strings.xml b/feature/tracker/ui-mobile/src/main/res/values/strings.xml
 new file mode 100644
-index 000000000..2356cf829
+index 00000000..2356cf82
 --- /dev/null
 +++ b/feature/tracker/ui-mobile/src/main/res/values/strings.xml
 @@ -0,0 +1,33 @@
@@ -1861,7 +1860,7 @@ index 000000000..2356cf829
 +</resources>
 diff --git a/feature/tracker/ui-tv/build.gradle.kts b/feature/tracker/ui-tv/build.gradle.kts
 new file mode 100644
-index 000000000..bc46c8136
+index 00000000..bc46c813
 --- /dev/null
 +++ b/feature/tracker/ui-tv/build.gradle.kts
 @@ -0,0 +1,26 @@
@@ -1893,7 +1892,7 @@ index 000000000..bc46c8136
 +}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt
 new file mode 100644
-index 000000000..36da211e9
+index 00000000..36da211e
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt
 @@ -0,0 +1,88 @@
@@ -1987,7 +1986,7 @@ index 000000000..36da211e9
 +}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt
 new file mode 100644
-index 000000000..455fc14b5
+index 00000000..455fc14b
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt
 @@ -0,0 +1,463 @@
@@ -2456,7 +2455,7 @@ index 000000000..455fc14b5
 +}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/di/TrackerTvNavigationModule.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/di/TrackerTvNavigationModule.kt
 new file mode 100644
-index 000000000..102a82d3d
+index 00000000..102a82d3
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/di/TrackerTvNavigationModule.kt
 @@ -0,0 +1,16 @@
@@ -2478,7 +2477,7 @@ index 000000000..102a82d3d
 +}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/navigator/TrackerNavRegistrar.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/navigator/TrackerNavRegistrar.kt
 new file mode 100644
-index 000000000..c9055272a
+index 00000000..c9055272
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/navigator/TrackerNavRegistrar.kt
 @@ -0,0 +1,59 @@
@@ -2543,7 +2542,7 @@ index 000000000..c9055272a
 +}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerIntents.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerIntents.kt
 new file mode 100644
-index 000000000..fd3a08ebd
+index 00000000..fd3a08eb
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerIntents.kt
 @@ -0,0 +1,22 @@
@@ -2571,7 +2570,7 @@ index 000000000..fd3a08ebd
 +}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerStatusLabels.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerStatusLabels.kt
 new file mode 100644
-index 000000000..5c1101c56
+index 00000000..5c1101c5
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerStatusLabels.kt
 @@ -0,0 +1,18 @@
@@ -2595,7 +2594,7 @@ index 000000000..5c1101c56
 +)
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt
 new file mode 100644
-index 000000000..ed3c124c4
+index 00000000..ed3c124c
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt
 @@ -0,0 +1,51 @@
@@ -2652,7 +2651,7 @@ index 000000000..ed3c124c4
 +}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt
 new file mode 100644
-index 000000000..d0afc14bf
+index 00000000..d0afc14b
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt
 @@ -0,0 +1,183 @@
@@ -2841,7 +2840,7 @@ index 000000000..d0afc14bf
 +}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerLogo.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerLogo.kt
 new file mode 100644
-index 000000000..c16eca0f9
+index 00000000..c16eca0f
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerLogo.kt
 @@ -0,0 +1,39 @@
@@ -2937,7 +2936,7 @@ HcmV?d00001
 
 diff --git a/feature/tracker/ui-tv/src/main/res/values-ru/strings.xml b/feature/tracker/ui-tv/src/main/res/values-ru/strings.xml
 new file mode 100644
-index 000000000..37804d26e
+index 00000000..37804d26
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/res/values-ru/strings.xml
 @@ -0,0 +1,32 @@
@@ -2975,7 +2974,7 @@ index 000000000..37804d26e
 +</resources>
 diff --git a/feature/tracker/ui-tv/src/main/res/values-uk/strings.xml b/feature/tracker/ui-tv/src/main/res/values-uk/strings.xml
 new file mode 100644
-index 000000000..dd80ff2cb
+index 00000000..dd80ff2c
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/res/values-uk/strings.xml
 @@ -0,0 +1,32 @@
@@ -3013,7 +3012,7 @@ index 000000000..dd80ff2cb
 +</resources>
 diff --git a/feature/tracker/ui-tv/src/main/res/values/strings.xml b/feature/tracker/ui-tv/src/main/res/values/strings.xml
 new file mode 100644
-index 000000000..38808f8ed
+index 00000000..38808f8e
 --- /dev/null
 +++ b/feature/tracker/ui-tv/src/main/res/values/strings.xml
 @@ -0,0 +1,32 @@

@@ -1,0 +1,574 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Fri, 9 Oct 2026 00:46:36 +0300
+Subject: [CORE] Shared chrome dual-path: bars, sheets, states
+
+---
+ .../baseScreen/BaseBottomSheet.kt             |  16 ++
+ .../designsystem/baseScreen/BaseScreen.kt     |  12 +-
+ .../baseScreen/DefaultErrorContent.kt         | 197 ++++++++++++------
+ .../baseScreen/DefaultLoadingContent.kt       |  12 ++
+ .../classic/ClassicBottomSheet.kt             |  34 +--
+ .../designsystem/components/StateMessage.kt   |  48 +++++
+ .../mobile/bar/MobileBottomBarDefaults.kt     |   8 +
+ .../designsystem/mobile/bar/MobileTopBar.kt   |  32 +++
+ 8 files changed, 278 insertions(+), 81 deletions(-)
+
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/BaseBottomSheet.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/BaseBottomSheet.kt
+index 399375ea..ac9369f6 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/BaseBottomSheet.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/BaseBottomSheet.kt
+@@ -27,6 +27,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.Velocity
+ import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.designsystem.classic.ClassicBottomSheet
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ 
+ /**
+  * Гасит остаточный scroll/fling, когда список внутри шторки короче её максимальной высоты и
+@@ -78,6 +80,20 @@ fun BaseBottomSheet(
+     scrollableContent: Boolean = false,
+     content: @Composable ColumnScope.() -> Unit,
+ ) {
++    if (LocalClassicUi.current) {
++        // External sheetState has no M2 equivalent; every caller uses
++        // skipPartiallyExpanded defaults, so dropping it changes nothing.
++        ClassicBottomSheet(
++            onDismissRequest = onDismissRequest,
++            modifier = modifier,
++            title = title,
++            titleContent = titleContent,
++            contentPadding = contentPadding,
++            verticalArrangement = verticalArrangement,
++            content = content,
++        )
++        return
++    }
+     val maxHeight = rememberBottomSheetMaxHeight()
+     val scrollState = rememberScrollState()
+ 
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/BaseScreen.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/BaseScreen.kt
+index 58902325..f302cace 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/BaseScreen.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/BaseScreen.kt
+@@ -1,6 +1,8 @@
+ package su.afk.yummy.tv.core.designsystem.baseScreen
+ 
+ import androidx.compose.animation.AnimatedContent
++import androidx.compose.animation.EnterTransition
++import androidx.compose.animation.ExitTransition
+ import androidx.compose.animation.fadeIn
+ import androidx.compose.animation.fadeOut
+ import androidx.compose.animation.togetherWith
+@@ -34,6 +36,7 @@ import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.input.nestedscroll.nestedScroll
+ import androidx.compose.ui.unit.Dp
+ import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.model.ErrorItem
+ 
+ internal enum class BaseScreenContentState {
+@@ -74,6 +77,8 @@ fun BaseScreen(
+ 
+     content: @Composable ColumnScope.() -> Unit,
+ ) {
++    // Read up front: transitionSpec below is not a @Composable scope.
++    val classic = LocalClassicUi.current
+     key(topBarScroll) {
+         val topAppBarState = rememberTopAppBarState()
+ 
+@@ -148,7 +153,12 @@ fun BaseScreen(
+             AnimatedContent(
+                 targetState = screenState,
+                 transitionSpec = {
+-                    fadeIn() togetherWith fadeOut()
++                    // Classic: instant switch, no fade-appear.
++                    if (classic) {
++                        EnterTransition.None togetherWith ExitTransition.None
++                    } else {
++                        fadeIn() togetherWith fadeOut()
++                    }
+                 },
+                 label = "baseScreenContent",
+             ) { targetState ->
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/DefaultErrorContent.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/DefaultErrorContent.kt
+index b89c8d3e..42cd714a 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/DefaultErrorContent.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/DefaultErrorContent.kt
+@@ -35,10 +35,12 @@ import androidx.compose.runtime.setValue
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.platform.LocalContext
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.unit.dp
+ import su.afk.yummy.tv.core.designsystem.R
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.model.ErrorItem
+ 
+ @Composable
+@@ -95,14 +97,26 @@ fun DefaultErrorContent(
+                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+             ) {
+                 if (hasDetails) {
+-                    OutlinedButton(
+-                        onClick = { showDetails = !showDetails },
+-                        modifier = Modifier.weight(1f)
+-                    ) {
+-                        Text(
+-                            if (showDetails) stringResource(R.string.hide_details)
+-                            else stringResource(R.string.details)
+-                        )
++                    if (LocalClassicUi.current) {
++                        androidx.compose.material.OutlinedButton(
++                            onClick = { showDetails = !showDetails },
++                            modifier = Modifier.weight(1f)
++                        ) {
++                            androidx.compose.material.Text(
++                                if (showDetails) stringResource(R.string.hide_details)
++                                else stringResource(R.string.details)
++                            )
++                        }
++                    } else {
++                        OutlinedButton(
++                            onClick = { showDetails = !showDetails },
++                            modifier = Modifier.weight(1f)
++                        ) {
++                            Text(
++                                if (showDetails) stringResource(R.string.hide_details)
++                                else stringResource(R.string.details)
++                            )
++                        }
+                     }
+                 }
+ 
+@@ -114,68 +128,97 @@ fun DefaultErrorContent(
+             }
+ 
+             /** ДЕТАЛИ */
+-            AnimatedVisibility(visible = showDetails && hasDetails) {
+-                Column(
+-                    modifier = Modifier
+-                        .padding(top = 16.dp)
+-                        .fillMaxWidth(),
+-                    horizontalAlignment = Alignment.Start
+-                ) {
+-                    errorItem.code?.let {
+-                        Text(
+-                            text = stringResource(
+-                                R.string.error_http_code,
+-                                it.toString()
+-                            ),
+-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+-                        )
+-                    }
+-                    errorItem.method?.let {
+-                        Text(
+-                            text = stringResource(R.string.error_method, it),
+-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+-                        )
+-                    }
+-                    errorItem.url?.let {
+-                        Text(
+-                            text = stringResource(R.string.error_url, it),
+-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+-                        )
+-                    }
+-                    errorItem.requestId?.let {
+-                        Text(
+-                            text = stringResource(R.string.error_request_id, it),
+-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+-                        )
+-                    }
++            if (LocalClassicUi.current) {
++                if (showDetails && hasDetails) {
++                    ErrorDetailsBody(
++                        errorItem = errorItem,
++                        onCopyClick = { context.copyToClipboard(copyText) },
++                    )
++                }
++            } else {
++                AnimatedVisibility(visible = showDetails && hasDetails) {
++                    ErrorDetailsBody(
++                        errorItem = errorItem,
++                        onCopyClick = { context.copyToClipboard(copyText) },
++                    )
++                }
++            }
++        }
++    }
++}
+ 
+-                    errorItem.cause?.takeIf { it.isNotBlank() }?.let {
+-                        Spacer(Modifier.height(8.dp))
+-                        Text(
+-                            text = it,
+-                            style = MaterialTheme.typography.bodySmall,
+-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+-                        )
+-                    }
++@Composable
++private fun ErrorDetailsBody(
++    errorItem: ErrorItem,
++    onCopyClick: () -> Unit,
++) {
++    Column(
++        modifier = Modifier
++            .padding(top = 16.dp)
++            .fillMaxWidth(),
++        horizontalAlignment = Alignment.Start
++    ) {
++        errorItem.code?.let {
++            Text(
++                text = stringResource(
++                    R.string.error_http_code,
++                    it.toString()
++                ),
++                color = MaterialTheme.colorScheme.onSurfaceVariant,
++            )
++        }
++        errorItem.method?.let {
++            Text(
++                text = stringResource(R.string.error_method, it),
++                color = MaterialTheme.colorScheme.onSurfaceVariant,
++            )
++        }
++        errorItem.url?.let {
++            Text(
++                text = stringResource(R.string.error_url, it),
++                color = MaterialTheme.colorScheme.onSurfaceVariant,
++            )
++        }
++        errorItem.requestId?.let {
++            Text(
++                text = stringResource(R.string.error_request_id, it),
++                color = MaterialTheme.colorScheme.onSurfaceVariant,
++            )
++        }
+ 
+-                    errorItem.body?.takeIf { it.isNotBlank() }?.let { body ->
+-                        Spacer(Modifier.height(12.dp))
+-                        Text(
+-                            text = stringResource(R.string.error_body, body),
+-                            style = MaterialTheme.typography.bodySmall,
+-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+-                        )
+-                    }
++        errorItem.cause?.takeIf { it.isNotBlank() }?.let {
++            Spacer(Modifier.height(8.dp))
++            Text(
++                text = it,
++                style = MaterialTheme.typography.bodySmall,
++                color = MaterialTheme.colorScheme.onSurfaceVariant,
++            )
++        }
+ 
+-                    /** Copy показываем ТОЛЬКО когда раскрыты детали */
+-                    Spacer(Modifier.height(12.dp))
+-                    OutlinedButton(
+-                        onClick = { context.copyToClipboard(copyText) },
+-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+-                    ) {
+-                        Text(stringResource(R.string.copy))
+-                    }
+-                }
++        errorItem.body?.takeIf { it.isNotBlank() }?.let { body ->
++            Spacer(Modifier.height(12.dp))
++            Text(
++                text = stringResource(R.string.error_body, body),
++                style = MaterialTheme.typography.bodySmall,
++                color = MaterialTheme.colorScheme.onSurfaceVariant,
++            )
++        }
++
++        /** Copy показываем ТОЛЬКО когда раскрыты детали */
++        Spacer(Modifier.height(12.dp))
++        if (LocalClassicUi.current) {
++            androidx.compose.material.OutlinedButton(
++                onClick = onCopyClick,
++                modifier = Modifier.align(Alignment.CenterHorizontally)
++            ) {
++                androidx.compose.material.Text(stringResource(R.string.copy))
++            }
++        } else {
++            OutlinedButton(
++                onClick = onCopyClick,
++                modifier = Modifier.align(Alignment.CenterHorizontally)
++            ) {
++                Text(stringResource(R.string.copy))
+             }
+         }
+     }
+@@ -195,6 +238,26 @@ private fun DefaultErrorRetryButton(
+     val contentColor = if (focused) colorScheme.onPrimary else colorScheme.onSurface
+     val borderColor = if (focused) colorScheme.primary else colorScheme.outline.copy(alpha = 0.72f)
+ 
++    if (LocalClassicUi.current) {
++        androidx.compose.material.Button(
++            modifier = modifier,
++            onClick = onClick,
++            shape = RectangleShape,
++            interactionSource = interactionSource,
++            colors = androidx.compose.material.ButtonDefaults.buttonColors(
++                backgroundColor = containerColor,
++                contentColor = contentColor,
++            ),
++            border = BorderStroke(
++                width = if (focused) 2.dp else 1.dp,
++                color = borderColor,
++            ),
++            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
++        ) {
++            androidx.compose.material.Text(text = text)
++        }
++        return
++    }
+     Button(
+         modifier = modifier,
+         onClick = onClick,
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/DefaultLoadingContent.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/DefaultLoadingContent.kt
+index 98f27f93..12f4110d 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/DefaultLoadingContent.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/baseScreen/DefaultLoadingContent.kt
+@@ -8,9 +8,21 @@ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ 
+ @Composable
+ internal fun DefaultLoadingContent() {
++    if (LocalClassicUi.current) {
++        Box(
++            modifier = Modifier
++                .fillMaxSize()
++                .background(androidx.compose.material.MaterialTheme.colors.background),
++            contentAlignment = Alignment.Center,
++        ) {
++            androidx.compose.material.CircularProgressIndicator()
++        }
++        return
++    }
+     Box(
+         modifier = Modifier
+             .fillMaxSize()
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicBottomSheet.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicBottomSheet.kt
+index 630f39b3..4a6b7696 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicBottomSheet.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicBottomSheet.kt
+@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.heightIn
+ import androidx.compose.foundation.layout.navigationBarsPadding
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.shape.RoundedCornerShape
+ import androidx.compose.material.ExperimentalMaterialApi
+ import androidx.compose.material.MaterialTheme
+ import androidx.compose.material.ModalBottomSheetLayout
+@@ -19,14 +18,16 @@ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.snapshotFlow
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
+-import kotlinx.coroutines.flow.distinctUntilChanged
++import kotlinx.coroutines.flow.drop
+ import su.afk.yummy.tv.core.designsystem.baseScreen.rememberBottomSheetMaxHeight
+ 
+ /**
+- * Classic Material (M2) bottom sheet: title, standard paddings, height cap.
+- * Mirrors BaseBottomSheet slots without the Material3 dependency.
++ * Classic Material (M2) bottom sheet: square top corners, flat surface,
++ * title slot, height cap. Content sits in a height-bounded box so lazy
++ * lists inside get finite constraints instead of crashing on infinity.
+  */
+ @OptIn(ExperimentalMaterialApi::class)
+ @Composable
+@@ -34,6 +35,7 @@ fun ClassicBottomSheet(
+     onDismissRequest: () -> Unit,
+     modifier: Modifier = Modifier,
+     title: String? = null,
++    titleContent: (@Composable () -> Unit)? = null,
+     contentPadding: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, bottom = 18.dp),
+     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+     content: @Composable ColumnScope.() -> Unit,
+@@ -43,18 +45,23 @@ fun ClassicBottomSheet(
+         initialValue = ModalBottomSheetValue.Hidden,
+         skipHalfExpanded = true,
+     )
+-    LaunchedEffect(sheetState) {
++    LaunchedEffect(Unit) {
+         sheetState.show()
+-        // Scrim taps auto-hide the sheet; report dismissal only after it was visible,
+-        // otherwise the initial Hidden state would dismiss immediately.
+-        snapshotFlow { sheetState.isVisible }.distinctUntilChanged().collect { visible ->
+-            if (!visible) onDismissRequest()
+-        }
++    }
++    // Dismiss only on a real Expanded -> Hidden transition; drop(1) skips the
++    // initial emission so the starting Hidden state can never dismiss at once.
++    LaunchedEffect(Unit) {
++        snapshotFlow { sheetState.currentValue }
++            .drop(1)
++            .collect { value ->
++                if (value == ModalBottomSheetValue.Hidden) onDismissRequest()
++            }
+     }
+     ModalBottomSheetLayout(
+         modifier = modifier,
+         sheetState = sheetState,
+-        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
++        sheetShape = RectangleShape,
++        sheetElevation = 0.dp,
+         sheetBackgroundColor = MaterialTheme.colors.surface,
+         sheetContent = {
+             Column(
+@@ -65,8 +72,9 @@ fun ClassicBottomSheet(
+                     .padding(contentPadding),
+                 verticalArrangement = verticalArrangement,
+             ) {
+-                if (title != null) {
+-                    Text(
++                when {
++                    titleContent != null -> titleContent()
++                    title != null -> Text(
+                         text = title,
+                         style = MaterialTheme.typography.h6,
+                         fontWeight = FontWeight.SemiBold,
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/StateMessage.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/StateMessage.kt
+index b021258d..8ef0484a 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/StateMessage.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/StateMessage.kt
+@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
+ import androidx.compose.ui.text.style.TextAlign
+ import androidx.compose.ui.unit.Dp
+ import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ 
+ @Composable
+ fun StateMessage(
+@@ -36,6 +37,53 @@ fun StateMessage(
+     /** Кастомная кнопка действия — рендерится вместо встроенной Button (например, TvRetryButton). */
+     action: (@Composable () -> Unit)? = null,
+ ) {
++    if (LocalClassicUi.current) {
++        Column(
++            modifier = modifier
++                .then(if (fillMaxSize) Modifier.fillMaxSize() else Modifier.fillMaxWidth())
++                .padding(horizontal = 32.dp, vertical = if (fillMaxSize) 40.dp else 24.dp),
++            horizontalAlignment = Alignment.CenterHorizontally,
++            verticalArrangement = Arrangement.Center,
++        ) {
++            androidx.compose.material.Icon(
++                icon,
++                contentDescription = null,
++                tint = androidx.compose.material.MaterialTheme.colors.primary.copy(alpha = .72f),
++                modifier = Modifier.size(iconSize)
++            )
++            Spacer(Modifier.height(18.dp))
++            androidx.compose.material.Text(
++                text = title,
++                style = androidx.compose.material.MaterialTheme.typography.h6,
++                color = androidx.compose.material.MaterialTheme.colors.onBackground,
++                textAlign = TextAlign.Center,
++            )
++            if (!description.isNullOrBlank()) {
++                Spacer(Modifier.height(8.dp))
++                androidx.compose.material.Text(
++                    description,
++                    style = androidx.compose.material.MaterialTheme.typography.body1,
++                    color = androidx.compose.material.MaterialTheme.colors.onSurface
++                        .copy(alpha = 0.72f),
++                    textAlign = TextAlign.Center
++                )
++            }
++            when {
++                action != null -> {
++                    Spacer(Modifier.height(20.dp))
++                    action()
++                }
++
++                actionLabel != null && onAction != null -> {
++                    Spacer(Modifier.height(20.dp))
++                    androidx.compose.material.Button(onClick = onAction) {
++                        androidx.compose.material.Text(actionLabel)
++                    }
++                }
++            }
++        }
++        return
++    }
+     Column(
+         modifier = modifier
+             .then(if (fillMaxSize) Modifier.fillMaxSize() else Modifier.fillMaxWidth())
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileBottomBarDefaults.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileBottomBarDefaults.kt
+index 7a45dcef..3129ed71 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileBottomBarDefaults.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileBottomBarDefaults.kt
+@@ -15,6 +15,14 @@ object MobileBottomBarDefaults {
+     /** С подписями под иконками нужен полный рост M3-бара, иначе текст обрежется. */
+     val LabeledBarHeight: Dp = 80.dp
+ 
++    /** M2-бар компактнее: без пилюли-индикатора хватает меньшей высоты. */
++    fun barHeight(classic: Boolean, showLabels: Boolean): Dp = when {
++        classic && showLabels -> 72.dp
++        classic -> 56.dp
++        showLabels -> LabeledBarHeight
++        else -> BarHeight
++    }
++
+     val ExtraContentBottomPadding: Dp = 16.dp
+ 
+     /**
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileTopBar.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileTopBar.kt
+index 9239d1c8..a3f0dc06 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileTopBar.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileTopBar.kt
+@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
++import androidx.compose.foundation.layout.statusBarsPadding
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ 
+ private val CompactMobileTopBarHeight = 52.dp
+ 
+@@ -24,6 +26,36 @@ fun MobileTopBar(
+     onBack: (() -> Unit)? = null,
+     actions: @Composable () -> Unit = {},
+ ) {
++    if (LocalClassicUi.current) {
++        val navigationIcon: @Composable (() -> Unit)? = if (onBack == null) {
++            null
++        } else {
++            {
++                androidx.compose.material.IconButton(onClick = onBack) {
++                    androidx.compose.material.Icon(
++                        Icons.AutoMirrored.Filled.ArrowBack,
++                        contentDescription = null,
++                    )
++                }
++            }
++        }
++        androidx.compose.material.TopAppBar(
++            title = {
++                androidx.compose.material.Text(
++                    text = title,
++                    maxLines = 1,
++                    overflow = TextOverflow.Ellipsis,
++                )
++            },
++            // M2 ignores window insets, M3 bars consume them internally:
++            // pad explicitly, otherwise the bar slides under the status bar.
++            modifier = modifier.statusBarsPadding(),
++            navigationIcon = navigationIcon,
++            actions = { actions() },
++            backgroundColor = androidx.compose.material.MaterialTheme.colors.surface,
++        )
++        return
++    }
+     TopAppBar(
+         modifier = modifier,
+         expandedHeight = CompactMobileTopBarHeight,

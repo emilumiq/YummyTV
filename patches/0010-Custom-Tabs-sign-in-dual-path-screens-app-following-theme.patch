@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 19:53:57 +0300
-Subject: [TRACKER] Custom Tabs sign-in, dual-path screens, app-following theme
+Subject: Custom Tabs sign-in, dual-path screens, app-following theme
 
 ---
  .../yummy/tv/feature/tracker/TrackerState.kt  |   2 +-
@@ -24,7 +24,7 @@ Subject: [TRACKER] Custom Tabs sign-in, dual-path screens, app-following theme
  delete mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt
 
 diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt
-index 8d5429211..dd76cc125 100644
+index 8d542921..dd76cc12 100644
 --- a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt
 +++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt
 @@ -31,7 +31,7 @@ class TrackerState {
@@ -37,7 +37,7 @@ index 8d5429211..dd76cc125 100644
  
          /** The OAuth page redirected back with a result URI (code flow). */
 diff --git a/feature/tracker/ui-mobile/build.gradle.kts b/feature/tracker/ui-mobile/build.gradle.kts
-index 98dc62f49..be3e024e2 100644
+index 98dc62f4..be3e024e 100644
 --- a/feature/tracker/ui-mobile/build.gradle.kts
 +++ b/feature/tracker/ui-mobile/build.gradle.kts
 @@ -13,6 +13,7 @@ dependencies {
@@ -55,7 +55,7 @@ index 98dc62f49..be3e024e2 100644
 +    implementation(libs.androidx.browser)
  }
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
-index 26c318304..8deb6d8e2 100644
+index 26c31830..8deb6d8e 100644
 --- a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
 @@ -1,96 +1,61 @@
@@ -195,7 +195,7 @@ index 26c318304..8deb6d8e2 100644
          }
      }
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
-index 2a24b8c91..32582fe89 100644
+index 2a24b8c9..32582fe8 100644
 --- a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
 @@ -17,26 +17,12 @@ import androidx.compose.foundation.layout.statusBarsPadding
@@ -587,7 +587,7 @@ index 2a24b8c91..32582fe89 100644
          }
      }
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt
-index c15fa1641..37d0780af 100644
+index c15fa164..37d0780a 100644
 --- a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt
 @@ -4,6 +4,7 @@ import android.content.ClipData
@@ -615,7 +615,7 @@ index c15fa1641..37d0780af 100644
      val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt
 deleted file mode 100644
-index 77c677a7a..000000000
+index 77c677a7..00000000
 --- a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt
 +++ /dev/null
 @@ -1,51 +0,0 @@
@@ -671,7 +671,7 @@ index 77c677a7a..000000000
 -    )
 -}
 diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt
-index 768be10d5..f4154e026 100644
+index 768be10d..f4154e02 100644
 --- a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt
 +++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt
 @@ -4,21 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
@@ -854,7 +854,7 @@ index 768be10d5..f4154e026 100644
              }
          },
 diff --git a/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml b/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml
-index af5109d35..c22f6c47b 100644
+index af5109d3..c22f6c47 100644
 --- a/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml
 +++ b/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml
 @@ -13,6 +13,7 @@
@@ -866,7 +866,7 @@ index af5109d35..c22f6c47b 100644
      <string name="tracker_copy_link">Скопировать ссылку</string>
      <string name="tracker_not_set">Не задано</string>
 diff --git a/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml b/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml
-index c53a5f465..be0abee2a 100644
+index c53a5f46..be0abee2 100644
 --- a/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml
 +++ b/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml
 @@ -13,6 +13,7 @@
@@ -875,10 +875,10 @@ index c53a5f465..be0abee2a 100644
      <string name="tracker_open_auth_failed">Не вдалося відкрити браузер</string>
 +    <string name="tracker_opening_browser">Відкриваю браузер…</string>
      <string name="tracker_open_in_browser">Відкрити в браузері</string>
-     <string name="tracker_copy_link">Скопіювати посилання</string>
+     <string name="tracker_copy_link">Скопіювати посиланн��</string>
      <string name="tracker_not_set">Не задано</string>
 diff --git a/feature/tracker/ui-mobile/src/main/res/values/strings.xml b/feature/tracker/ui-mobile/src/main/res/values/strings.xml
-index 2356cf829..5c8903f32 100644
+index 2356cf82..5c8903f3 100644
 --- a/feature/tracker/ui-mobile/src/main/res/values/strings.xml
 +++ b/feature/tracker/ui-mobile/src/main/res/values/strings.xml
 @@ -13,6 +13,7 @@
@@ -890,7 +890,7 @@ index 2356cf829..5c8903f32 100644
      <string name="tracker_copy_link">Copy link</string>
      <string name="tracker_not_set">Not set</string>
 diff --git a/feature/tracker/ui-tv/build.gradle.kts b/feature/tracker/ui-tv/build.gradle.kts
-index bc46c8136..1f0e8f017 100644
+index bc46c813..1f0e8f01 100644
 --- a/feature/tracker/ui-tv/build.gradle.kts
 +++ b/feature/tracker/ui-tv/build.gradle.kts
 @@ -13,6 +13,7 @@ dependencies {
@@ -902,7 +902,7 @@ index bc46c8136..1f0e8f017 100644
      implementation(libs.bundles.compose.core)
      implementation(libs.bundles.navigation.serialization)
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt
-index 36da211e9..c87b1d16f 100644
+index 36da211e..c87b1d16 100644
 --- a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt
 @@ -8,9 +8,8 @@ import android.webkit.WebViewClient
@@ -963,7 +963,7 @@ index 36da211e9..c87b1d16f 100644
      }
  }
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt
-index 455fc14b5..b6a63e98b 100644
+index 455fc14b..b6a63e98 100644
 --- a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt
 @@ -17,23 +17,12 @@ import androidx.compose.foundation.layout.width
@@ -1303,7 +1303,7 @@ index 455fc14b5..b6a63e98b 100644
      }
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt
 deleted file mode 100644
-index ed3c124c4..000000000
+index ed3c124c..00000000
 --- a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt
 +++ /dev/null
 @@ -1,51 +0,0 @@
@@ -1359,7 +1359,7 @@ index ed3c124c4..000000000
 -    )
 -}
 diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt
-index d0afc14bf..507f7434d 100644
+index d0afc14b..507f7434 100644
 --- a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt
 +++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt
 @@ -4,21 +4,12 @@ import androidx.compose.foundation.layout.Arrangement

@@ -1,14 +1,14 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 20:02:10 +0300
-Subject: [CORE] Pin upstream to 1.25 (c8dc943b)
+Subject: Pin upstream to 1.25 (c8dc943b)
 
 ---
  upstream-commit | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/upstream-commit b/upstream-commit
-index 457fe3bcd..e269fa39e 100644
+index 457fe3bc..e269fa39 100644
 --- a/upstream-commit
 +++ b/upstream-commit
 @@ -1 +1 @@

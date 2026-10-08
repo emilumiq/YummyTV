@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 19:53:50 +0300
-Subject: [CLASSIC] Theme engine, wrappers, main graphs, labels-aware scaffold
+Subject: Theme engine, wrappers, main graphs, labels-aware scaffold
 
 ---
  core/designsystem/build.gradle.kts            |  1 +
@@ -59,7 +59,7 @@ Subject: [CLASSIC] Theme engine, wrappers, main graphs, labels-aware scaffold
  create mode 100644 feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTopBar.kt
 
 diff --git a/core/designsystem/build.gradle.kts b/core/designsystem/build.gradle.kts
-index 5bd5780c0..e5d11c5c2 100644
+index 5bd5780c..e5d11c5c 100644
 --- a/core/designsystem/build.gradle.kts
 +++ b/core/designsystem/build.gradle.kts
 @@ -13,6 +13,7 @@ dependencies {
@@ -72,7 +72,7 @@ index 5bd5780c0..e5d11c5c2 100644
      implementation(libs.androidx.core.ktx)
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicBottomSheet.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicBottomSheet.kt
 new file mode 100644
-index 000000000..630f39b36
+index 00000000..630f39b3
 --- /dev/null
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicBottomSheet.kt
 @@ -0,0 +1,81 @@
@@ -159,7 +159,7 @@ index 000000000..630f39b36
 +}
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicMaterialTheme.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicMaterialTheme.kt
 new file mode 100644
-index 000000000..e985807ea
+index 00000000..e985807e
 --- /dev/null
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/classic/ClassicMaterialTheme.kt
 @@ -0,0 +1,67 @@
@@ -231,21 +231,21 @@ index 000000000..e985807ea
 +    )
 +}
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileBottomBarDefaults.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileBottomBarDefaults.kt
-index db0dba21d..7a45dcef7 100644
+index db0dba21..7a45dcef 100644
 --- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileBottomBarDefaults.kt
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/bar/MobileBottomBarDefaults.kt
 @@ -12,6 +12,9 @@ object MobileBottomBarDefaults {
      /** Высота самого бара без системного инсета: иконки без подписей, 80.dp из M3 избыточны. */
      val BarHeight: Dp = 64.dp
  
-+    /** С подписями под иконками нужен полный рост M3-бара, иначе текст обрежется. */
++    /** С подписям�� под иконками нужен полный рост M3-бара, иначе текст обрежется. */
 +    val LabeledBarHeight: Dp = 80.dp
 +
      val ExtraContentBottomPadding: Dp = 16.dp
  
      /**
 diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
-index 8d8b082ba..72b806b14 100644
+index 8d8b082b..72b806b1 100644
 --- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
 +++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
 @@ -138,25 +138,6 @@ private val GraphitePalette = YummyTvPalette(    background = Color(0xFF0C0D0E),
@@ -284,7 +284,7 @@ index 8d8b082ba..72b806b14 100644
  private fun YummyTvPalette.toDarkColorScheme() = darkColorScheme(
 diff --git a/feature/classic/ui/build.gradle.kts b/feature/classic/ui/build.gradle.kts
 new file mode 100644
-index 000000000..c7bcfb789
+index 00000000..c7bcfb78
 --- /dev/null
 +++ b/feature/classic/ui/build.gradle.kts
 @@ -0,0 +1,16 @@
@@ -306,7 +306,7 @@ index 000000000..c7bcfb789
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/ClassicThemeWrapper.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/ClassicThemeWrapper.kt
 new file mode 100644
-index 000000000..29009d15d
+index 00000000..29009d15
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/ClassicThemeWrapper.kt
 @@ -0,0 +1,42 @@
@@ -354,7 +354,7 @@ index 000000000..29009d15d
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/theme/ClassicScheme.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/theme/ClassicScheme.kt
 new file mode 100644
-index 000000000..0ae618382
+index 00000000..0ae61838
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/theme/ClassicScheme.kt
 @@ -0,0 +1,39 @@
@@ -399,7 +399,7 @@ index 000000000..0ae618382
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyAlertDialog.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyAlertDialog.kt
 new file mode 100644
-index 000000000..bc9f21cfe
+index 00000000..bc9f21cf
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyAlertDialog.kt
 @@ -0,0 +1,35 @@
@@ -440,7 +440,7 @@ index 000000000..bc9f21cfe
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyButton.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyButton.kt
 new file mode 100644
-index 000000000..171adb8bd
+index 00000000..171adb8b
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyButton.kt
 @@ -0,0 +1,30 @@
@@ -476,7 +476,7 @@ index 000000000..171adb8bd
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyCard.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyCard.kt
 new file mode 100644
-index 000000000..51d33008c
+index 00000000..51d33008
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyCard.kt
 @@ -0,0 +1,34 @@
@@ -516,7 +516,7 @@ index 000000000..51d33008c
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyCheckbox.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyCheckbox.kt
 new file mode 100644
-index 000000000..4fd87882f
+index 00000000..4fd87882
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyCheckbox.kt
 @@ -0,0 +1,29 @@
@@ -551,7 +551,7 @@ index 000000000..4fd87882f
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyDialog.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyDialog.kt
 new file mode 100644
-index 000000000..63404db85
+index 00000000..63404db8
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyDialog.kt
 @@ -0,0 +1,52 @@
@@ -609,7 +609,7 @@ index 000000000..63404db85
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyDropdownMenu.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyDropdownMenu.kt
 new file mode 100644
-index 000000000..fea692ad0
+index 00000000..fea692ad
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyDropdownMenu.kt
 @@ -0,0 +1,55 @@
@@ -670,7 +670,7 @@ index 000000000..fea692ad0
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyExposedDropdown.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyExposedDropdown.kt
 new file mode 100644
-index 000000000..6b2b0ad1b
+index 00000000..6b2b0ad1
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyExposedDropdown.kt
 @@ -0,0 +1,90 @@
@@ -766,7 +766,7 @@ index 000000000..6b2b0ad1b
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyIconButton.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyIconButton.kt
 new file mode 100644
-index 000000000..8d38fe308
+index 00000000..8d38fe30
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyIconButton.kt
 @@ -0,0 +1,29 @@
@@ -801,7 +801,7 @@ index 000000000..8d38fe308
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedButton.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedButton.kt
 new file mode 100644
-index 000000000..093ae4bb4
+index 00000000..093ae4bb
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedButton.kt
 @@ -0,0 +1,30 @@
@@ -837,7 +837,7 @@ index 000000000..093ae4bb4
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedTextField.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedTextField.kt
 new file mode 100644
-index 000000000..f544c0e0c
+index 00000000..f544c0e0
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyOutlinedTextField.kt
 @@ -0,0 +1,35 @@
@@ -878,7 +878,7 @@ index 000000000..f544c0e0c
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyProgress.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyProgress.kt
 new file mode 100644
-index 000000000..81022a1e7
+index 00000000..81022a1e
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyProgress.kt
 @@ -0,0 +1,61 @@
@@ -945,7 +945,7 @@ index 000000000..81022a1e7
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyScaffold.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyScaffold.kt
 new file mode 100644
-index 000000000..6591b8535
+index 00000000..6591b853
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyScaffold.kt
 @@ -0,0 +1,27 @@
@@ -978,7 +978,7 @@ index 000000000..6591b8535
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTextButton.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTextButton.kt
 new file mode 100644
-index 000000000..79b47d475
+index 00000000..79b47d47
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTextButton.kt
 @@ -0,0 +1,30 @@
@@ -1014,7 +1014,7 @@ index 000000000..79b47d475
 +}
 diff --git a/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTopBar.kt b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTopBar.kt
 new file mode 100644
-index 000000000..73c19541b
+index 00000000..73c19541
 --- /dev/null
 +++ b/feature/classic/ui/src/main/kotlin/su/afk/yummy/tv/feature/classic/ui/view/YummyTopBar.kt
 @@ -0,0 +1,56 @@
@@ -1075,7 +1075,7 @@ index 000000000..73c19541b
 +    }
 +}
 diff --git a/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainState.kt b/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainState.kt
-index a261a5d51..b70ebac4b 100644
+index a261a5d5..b70ebac4 100644
 --- a/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainState.kt
 +++ b/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainState.kt
 @@ -14,6 +14,8 @@ class MainState {
@@ -1088,7 +1088,7 @@ index a261a5d51..b70ebac4b 100644
          val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
          val yaniNickname: String = "",
 diff --git a/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainViewModel.kt b/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainViewModel.kt
-index d6d7ace01..eda382c8f 100644
+index d6d7ace0..eda382c8 100644
 --- a/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainViewModel.kt
 +++ b/feature/main/presentation/src/main/kotlin/su/afk/yummy/tv/feature/main/MainViewModel.kt
 @@ -93,6 +93,8 @@ class MainViewModel @Inject internal constructor(
@@ -1101,7 +1101,7 @@ index d6d7ace01..eda382c8f 100644
                          posterCardSize = snapshot.posterCardSize,
                          yaniNickname = snapshot.yaniNickname,
 diff --git a/feature/main/ui-mobile/build.gradle.kts b/feature/main/ui-mobile/build.gradle.kts
-index 462142fd0..964401ada 100644
+index 462142fd..964401ad 100644
 --- a/feature/main/ui-mobile/build.gradle.kts
 +++ b/feature/main/ui-mobile/build.gradle.kts
 @@ -13,6 +13,7 @@ dependencies {
@@ -1113,7 +1113,7 @@ index 462142fd0..964401ada 100644
      implementation(project(":feature:collection:api"))
      implementation(project(":feature:comments:api"))
 diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/MobileMainGraph.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/MobileMainGraph.kt
-index 38f2e765e..2e77d345e 100644
+index 38f2e765..2e77d345 100644
 --- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/MobileMainGraph.kt
 +++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/MobileMainGraph.kt
 @@ -15,7 +15,7 @@ import su.afk.yummy.tv.core.designsystem.locals.LocalPosterCardSize
@@ -1144,7 +1144,7 @@ index 38f2e765e..2e77d345e 100644
                              onEvent(MainState.Event.RootSelected(root, popToRootOnReselect = true))
                          },
 diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationBar.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationBar.kt
-index f9224608a..5af18f042 100644
+index f9224608..5af18f04 100644
 --- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationBar.kt
 +++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationBar.kt
 @@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
@@ -1185,7 +1185,7 @@ index f9224608a..5af18f042 100644
              }
          }
 diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationRail.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationRail.kt
-index 4ab920e8c..ad1888a77 100644
+index 4ab920e8..ad1888a7 100644
 --- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationRail.kt
 +++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainNavigationRail.kt
 @@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
@@ -1214,7 +1214,7 @@ index 4ab920e8c..ad1888a77 100644
              }
          }
 diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainScaffold.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainScaffold.kt
-index 8acbbd1bd..0d37b7731 100644
+index 8acbbd1b..0d37b773 100644
 --- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainScaffold.kt
 +++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/view/MobileMainScaffold.kt
 @@ -37,6 +37,7 @@ internal fun <T> MobileMainScaffold(
@@ -1243,7 +1243,7 @@ index 8acbbd1bd..0d37b7731 100644
              }
 @@ -88,8 +91,13 @@ internal fun <T> MobileMainScaffold(
          CompositionLocalProvider(LocalMobileNavigationLayout provides layout) {
-             // Низ контента уже занят баром вместе с системным инсетом: без консьюма imePadding
+             // Низ контента уже занят баром вместе с системным инсетом: ��ез консьюма imePadding
              // в экранах табов отступал бы на полную высоту клавиатуры и оставлял пустую полосу.
 +            val barHeight = if (showNavigationLabels) {
 +                MobileBottomBarDefaults.LabeledBarHeight
@@ -1257,7 +1257,7 @@ index 8acbbd1bd..0d37b7731 100644
                  WindowInsets(0.dp)
              }
 diff --git a/feature/main/ui-tv/build.gradle.kts b/feature/main/ui-tv/build.gradle.kts
-index b348d5d6c..a2c753bab 100644
+index b348d5d6..a2c753ba 100644
 --- a/feature/main/ui-tv/build.gradle.kts
 +++ b/feature/main/ui-tv/build.gradle.kts
 @@ -13,6 +13,7 @@ dependencies {
@@ -1269,7 +1269,7 @@ index b348d5d6c..a2c753bab 100644
      implementation(project(":feature:collection:api"))
      implementation(project(":feature:comments:api"))
 diff --git a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/TvMainGraph.kt b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/TvMainGraph.kt
-index a6366a8af..30428d1ad 100644
+index a6366a8a..30428d1a 100644
 --- a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/TvMainGraph.kt
 +++ b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/TvMainGraph.kt
 @@ -12,7 +12,7 @@ import su.afk.yummy.tv.core.designsystem.components.rememberGlobalToastState
@@ -1292,7 +1292,7 @@ index a6366a8af..30428d1ad 100644
                  backgroundStyle = state.backgroundStyle,
                  isTelevision = true,
 diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
-index 234e7c74b..8d5642c2e 100644
+index 234e7c74..8d5642c2 100644
 --- a/gradle/libs.versions.toml
 +++ b/gradle/libs.versions.toml
 @@ -14,6 +14,7 @@ stability-analyzer = "0.15.0"
@@ -1312,7 +1312,7 @@ index 234e7c74b..8d5642c2e 100644
  androidx-lifecycle-viewmodelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
  androidx-lifecycle-runtimeCompose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 diff --git a/settings.gradle.kts b/settings.gradle.kts
-index 09fb7af95..97fc8b573 100644
+index 09fb7af9..97fc8b57 100644
 --- a/settings.gradle.kts
 +++ b/settings.gradle.kts
 @@ -210,3 +210,5 @@ include(":feature:tracker:data")

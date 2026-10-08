@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 19:53:26 +0300
-Subject: [CORE] TypeScript patch tooling, node/pnpm in flake, drop PATCHES.md
- and shell scripts
+Subject: TypeScript patch tooling, node/pnpm in flake, drop PATCHES.md and
+ shell scripts
 
 ---
  AGENTS.md                 | 71 +++++++++++++++++++++++++++++++++++++--
@@ -28,7 +28,7 @@ Subject: [CORE] TypeScript patch tooling, node/pnpm in flake, drop PATCHES.md
  create mode 100644 scripts/rebase.ts
 
 diff --git a/AGENTS.md b/AGENTS.md
-index 9dbfc5dc5..1102dcad4 100644
+index 9dbfc5dc..1102dcad 100644
 --- a/AGENTS.md
 +++ b/AGENTS.md
 @@ -1,7 +1,51 @@
@@ -113,7 +113,7 @@ index 9dbfc5dc5..1102dcad4 100644
 +when those change; keep implementation walkthroughs and benchmark history out.
 diff --git a/PATCHES.md b/PATCHES.md
 deleted file mode 100644
-index a0a369491..000000000
+index a0a36949..00000000
 --- a/PATCHES.md
 +++ /dev/null
 @@ -1,30 +0,0 @@
@@ -148,7 +148,7 @@ index a0a369491..000000000
 -  не попадают никогда — они в `.gitignore`. Проверяй `grep -ri secret patches/`.
 -- Сборка только через `gradle-fhs` внутри `nix develop` (см. `flake.nix`).
 diff --git a/flake.nix b/flake.nix
-index d023625af..efc0d56f1 100644
+index d023625a..efc0d56f 100644
 --- a/flake.nix
 +++ b/flake.nix
 @@ -44,6 +44,8 @@
@@ -162,7 +162,7 @@ index d023625af..efc0d56f1 100644
          gradleFhs = pkgs.buildFHSEnv {
 diff --git a/package.json b/package.json
 new file mode 100644
-index 000000000..b1ccf0ca6
+index 00000000..b1ccf0ca
 --- /dev/null
 +++ b/package.json
 @@ -0,0 +1,18 @@
@@ -186,7 +186,7 @@ index 000000000..b1ccf0ca6
 +}
 diff --git a/scripts/apply-patches.sh b/scripts/apply-patches.sh
 deleted file mode 100755
-index 0fd1ea5a5..000000000
+index 0fd1ea5a..00000000
 --- a/scripts/apply-patches.sh
 +++ /dev/null
 @@ -1,12 +0,0 @@
@@ -204,7 +204,7 @@ index 0fd1ea5a5..000000000
 -echo "applied $(wc -l < series) patches onto $upstream into $branch"
 diff --git a/scripts/config.ts b/scripts/config.ts
 new file mode 100644
-index 000000000..415a2ac6b
+index 00000000..415a2ac6
 --- /dev/null
 +++ b/scripts/config.ts
 @@ -0,0 +1,9 @@
@@ -219,7 +219,7 @@ index 000000000..415a2ac6b
 +export const stackBranch = 'yummy'
 diff --git a/scripts/export-patches.sh b/scripts/export-patches.sh
 deleted file mode 100755
-index 40487740e..000000000
+index 40487740..00000000
 --- a/scripts/export-patches.sh
 +++ /dev/null
 @@ -1,11 +0,0 @@
@@ -236,7 +236,7 @@ index 40487740e..000000000
 -echo "exported $(wc -l < series) patches onto $(cat upstream-commit)"
 diff --git a/scripts/export.ts b/scripts/export.ts
 new file mode 100644
-index 000000000..0c97561c8
+index 00000000..0c97561c
 --- /dev/null
 +++ b/scripts/export.ts
 @@ -0,0 +1,32 @@
@@ -274,7 +274,7 @@ index 000000000..0c97561c8
 +success(`Exported ${entries.length} ${entries.length === 1 ? 'patch' : 'patches'}`)
 diff --git a/scripts/lib.ts b/scripts/lib.ts
 new file mode 100644
-index 000000000..88a912240
+index 00000000..88a91224
 --- /dev/null
 +++ b/scripts/lib.ts
 @@ -0,0 +1,54 @@
@@ -334,7 +334,7 @@ index 000000000..88a912240
 +}
 diff --git a/scripts/lint-patches.ts b/scripts/lint-patches.ts
 new file mode 100644
-index 000000000..c70fb1f23
+index 00000000..c70fb1f2
 --- /dev/null
 +++ b/scripts/lint-patches.ts
 @@ -0,0 +1,21 @@
@@ -361,7 +361,7 @@ index 000000000..c70fb1f23
 +success(`Checked ${files.length} patches`)
 diff --git a/scripts/rebase.ts b/scripts/rebase.ts
 new file mode 100644
-index 000000000..402b08a0b
+index 00000000..402b08a0
 --- /dev/null
 +++ b/scripts/rebase.ts
 @@ -0,0 +1,31 @@

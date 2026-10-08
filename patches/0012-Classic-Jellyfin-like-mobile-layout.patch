@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: emilumiq <emilumiq@gmail.com>
 Date: Thu, 8 Oct 2026 19:54:01 +0300
-Subject: [DETAILS] Classic Jellyfin-like mobile layout
+Subject: Classic Jellyfin-like mobile layout
 
 ---
  feature/details/ui-mobile/build.gradle.kts    |   2 +
@@ -21,7 +21,7 @@ Subject: [DETAILS] Classic Jellyfin-like mobile layout
  create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
 
 diff --git a/feature/details/ui-mobile/build.gradle.kts b/feature/details/ui-mobile/build.gradle.kts
-index 639bd98fa..825768e10 100644
+index 639bd98f..825768e1 100644
 --- a/feature/details/ui-mobile/build.gradle.kts
 +++ b/feature/details/ui-mobile/build.gradle.kts
 @@ -17,10 +17,12 @@ dependencies {
@@ -38,7 +38,7 @@ index 639bd98fa..825768e10 100644
      implementation(libs.coil.compose)
  }
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
-index 2299adc7c..37ed57d2a 100644
+index 2299adc7..37ed57d2 100644
 --- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
 @@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
@@ -77,7 +77,7 @@ index 2299adc7c..37ed57d2a 100644
  }
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt
 new file mode 100644
-index 000000000..ebaaeac36
+index 00000000..ebaaeac3
 --- /dev/null
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt
 @@ -0,0 +1,53 @@
@@ -136,7 +136,7 @@ index 000000000..ebaaeac36
 +}
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt
 new file mode 100644
-index 000000000..47017de0c
+index 00000000..47017de0
 --- /dev/null
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt
 @@ -0,0 +1,197 @@
@@ -339,7 +339,7 @@ index 000000000..47017de0c
 +}
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt
 new file mode 100644
-index 000000000..b0fca2a23
+index 00000000..b0fca2a2
 --- /dev/null
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt
 @@ -0,0 +1,65 @@
@@ -410,7 +410,7 @@ index 000000000..b0fca2a23
 +}
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsRating.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsRating.kt
 new file mode 100644
-index 000000000..b7bcc9f80
+index 00000000..b7bcc9f8
 --- /dev/null
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsRating.kt
 @@ -0,0 +1,137 @@
@@ -553,7 +553,7 @@ index 000000000..b7bcc9f80
 +}
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt
 new file mode 100644
-index 000000000..6e6c26172
+index 00000000..6e6c2617
 --- /dev/null
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt
 @@ -0,0 +1,96 @@
@@ -655,7 +655,7 @@ index 000000000..6e6c26172
 +}
 diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
 new file mode 100644
-index 000000000..2a517f86d
+index 00000000..2a517f86
 --- /dev/null
 +++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
 @@ -0,0 +1,81 @@
