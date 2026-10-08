@@ -1,0 +1,98 @@
+name: Build release APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'patches/**'
+      - series
+      - upstream-commit
+      - '.github/workflows/build.yml'
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patchset
+        uses: actions/checkout@v4
+
+      - name: Read upstream pin
+        id: pin
+        run: echo "sha=$(cat upstream-commit)" >> "$GITHUB_OUTPUT"
+
+      - name: Clone upstream at pin
+        run: |
+          git clone --filter=blob:none https://github.com/Helandy/YummyTV.git worktree
+          git -C worktree checkout '${{ steps.pin.outputs.sha }}'
+
+      - name: Apply patches
+        run: |
+          git -C worktree checkout -B yummy '${{ steps.pin.outputs.sha }}'
+          git -C worktree am --empty=drop "$GITHUB_WORKSPACE"/patches/*.patch
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Write local.properties from secrets
+        if: ${{ secrets.ANILIST_CLIENT_ID != '' }}
+        run: |
+          {
+            echo "yummytv.anilistClientId=${{ secrets.ANILIST_CLIENT_ID }}"
+            echo "yummytv.anilistClientSecret=${{ secrets.ANILIST_CLIENT_SECRET }}"
+            echo "yummytv.anilistRedirectUri=yummytv://anilist-auth"
+          } >> worktree/local.properties
+
+      - name: Write release keystore from secrets
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        run: |
+          echo '${{ secrets.KEYSTORE_BASE64 }}' | base64 -d > worktree/release.jks
+          {
+            echo "storeFile=release.jks"
+            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}"
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}"
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
+          } > worktree/keystore.properties
+
+      - name: Build release APK
+        run: |
+          chmod +x worktree/gradlew
+          ./gradlew :app:assembleRelease --console=plain
+        working-directory: worktree
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: worktree/app/build/outputs/apk/release/*.apk
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release
+          path: dist
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.apk
+          generate_release_notes: true

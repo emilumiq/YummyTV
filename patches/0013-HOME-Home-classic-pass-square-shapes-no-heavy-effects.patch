@@ -1,0 +1,449 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 19:54:01 +0300
+Subject: [HOME] Home classic pass: square shapes, no heavy effects
+
+---
+ .../designsystem/components/RatingBadge.kt    |  7 ++-
+ .../mobile/MobileSectionHeader.kt             |  7 ++-
+ .../mobile/cards/MobilePosterCard.kt          | 11 ++++-
+ .../mobile/cards/MobileProgressMediaCard.kt   |  5 +-
+ .../mobile/cards/MobileTitleListCard.kt       |  5 +-
+ docs/changelog.md                             | 49 +++++++++++++++++++
+ docs/project-overview.md                      | 37 ++++++++++++++
+ .../feature/home/mobile/view/HomeHeroCard.kt  | 18 +++++--
+ .../home/mobile/view/HomeHeroCarousel.kt      | 24 +++++----
+ .../feature/home/mobile/view/HomeItemCard.kt  |  5 +-
+ .../home/mobile/view/HomeSearchEntry.kt       |  4 +-
+ 11 files changed, 151 insertions(+), 21 deletions(-)
+ create mode 100644 docs/changelog.md
+ create mode 100644 docs/project-overview.md
+
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/RatingBadge.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/RatingBadge.kt
+index 72cb4941a..f7567d906 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/RatingBadge.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/components/RatingBadge.kt
+@@ -14,10 +14,12 @@ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+ import java.util.Locale
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ 
+ @Composable
+ fun RatingBadge(
+@@ -31,7 +33,10 @@ fun RatingBadge(
+         verticalAlignment = Alignment.CenterVertically,
+         horizontalArrangement = Arrangement.spacedBy(3.dp),
+         modifier = modifier
+-            .background(Color.Black.copy(alpha = 0.62f), RoundedCornerShape(4.dp))
++            .background(
++                Color.Black.copy(alpha = 0.62f),
++                if (LocalClassicUi.current) RectangleShape else RoundedCornerShape(4.dp),
++            )
+             .padding(horizontal = 5.dp, vertical = 2.dp),
+     ) {
+         Icon(
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/MobileSectionHeader.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/MobileSectionHeader.kt
+index 4f94c8781..2f309d182 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/MobileSectionHeader.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/MobileSectionHeader.kt
+@@ -15,10 +15,12 @@ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.draw.clip
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ 
+ @Composable
+ fun MobileSectionHeader(
+@@ -37,7 +39,10 @@ fun MobileSectionHeader(
+             modifier = Modifier
+                 .width(4.dp)
+                 .height(20.dp)
+-                .clip(RoundedCornerShape(2.dp))
++                .clip(
++                    if (LocalClassicUi.current) RectangleShape
++                    else RoundedCornerShape(2.dp)
++                )
+                 .background(MaterialTheme.colorScheme.primary),
+         )
+         Text(
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobilePosterCard.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobilePosterCard.kt
+index cbb3c8e34..7ad2836f1 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobilePosterCard.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobilePosterCard.kt
+@@ -20,11 +20,13 @@ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.layout.ContentScale
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
+ import coil3.compose.AsyncImage
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.dimensions.TITLE_POSTER_ASPECT_RATIO
+ import su.afk.yummy.tv.core.designsystem.dimensions.currentMobilePosterWidth
+ import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
+@@ -47,9 +49,10 @@ fun MobilePosterCard(
+     onLongClick: (() -> Unit)? = null,
+     onClick: () -> Unit,
+ ) {
++    val classic = LocalClassicUi.current
+     Card(
+         modifier = modifier,
+-        shape = MaterialTheme.shapes.medium,
++        shape = if (classic) RectangleShape else MaterialTheme.shapes.medium,
+         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+     ) {
+         Column(
+@@ -83,7 +86,11 @@ fun MobilePosterCard(
+                         modifier = Modifier
+                             .align(Alignment.TopStart)
+                             .padding(8.dp)
+-                            .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.extraSmall)
++                            .background(
++                                MaterialTheme.colorScheme.primary,
++                                if (classic) RectangleShape
++                                else MaterialTheme.shapes.extraSmall,
++                            )
+                             .padding(horizontal = 8.dp, vertical = 3.dp),
+                     )
+                 }
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileProgressMediaCard.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileProgressMediaCard.kt
+index 7b0d3ebe8..d1dcdb4b2 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileProgressMediaCard.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileProgressMediaCard.kt
+@@ -22,11 +22,13 @@ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.layout.ContentScale
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
+ import coil3.compose.AsyncImage
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
+ 
+ @Composable
+@@ -41,11 +43,12 @@ fun MobileProgressMediaCard(
+     isLoading: Boolean = false,
+     onClick: () -> Unit,
+ ) {
++    val classic = LocalClassicUi.current
+     Card(
+         modifier = modifier
+             .clickablePointer()
+             .clickable(enabled = !isLoading, onClick = onClick),
+-        shape = MaterialTheme.shapes.medium,
++        shape = if (classic) RectangleShape else MaterialTheme.shapes.medium,
+         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+     ) {
+         Box(
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileTitleListCard.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileTitleListCard.kt
+index 410427d80..bc65846ed 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileTitleListCard.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/mobile/cards/MobileTitleListCard.kt
+@@ -20,11 +20,13 @@ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.draw.clip
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.layout.ContentScale
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
+ import coil3.compose.AsyncImage
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.mobile.input.clickablePointer
+ 
+ @Composable
+@@ -39,11 +41,12 @@ fun MobileTitleListCard(
+     contentOverlay: @Composable BoxScope.() -> Unit = {},
+     onClick: () -> Unit,
+ ) {
++    val classic = LocalClassicUi.current
+     Row(
+         modifier = modifier
+             .fillMaxWidth()
+             .height(116.dp)
+-            .clip(RoundedCornerShape(8.dp))
++            .clip(if (classic) RectangleShape else RoundedCornerShape(8.dp))
+             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f))
+             .clickablePointer()
+             .clickable(onClick = onClick),
+diff --git a/docs/changelog.md b/docs/changelog.md
+new file mode 100644
+index 000000000..b2c238cd2
+--- /dev/null
++++ b/docs/changelog.md
+@@ -0,0 +1,49 @@
++# Changelog (patchset work)
++
++Newest first. Each entry maps to one commit on `yummy` / one patch dir.
++
++## Unreleased (on top of 162eb9af)
++
++- Classic details (mobile): separate Jellyfin-like layout — square poster and
++  cards, plain backdrop without blur, static rating, no animations; wired via
++  screen-level branch in `DetailsMobileScreen`.
++- M2 shapes forced square; M3 classic shapes fully square.
++
++- Classic toggle now restyles unconverted M3 screens (flat surfaces, square
++  corners) via `ClassicThemeWrapper`; M2 darkness follows the displayed scheme,
++  fixing forced-light rendering dark.
++- `feature:classic:ui` shared kit: `ClassicThemeWrapper`, `YummyButton`,
++  `YummyCard`, `YummyDialog`; wired once in mobile/tv main graphs.
++- Navigation bar labels toggle (mobile bar + wide-window rail, taller bar
++  when enabled); plumbed from DataStore to `MobileMainScaffold`.
++- Home classic pass (mobile): square poster/progress/search/rating shapes,
++  no hero blur, static carousel without auto-scroll and transforms.
++- Tracker mobile+tv are dual-path: M3 widgets when classic is off, M2 when on
++  (`YummyScaffold/TopBar/Button/TextField/Menu/Dialog/Progress/...`); hardcoded
++  Twitter-blue theme deleted.
++- AniList sign-in on mobile opens a Custom Tab (Telegram-style) with plain
++  browser fallback; TV keeps the in-app WebView page.
++- Tracker screens follow the app palette (hardcoded Twitter-blue theme
++  removed); M2 bridge is always present so converted screens match in both
++  classic modes; auth screen respects status-bar insets, tracker top bar
++  regained its back button.
++
++- Classic UI toggle: `classicUiEnabled` appearance flag, `LocalClassicUi`, M2 colors
++  derived from the active MD3 scheme; `AppTheme.CLASSIC` removed.
++- Material Design 2 theme entries renamed to "Material Design 2".
++- Settings mobile fully on M2-classic dual-path atoms; shared `ClassicBottomSheet`.
++- Tracker anime screen reworked to Aniyomi-sheet style (info grid, overflow menu,
++  logout confirm dialog, logo tile); auth block only on the settings screen.
++- Interface language switch (EN/RU/UK/system) via base-context wrap + recreate.
++- Backdrop blur toggle (home carousel, details heroes mobile+tv).
++- AniList bindings persist in Room (`tracker_binding`, migration v55).
++- Separate TRACKERS settings category (mobile + tv).
++- AniList track editor dialog (status/episodes/score/privacy), in-app WebView
++  OAuth, search with posters/scores, real Viewer.name display.
++- AniList sync core: Ktor GraphQL port, code flow + refresh, episode hook.
++- Release signing with debug fallback, R8 keeps, `anilist-auth` deeplink.
++- AppMetrica no-op without API key (fixes release crash).
++- Swipe navigation transitions (mobile + tv).
++- Nix dev environment (flake + direnv).
++- Patch workflow: `upstream-commit`, `patches/`, `series`, TS scripts (`AGENTS.md`).
++- Agent rules: English-only, patchset model, comment discipline (`AGENTS.md`).
+diff --git a/docs/project-overview.md b/docs/project-overview.md
+new file mode 100644
+index 000000000..cc03ccf5b
+--- /dev/null
++++ b/docs/project-overview.md
+@@ -0,0 +1,37 @@
++# Project overview (patchset notes)
++
++Upstream: `Helandy/YummyTV`, pinned in `upstream-commit`. Branch `yummy` holds the
++stack as atomic commits; `patches/` + `series` are exports (see `AGENTS.md`).
++Builds only via `gradle-fhs` inside `nix develop` (run by the user, never agents).
++
++## Module map
++
++- `app` — Application, activities (ComponentActivity), signing config, manifest.
++- `core/*` — foundation: navigation (Navigation3), designsystem (MD3 theme +
++  `classic/` M2 kit), network (Ktor), preferences (DataStore + sync SharedPrefs),
++  storage (Room `yummy_cache.db`), deeplink, mvi, model, utils, tv, error.
++- `feature/*` — `api` (NavKey destinations + navigator/entry contracts),
++  `domain` (model/repository/usecase, pure JVM), `data` (DTOs, mappers, Ktor/Room),
++  `presentation` (MVI ViewModel + navigator impl), `ui-mobile` / `ui-tv` screens.
++- `feature/main/{ui-mobile,ui-tv}` — `*NavigationHolder` lists every graph entry
++  explicitly; a missing binding fails Dagger at compile time.
++- `feature/classic/ui` — shared classic kit: `ClassicThemeWrapper` (global M2
++  bridge + `LocalClassicUi`, flat classic remap of the M3 scheme when enabled),
++  dual-path atoms (`YummyScaffold`, `YummyTopBar`, buttons, text field,
++  dropdown/exposed menus, alert dialog, checkbox, progress, divider);
++  fully converted screens use M2 directly (`ClassicBottomSheet` stays in
++  designsystem), dual-path screens (tracker) use M3 text plus `Yummy*` widgets.
++
++## Key conventions
++
++- MVI: `XxxState` holds State/Event/Effect only; `ScreenNavigator(vm)` wires screens.
++- Navigation3 serializable keys; deeplinks via `DeepLinkResolver` multibindings.
++- Settings flow through `SettingsStore` snapshot; per-screen state mirrors it.
++- `LocalClassicUi` (designsystem classic) switches converted components between
++  MD3 and M2-classic render paths; `ClassicMaterialTheme` derives M2 colors from
++  the ambient MD3 scheme, so classic mode follows any `AppTheme` incl. Dynamic.
++- `AppLocale` (interface language) applies via base-context wrapping in activities;
++  changes apply through activity `recreate()`, no process restart.
++- AniList tracker (`feature/tracker`): OAuth authorization-code flow, credentials
++  from `local.properties` into `BuildConfig`, bindings cached in Room
++  (`tracker_binding`, one row per animeId — seasons are separate titles).
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
+index ba4f53f48..95d65739e 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
+@@ -24,11 +24,13 @@ import androidx.compose.ui.draw.clip
+ import androidx.compose.ui.draw.shadow
+ import androidx.compose.ui.graphics.Brush
+ import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.layout.ContentScale
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
+ import coil3.compose.AsyncImage
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobileRatingBadge
+ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+ import su.afk.yummy.tv.feature.home.mobile.utils.bestUrl
+@@ -45,12 +47,13 @@ internal fun HomeHeroCard(
+     modifier: Modifier = Modifier,
+ ) {
+     val posterUrl = item.poster.bestUrl()
++    val classic = LocalClassicUi.current
+     Card(
+         modifier = modifier
+             .fillMaxWidth()
+             .height(HERO_CARD_HEIGHT)
+             .clickable(onClick = onClick),
+-        shape = MaterialTheme.shapes.large,
++        shape = if (classic) RectangleShape else MaterialTheme.shapes.large,
+         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+     ) {
+         Box(
+@@ -65,7 +68,10 @@ internal fun HomeHeroCard(
+                 contentScale = ContentScale.Crop,
+                 modifier = Modifier
+                     .matchParentSize()
+-                    .then(if (backdropBlurEnabled) Modifier.blur(28.dp) else Modifier)
++                    .then(
++                        if (backdropBlurEnabled && !classic) Modifier.blur(28.dp)
++                        else Modifier
++                    )
+                     .background(MaterialTheme.colorScheme.surfaceVariant),
+             )
+             Box(
+@@ -95,8 +101,12 @@ internal fun HomeHeroCard(
+                     modifier = Modifier
+                         .fillMaxHeight()
+                         .aspectRatio(2f / 3f)
+-                        .shadow(8.dp, HERO_POSTER_SHAPE)
+-                        .clip(HERO_POSTER_SHAPE)
++                        .then(
++                            if (classic) Modifier
++                            else Modifier
++                                .shadow(8.dp, HERO_POSTER_SHAPE)
++                                .clip(HERO_POSTER_SHAPE)
++                        )
+                         .background(MaterialTheme.colorScheme.surfaceVariant),
+                 )
+                 Column(
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
+index 3cd6650d9..c5cfe9919 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
+@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.Density
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.util.lerp
+ import kotlinx.coroutines.delay
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+ import kotlin.math.absoluteValue
+ import kotlin.time.Duration.Companion.seconds
+@@ -55,6 +56,8 @@ internal fun HomeHeroCarousel(
+     modifier: Modifier = Modifier,
+ ) {
+     val pagerState = rememberPagerState { items.size }
++    // Classic: static pager — no auto-scroll loop, no scale/alpha transforms.
++    val classic = LocalClassicUi.current
+     var isUserTouchingCarousel by remember { mutableStateOf(false) }
+     // Пользователь сам листал — дальше карусель не перехватывает управление. Saveable, чтобы
+     // автопрокрутка не ожила, когда карусель уезжает за экран ленты и возвращается
+@@ -65,8 +68,8 @@ internal fun HomeHeroCarousel(
+         if (isUserDragging) isAutoScrollCancelled = true
+     }
+ 
+-    LaunchedEffect(items.size, isUserTouchingCarousel, isAutoScrollCancelled) {
+-        if (items.size <= 1 || isUserTouchingCarousel || isAutoScrollCancelled) {
++    LaunchedEffect(items.size, isUserTouchingCarousel, isAutoScrollCancelled, classic) {
++        if (classic || items.size <= 1 || isUserTouchingCarousel || isAutoScrollCancelled) {
+             return@LaunchedEffect
+         }
+         while (true) {
+@@ -112,13 +115,16 @@ internal fun HomeHeroCarousel(
+                 item = item,
+                 backdropBlurEnabled = backdropBlurEnabled,
+                 onClick = { onItemSelected(item) },
+-                modifier = Modifier.graphicsLayer {
+-                    val offset = pagerState.getOffsetDistanceInPages(page).absoluteValue
+-                        .coerceIn(0f, 1f)
+-                    // Только по высоте: сжатие по ширине съело бы выглядывающий край соседа
+-                    scaleY = lerp(1f, HERO_INACTIVE_SCALE, offset)
+-                    alpha = lerp(1f, HERO_INACTIVE_ALPHA, offset)
+-                },
++                modifier = Modifier.then(
++                    if (classic) Modifier
++                    else Modifier.graphicsLayer {
++                        val offset = pagerState.getOffsetDistanceInPages(page).absoluteValue
++                            .coerceIn(0f, 1f)
++                        // Только по высоте: сжатие по ширине съело бы выглядывающий край соседа
++                        scaleY = lerp(1f, HERO_INACTIVE_SCALE, offset)
++                        alpha = lerp(1f, HERO_INACTIVE_ALPHA, offset)
++                    }
++                ),
+             )
+         }
+     }
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeItemCard.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeItemCard.kt
+index c144e46a3..32cdb3e81 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeItemCard.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeItemCard.kt
+@@ -8,8 +8,10 @@ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.mobile.cards.MobilePosterCard
+ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+ import su.afk.yummy.tv.feature.home.mobile.utils.bestUrl
+@@ -46,7 +48,8 @@ internal fun HomeItemCard(
+                             .padding(4.dp)
+                             .background(
+                                 MaterialTheme.colorScheme.inverseOnSurface,
+-                                RoundedCornerShape(4.dp),
++                                if (LocalClassicUi.current) RectangleShape
++                                else RoundedCornerShape(4.dp),
+                             )
+                             .padding(horizontal = 6.dp, vertical = 3.dp),
+                     )
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSearchEntry.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSearchEntry.kt
+index 1f6ed12e8..78bd5dcbe 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSearchEntry.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeSearchEntry.kt
+@@ -14,8 +14,10 @@ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.RectangleShape
+ import androidx.compose.ui.text.style.TextOverflow
+ import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ 
+ @Composable
+ internal fun HomeSearchEntry(
+@@ -26,7 +28,7 @@ internal fun HomeSearchEntry(
+     Surface(
+         onClick = onClick,
+         modifier = modifier.fillMaxWidth(),
+-        shape = MaterialTheme.shapes.large,
++        shape = if (LocalClassicUi.current) RectangleShape else MaterialTheme.shapes.large,
+         color = MaterialTheme.colorScheme.surfaceContainerHigh,
+     ) {
+         Row(

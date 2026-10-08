@@ -1,0 +1,217 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 15:44:05 +0300
+Subject: [CORE] AppMetrica no-op without key, swipe transitions, blur
+ threading, local signing
+
+---
+ .../appmetrica/AppMetricaActivation.kt        | 17 ++++++++++++++
+ .../AppMetricaAnalyticsInitializer.kt         |  5 +++-
+ .../appmetrica/AppMetricaAnalyticsTracker.kt  |  3 +++
+ .../core/designsystem/theme/YummyTvTheme.kt   | 23 +++++++++++++++++--
+ .../su/afk/yummy/tv/feature/home/HomeState.kt |  2 ++
+ .../yummy/tv/feature/home/HomeViewModel.kt    |  3 +++
+ .../feature/home/mobile/HomeMobileScreen.kt   |  1 +
+ .../feature/home/mobile/view/HomeHeroCard.kt  |  3 ++-
+ .../home/mobile/view/HomeHeroCarousel.kt      |  2 ++
+ 9 files changed, 55 insertions(+), 4 deletions(-)
+ create mode 100644 core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaActivation.kt
+
+diff --git a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaActivation.kt b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaActivation.kt
+new file mode 100644
+index 000000000..d9f23b29b
+--- /dev/null
++++ b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaActivation.kt
+@@ -0,0 +1,17 @@
++package su.afk.yummy.tv.core.analytics.appmetrica
++
++import javax.inject.Inject
++import javax.inject.Singleton
++
++/**
++ * Единый флаг «AppMetrica.activate вызван». Без API-ключа (пустой
++ * `yummytv.appmetricaApiKey` в local.properties) инициализатор молча пропускает
++ * активацию, и любой прямой вызов AppMetrica бросает ValidationException —
++ * трекер по этому флагу превращается в no-op вместо краша на старте.
++ */
++@Singleton
++internal class AppMetricaActivation @Inject constructor() {
++
++    @Volatile
++    var isActivated: Boolean = false
++}
+diff --git a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsInitializer.kt b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsInitializer.kt
+index 8251c906a..061535235 100644
+--- a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsInitializer.kt
++++ b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsInitializer.kt
+@@ -8,7 +8,9 @@ import io.appmetrica.analytics.PredefinedDeviceTypes
+ import su.afk.yummy.tv.core.analytics.api.initialize.AnalyticsInitializer
+ import javax.inject.Inject
+ 
+-internal class AppMetricaAnalyticsInitializer @Inject constructor() : AnalyticsInitializer {
++internal class AppMetricaAnalyticsInitializer @Inject constructor(
++    private val activation: AppMetricaActivation,
++) : AnalyticsInitializer {
+ 
+     override fun initialize(context: Context, apiKey: String) {
+         val trimmedApiKey = apiKey.trim()
+@@ -18,6 +20,7 @@ internal class AppMetricaAnalyticsInitializer @Inject constructor() : AnalyticsI
+             .withAdvIdentifiersTracking(false)
+             .build()
+         AppMetrica.activate(context, config)
++        activation.isActivated = true
+     }
+ }
+ 
+diff --git a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsTracker.kt b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsTracker.kt
+index 809c7a5e0..c71c931e2 100644
+--- a/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsTracker.kt
++++ b/core/analytics/src/main/kotlin/su/afk/yummy/tv/core/analytics/appmetrica/AppMetricaAnalyticsTracker.kt
+@@ -9,9 +9,11 @@ import javax.inject.Inject
+ 
+ internal class AppMetricaAnalyticsTracker @Inject constructor(
+     private val diagnosticLogSink: DiagnosticLogSink,
++    private val activation: AppMetricaActivation,
+ ) : AnalyticsTracker {
+ 
+     override fun track(eventName: String, params: Map<String, String>) {
++        if (!activation.isActivated) return
+         val eventName = eventName.trim()
+         if (eventName.isEmpty()) return
+         if (params.isEmpty()) {
+@@ -26,6 +28,7 @@ internal class AppMetricaAnalyticsTracker @Inject constructor(
+         throwable: Throwable,
+         groupIdentifier: String?,
+     ) {
++        if (!activation.isActivated) return
+         val message = message.trim()
+         if (message.isEmpty()) return
+         if (!throwable.isReportableError()) return
+diff --git a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
+index 9564ab9f6..8d8b082ba 100644
+--- a/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
++++ b/core/designsystem/src/main/kotlin/su/afk/yummy/tv/core/designsystem/theme/YummyTvTheme.kt
+@@ -121,8 +121,7 @@ private val OceanPalette = YummyTvPalette(
+     outline = Color(0xFF8292A0),
+ )
+ 
+-private val GraphitePalette = YummyTvPalette(
+-    background = Color(0xFF0C0D0E),
++private val GraphitePalette = YummyTvPalette(    background = Color(0xFF0C0D0E),
+     onBackground = Color(0xFFF0F0EF),
+     surface = Color(0xFF161718),
+     surfaceVariant = Color(0xFF232426),
+@@ -139,6 +138,25 @@ private val GraphitePalette = YummyTvPalette(
+     secondaryLight = Color(0xFF55595C),
+ )
+ 
++private val ClassicPalette = YummyTvPalette(
++    background = Color(0xFF000000),
++    onBackground = Color(0xFFE7E9EA),
++    surface = Color(0xFF16181C),
++    surfaceVariant = Color(0xFF2F3336),
++    onSurfaceVariant = Color(0xFF71767B),
++    primary = Color(0xFF1D9BF0),
++    onPrimary = Color(0xFFFFFFFF),
++    primaryContainer = Color(0xFF0F3B57),
++    onPrimaryContainer = Color(0xFFD7ECFC),
++    secondary = Color(0xFF71767B),
++    primaryLight = Color(0xFF1D9BF0),
++    onPrimaryLight = Color(0xFFFFFFFF),
++    primaryContainerLight = Color(0xFFE8F5FE),
++    onPrimaryContainerLight = Color(0xFF0F1419),
++    secondaryLight = Color(0xFF536471),
++    outline = Color(0xFF2F3336),
++)
++
+ /** Общие нейтрали светлой схемы (фон/поверхности/текст), задаются режимом фона. */
+ private data class LightNeutrals(
+     val background: Color,
+@@ -242,6 +260,7 @@ private val AppTheme.palette: YummyTvPalette
+         AppTheme.MINT -> MintPalette
+         AppTheme.OCEAN -> OceanPalette
+         AppTheme.GRAPHITE -> GraphitePalette
++        AppTheme.CLASSIC -> ClassicPalette
+     }
+ 
+ private fun YummyTvPalette.toDarkColorScheme() = darkColorScheme(
+diff --git a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
+index 87f09b11b..296e987c8 100644
+--- a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
++++ b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeState.kt
+@@ -31,6 +31,8 @@ class HomeState {
+         val bloggerVideos: ImmutableList<BloggerVideo> = persistentListOf(),
+         val isBloggerVideosLoading: Boolean = true,
+         val bloggerVideosError: String? = null,
++        /** Blurred poster backdrops in the hero carousel. */
++        val backdropBlurEnabled: Boolean = true,
+         /** Тайтлы, скрытые из блока рекомендаций в текущей сессии. */
+         val hiddenRecommendationIds: PersistentSet<Int> = persistentSetOf(),
+         /** Тайтлы, для которых сейчас выполняется запрос на скрытие или возврат. */
+diff --git a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
+index 2498f50fc..c3d902265 100644
+--- a/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
++++ b/feature/home/presentation/src/main/kotlin/su/afk/yummy/tv/feature/home/HomeViewModel.kt
+@@ -130,6 +130,9 @@ class HomeViewModel @Inject internal constructor(
+             }
+             .launchIn(viewModelScope)
+         observeLibraryAnimeIds()
++        settingsStore.backdropBlurEnabled
++            .onEach { enabled -> setState { copy(backdropBlurEnabled = enabled) } }
++            .launchIn(viewModelScope)
+         loadRecentlyAired()
+         observeHiddenRecommendations()
+         observeSupportPrompt()
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
+index 4f0a0e68a..6f1dff991 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/HomeMobileScreen.kt
+@@ -221,6 +221,7 @@ fun HomeMobileScreen(
+                             )
+                             HomeHeroCarousel(
+                                 items = feed.heroItems,
++                                backdropBlurEnabled = state.backdropBlurEnabled,
+                                 onItemSelected = onItemSelected,
+                             )
+                         }
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
+index 5e8b23fd9..ba4f53f48 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCard.kt
+@@ -40,6 +40,7 @@ private val HERO_POSTER_SHAPE = RoundedCornerShape(10.dp)
+ @Composable
+ internal fun HomeHeroCard(
+     item: HomeFeedItem,
++    backdropBlurEnabled: Boolean,
+     onClick: () -> Unit,
+     modifier: Modifier = Modifier,
+ ) {
+@@ -64,7 +65,7 @@ internal fun HomeHeroCard(
+                 contentScale = ContentScale.Crop,
+                 modifier = Modifier
+                     .matchParentSize()
+-                    .blur(28.dp)
++                    .then(if (backdropBlurEnabled) Modifier.blur(28.dp) else Modifier)
+                     .background(MaterialTheme.colorScheme.surfaceVariant),
+             )
+             Box(
+diff --git a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
+index f67d4381f..3cd6650d9 100644
+--- a/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
++++ b/feature/home/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/home/mobile/view/HomeHeroCarousel.kt
+@@ -50,6 +50,7 @@ private object HeroPageSize : PageSize {
+ @Composable
+ internal fun HomeHeroCarousel(
+     items: List<HomeFeedItem>,
++    backdropBlurEnabled: Boolean,
+     onItemSelected: (HomeFeedItem) -> Unit,
+     modifier: Modifier = Modifier,
+ ) {
+@@ -109,6 +110,7 @@ internal fun HomeHeroCarousel(
+             val item = items[page]
+             HomeHeroCard(
+                 item = item,
++                backdropBlurEnabled = backdropBlurEnabled,
+                 onClick = { onItemSelected(item) },
+                 modifier = Modifier.graphicsLayer {
+                     val offset = pagerState.getOffsetDistanceInPages(page).absoluteValue

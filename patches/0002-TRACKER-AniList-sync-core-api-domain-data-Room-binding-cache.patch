@@ -1,0 +1,2424 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 15:43:21 +0300
+Subject: [TRACKER] AniList sync core: api/domain/data, Room binding cache,
+ OAuth code flow
+
+---
+ .../yummy/tv/core/storage/db/AppDatabase.kt   |   6 +-
+ .../core/storage/db/migrations/Migrations.kt  |   1 +
+ .../db/migrations/MigrationsSchema5.kt        |  32 ++
+ .../core/storage/tracker/TrackerBindingDao.kt |  19 +
+ .../storage/tracker/TrackerBindingEntry.kt    |  27 ++
+ .../storage/tracker/TrackerBindingStorage.kt  |  11 +
+ .../storage/tracker/TrackerBindingStore.kt    |  13 +
+ .../tracker/di/TrackerBindingStorageModule.kt |  25 ++
+ feature/tracker/api/build.gradle.kts          |  14 +
+ .../tv/feature/tracker/IMobileTrackerEntry.kt |   9 +
+ .../tv/feature/tracker/ITrackerNavigator.kt   |  12 +
+ .../tv/feature/tracker/ITvTrackerEntry.kt     |   9 +
+ .../tv/feature/tracker/TrackerDestination.kt  |  23 ++
+ feature/tracker/data/build.gradle.kts         |  41 +++
+ .../deeplink/AniListAuthDeepLinkResolver.kt   |  37 ++
+ .../tv/data/tracker/di/TrackerDataModule.kt   |  24 ++
+ .../data/tracker/di/TrackerDeepLinkModule.kt  |  18 +
+ .../yummy/tv/data/tracker/dto/ALAddEntry.kt   |  21 ++
+ .../tv/data/tracker/dto/ALCurrentUser.kt      |  28 ++
+ .../yummy/tv/data/tracker/dto/ALFuzzyDate.kt  |  23 ++
+ .../tv/data/tracker/dto/ALGraphqlRequest.kt   |  11 +
+ .../afk/yummy/tv/data/tracker/dto/ALOAuth.kt  |  21 ++
+ .../afk/yummy/tv/data/tracker/dto/ALSearch.kt |  21 ++
+ .../yummy/tv/data/tracker/dto/ALSearchItem.kt |  74 ++++
+ .../tv/data/tracker/dto/ALTokenResponse.kt    |  21 ++
+ .../yummy/tv/data/tracker/dto/ALUserList.kt   |  33 ++
+ .../data/tracker/local/AniListSessionStore.kt |  93 +++++
+ .../data/tracker/mapper/AniListTrackMapper.kt |  61 ++++
+ .../tv/data/tracker/remote/AniListApi.kt      | 325 ++++++++++++++++++
+ .../tv/data/tracker/remote/AniListConfig.kt   |  43 +++
+ .../AniListAnimeTrackRepositoryImpl.kt        | 164 +++++++++
+ .../repository/AniListAuthRepositoryImpl.kt   | 102 ++++++
+ .../storage/mapper/TrackerBindingMapper.kt    |  43 +++
+ feature/tracker/domain/build.gradle.kts       |  15 +
+ .../tracker/model/AniListScoreFormat.kt       |  22 ++
+ .../tv/domain/tracker/model/AnimeTrack.kt     |  24 ++
+ .../domain/tracker/model/AnimeTrackSearch.kt  |  19 +
+ .../domain/tracker/model/AnimeTrackStatus.kt  |  22 ++
+ .../domain/tracker/model/TrackerAuthState.kt  |  13 +
+ .../tracker/model/TrackerCapabilities.kt      |  32 ++
+ .../tv/domain/tracker/model/TrackerOAuth.kt   |  12 +
+ .../domain/tracker/model/TrackerProvider.kt   |  10 +
+ .../repository/AnimeTrackRepository.kt        |  39 +++
+ .../repository/TrackerAuthRepository.kt       |  33 ++
+ .../usecase/BeginAniListOAuthUseCase.kt       |  15 +
+ .../tracker/usecase/BindAnimeTrackUseCase.kt  |  31 ++
+ .../usecase/HandleAniListCallbackUseCase.kt   |  31 ++
+ .../tracker/usecase/LogoutTrackerUseCase.kt   |  14 +
+ .../usecase/ObserveTrackerAuthStateUseCase.kt |  16 +
+ .../usecase/RefreshAnimeTrackUseCase.kt       |  19 +
+ .../usecase/SearchAnimeTracksUseCase.kt       |  19 +
+ .../usecase/TrackEpisodeSeenUseCase.kt        |  18 +
+ .../usecase/UpdateAnimeTrackUseCase.kt        |  19 +
+ .../domain/tracker/utils/AniListScoreUtils.kt |  73 ++++
+ .../tracker/utils/AniListStatusUtils.kt       |  26 ++
+ gradle/libs.versions.toml                     |   1 +
+ settings.gradle.kts                           |   7 +
+ 57 files changed, 1934 insertions(+), 1 deletion(-)
+ create mode 100644 core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/MigrationsSchema5.kt
+ create mode 100644 core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingDao.kt
+ create mode 100644 core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingEntry.kt
+ create mode 100644 core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStorage.kt
+ create mode 100644 core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStore.kt
+ create mode 100644 core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/di/TrackerBindingStorageModule.kt
+ create mode 100644 feature/tracker/api/build.gradle.kts
+ create mode 100644 feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/IMobileTrackerEntry.kt
+ create mode 100644 feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITrackerNavigator.kt
+ create mode 100644 feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITvTrackerEntry.kt
+ create mode 100644 feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerDestination.kt
+ create mode 100644 feature/tracker/data/build.gradle.kts
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/deeplink/AniListAuthDeepLinkResolver.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDataModule.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDeepLinkModule.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALAddEntry.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALCurrentUser.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALFuzzyDate.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALGraphqlRequest.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALOAuth.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearch.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearchItem.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALTokenResponse.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALUserList.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/local/AniListSessionStore.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/mapper/AniListTrackMapper.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListApi.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListConfig.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAnimeTrackRepositoryImpl.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAuthRepositoryImpl.kt
+ create mode 100644 feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/storage/mapper/TrackerBindingMapper.kt
+ create mode 100644 feature/tracker/domain/build.gradle.kts
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AniListScoreFormat.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrack.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackSearch.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackStatus.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerAuthState.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerCapabilities.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerOAuth.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerProvider.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/AnimeTrackRepository.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/TrackerAuthRepository.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BeginAniListOAuthUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BindAnimeTrackUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/HandleAniListCallbackUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/LogoutTrackerUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/ObserveTrackerAuthStateUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/RefreshAnimeTrackUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/SearchAnimeTracksUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/TrackEpisodeSeenUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/UpdateAnimeTrackUseCase.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListScoreUtils.kt
+ create mode 100644 feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListStatusUtils.kt
+
+diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/AppDatabase.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/AppDatabase.kt
+index 9a903b0d5..e99b9c93a 100644
+--- a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/AppDatabase.kt
++++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/AppDatabase.kt
+@@ -85,6 +85,8 @@ import su.afk.yummy.tv.core.storage.search.SearchTypeEntry
+ import su.afk.yummy.tv.core.storage.top.AnimeTopDao
+ import su.afk.yummy.tv.core.storage.top.AnimeTopItemEntry
+ import su.afk.yummy.tv.core.storage.top.AnimeTopPageEntry
++import su.afk.yummy.tv.core.storage.tracker.TrackerBindingDao
++import su.afk.yummy.tv.core.storage.tracker.TrackerBindingEntry
+ import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadDao
+ import su.afk.yummy.tv.core.storage.videodownload.VideoDownloadEntry
+ import su.afk.yummy.tv.core.storage.watchlater.WatchLaterDao
+@@ -163,8 +165,9 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
+         AllohaTrackPreferenceEntry::class,
+         WatchLaterEntry::class,
+         PendingMutationEntry::class,
++        TrackerBindingEntry::class,
+     ],
+-    version = 54,
++    version = 55,
+     exportSchema = false,
+ )
+ abstract class AppDatabase : RoomDatabase() {
+@@ -190,4 +193,5 @@ abstract class AppDatabase : RoomDatabase() {
+     abstract fun allohaTrackPreferenceDao(): AllohaTrackPreferenceDao
+     abstract fun watchLaterDao(): WatchLaterDao
+     abstract fun pendingMutationDao(): PendingMutationDao
++    abstract fun trackerBindingDao(): TrackerBindingDao
+ }
+diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/Migrations.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/Migrations.kt
+index 3b38cd1ec..f4ebf8c23 100644
+--- a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/Migrations.kt
++++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/Migrations.kt
+@@ -50,4 +50,5 @@ internal val ALL_MIGRATIONS: Array<Migration> = arrayOf(
+     MIGRATION_51_52,
+     MIGRATION_52_53,
+     MIGRATION_53_54,
++    MIGRATION_54_55,
+ )
+diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/MigrationsSchema5.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/MigrationsSchema5.kt
+new file mode 100644
+index 000000000..cfaf00669
+--- /dev/null
++++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/db/migrations/MigrationsSchema5.kt
+@@ -0,0 +1,32 @@
++package su.afk.yummy.tv.core.storage.db.migrations
++
++import androidx.room.migration.Migration
++import androidx.sqlite.db.SupportSQLiteDatabase
++
++/**
++ * Local AniList binding cache. The user's server list stays the source of truth —
++ * diverging rows are overwritten from the network, so no backfill is needed.
++ */
++internal val MIGRATION_54_55 = object : Migration(54, 55) {
++    override fun migrate(db: SupportSQLiteDatabase) {
++        db.execSQL(
++            """
++            CREATE TABLE IF NOT EXISTS tracker_binding (
++                animeId INTEGER NOT NULL,
++                remoteId INTEGER NOT NULL,
++                libraryId INTEGER,
++                title TEXT NOT NULL,
++                lastEpisodeSeen REAL NOT NULL,
++                totalEpisodes INTEGER NOT NULL,
++                statusId INTEGER NOT NULL,
++                score REAL NOT NULL,
++                remoteUrl TEXT NOT NULL,
++                startDateMillis INTEGER NOT NULL,
++                finishDateMillis INTEGER NOT NULL,
++                isPrivate INTEGER NOT NULL,
++                PRIMARY KEY(animeId)
++            )
++            """.trimIndent()
++        )
++    }
++}
+diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingDao.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingDao.kt
+new file mode 100644
+index 000000000..9babbafdc
+--- /dev/null
++++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingDao.kt
+@@ -0,0 +1,19 @@
++package su.afk.yummy.tv.core.storage.tracker
++
++import androidx.room.Dao
++import androidx.room.Insert
++import androidx.room.OnConflictStrategy
++import androidx.room.Query
++
++@Dao
++interface TrackerBindingDao {
++
++    @Query("SELECT * FROM tracker_binding WHERE animeId = :animeId")
++    suspend fun getByAnimeId(animeId: Long): TrackerBindingEntry?
++
++    @Insert(onConflict = OnConflictStrategy.REPLACE)
++    suspend fun save(entry: TrackerBindingEntry)
++
++    @Query("DELETE FROM tracker_binding WHERE animeId = :animeId")
++    suspend fun deleteByAnimeId(animeId: Long)
++}
+diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingEntry.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingEntry.kt
+new file mode 100644
+index 000000000..d37b3f3d5
+--- /dev/null
++++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingEntry.kt
+@@ -0,0 +1,27 @@
++package su.afk.yummy.tv.core.storage.tracker
++
++import androidx.room.Entity
++
++/**
++ * AniList binding of a Yummy title. One title holds one entry (seasons in Yummy
++ * are separate titles with their own animeId, so each season binds independently
++ * from its own page).
++ */
++@Entity(
++    tableName = "tracker_binding",
++    primaryKeys = ["animeId"],
++)
++data class TrackerBindingEntry(
++    val animeId: Long,
++    val remoteId: Long,
++    val libraryId: Long?,
++    val title: String,
++    val lastEpisodeSeen: Double,
++    val totalEpisodes: Long,
++    val statusId: Long,
++    val score: Double,
++    val remoteUrl: String,
++    val startDateMillis: Long,
++    val finishDateMillis: Long,
++    val isPrivate: Boolean,
++)
+diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStorage.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStorage.kt
+new file mode 100644
+index 000000000..a2094490c
+--- /dev/null
++++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStorage.kt
+@@ -0,0 +1,11 @@
++package su.afk.yummy.tv.core.storage.tracker
++
++/** Local AniList binding cache abstraction, swappable in tests. */
++interface TrackerBindingStorage {
++
++    suspend fun getByAnimeId(animeId: Long): TrackerBindingEntry?
++
++    suspend fun save(entry: TrackerBindingEntry)
++
++    suspend fun deleteByAnimeId(animeId: Long)
++}
+diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStore.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStore.kt
+new file mode 100644
+index 000000000..c62732224
+--- /dev/null
++++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/TrackerBindingStore.kt
+@@ -0,0 +1,13 @@
++package su.afk.yummy.tv.core.storage.tracker
++
++internal class TrackerBindingStore(
++    private val dao: TrackerBindingDao,
++) : TrackerBindingStorage {
++
++    override suspend fun getByAnimeId(animeId: Long): TrackerBindingEntry? =
++        dao.getByAnimeId(animeId)
++
++    override suspend fun save(entry: TrackerBindingEntry) = dao.save(entry)
++
++    override suspend fun deleteByAnimeId(animeId: Long) = dao.deleteByAnimeId(animeId)
++}
+diff --git a/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/di/TrackerBindingStorageModule.kt b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/di/TrackerBindingStorageModule.kt
+new file mode 100644
+index 000000000..8a476f11c
+--- /dev/null
++++ b/core/storage/src/main/kotlin/su/afk/yummy/tv/core/storage/tracker/di/TrackerBindingStorageModule.kt
+@@ -0,0 +1,25 @@
++package su.afk.yummy.tv.core.storage.tracker.di
++
++import dagger.Module
++import dagger.Provides
++import dagger.hilt.InstallIn
++import dagger.hilt.components.SingletonComponent
++import su.afk.yummy.tv.core.storage.db.AppDatabase
++import su.afk.yummy.tv.core.storage.tracker.TrackerBindingStorage
++import su.afk.yummy.tv.core.storage.tracker.TrackerBindingStore
++import javax.inject.Singleton
++
++@Module
++@InstallIn(SingletonComponent::class)
++object TrackerBindingStorageModule {
++
++    @Provides
++    @Singleton
++    internal fun provideTrackerBindingStore(db: AppDatabase): TrackerBindingStore =
++        TrackerBindingStore(db.trackerBindingDao())
++
++    @Provides
++    @Singleton
++    internal fun provideTrackerBindingStorage(store: TrackerBindingStore): TrackerBindingStorage =
++        store
++}
+diff --git a/feature/tracker/api/build.gradle.kts b/feature/tracker/api/build.gradle.kts
+new file mode 100644
+index 000000000..970e01bf6
+--- /dev/null
++++ b/feature/tracker/api/build.gradle.kts
+@@ -0,0 +1,14 @@
++plugins {
++    id("yummytv.android.library")
++    alias(libs.plugins.kotlinSerialization)
++}
++
++android {
++    namespace = "su.afk.yummy.tv.feature.tracker.api"
++}
++
++dependencies {
++    implementation(project(":core:navigation"))
++    api(libs.bundles.navigation.serialization)
++    implementation(libs.javax.inject)
++}
+diff --git a/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/IMobileTrackerEntry.kt b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/IMobileTrackerEntry.kt
+new file mode 100644
+index 000000000..2f01a7d3f
+--- /dev/null
++++ b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/IMobileTrackerEntry.kt
+@@ -0,0 +1,9 @@
++package su.afk.yummy.tv.feature.tracker
++
++import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
++
++/**
++ * Entry point for tracker screens in the mobile navigation graph. Implemented in `ui-mobile`,
++ * wired explicitly in `MobileMainGraph`.
++ */
++interface IMobileTrackerEntry : NavRegistrar
+diff --git a/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITrackerNavigator.kt b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITrackerNavigator.kt
+new file mode 100644
+index 000000000..5187eadeb
+--- /dev/null
++++ b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITrackerNavigator.kt
+@@ -0,0 +1,12 @@
++package su.afk.yummy.tv.feature.tracker
++
++/**
++ * Navigator to tracker screens. Implementation lives in :feature:tracker:presentation,
++ * screen registration — in tracker ui modules (following Settings/Account).
++ */
++interface ITrackerNavigator {
++
++    fun openTrackerSettings()
++
++    fun openAnimeTrack(animeId: Long, title: String)
++}
+diff --git a/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITvTrackerEntry.kt b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITvTrackerEntry.kt
+new file mode 100644
+index 000000000..14d691b0d
+--- /dev/null
++++ b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/ITvTrackerEntry.kt
+@@ -0,0 +1,9 @@
++package su.afk.yummy.tv.feature.tracker
++
++import su.afk.yummy.tv.core.navigation.registrar.NavRegistrar
++
++/**
++ * Entry point for tracker screens in the TV navigation graph. Implemented in `ui-tv`,
++ * wired explicitly in `TvNavigationHolder`.
++ */
++interface ITvTrackerEntry : NavRegistrar
+diff --git a/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerDestination.kt b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerDestination.kt
+new file mode 100644
+index 000000000..6cc61f218
+--- /dev/null
++++ b/feature/tracker/api/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerDestination.kt
+@@ -0,0 +1,23 @@
++package su.afk.yummy.tv.feature.tracker
++
++import androidx.navigation3.runtime.NavKey
++import kotlinx.serialization.Serializable
++
++/**
++ * Tracker destinations (AniList). Port of the Aniyomi tracking-settings entry point
++ * ([SettingsTrackingScreen]) — screens live in :feature:tracker:presentation.
++ */
++@Serializable
++sealed interface TrackerDestination : NavKey {
++
++    @Serializable
++    data object TrackerSettings : TrackerDestination
++
++    /** In-app OAuth page (WebView) for the AniList sign-in. */
++    @Serializable
++    data object TrackerAuth : TrackerDestination
++
++    /** Binding of a specific Yummy anime ([animeId]) to an AniList entry. */
++    @Serializable
++    data class TrackerAnime(val animeId: Long, val title: String) : TrackerDestination
++}
+diff --git a/feature/tracker/data/build.gradle.kts b/feature/tracker/data/build.gradle.kts
+new file mode 100644
+index 000000000..d5c75b51c
+--- /dev/null
++++ b/feature/tracker/data/build.gradle.kts
+@@ -0,0 +1,41 @@
++import su.afk.yummy.tv.buildlogic.buildConfigSecret
++
++plugins {
++    id("yummytv.android.library")
++    alias(libs.plugins.kotlinSerialization)
++    id("yummytv.android.hilt")
++}
++
++android {
++    namespace = "su.afk.yummy.tv.data.tracker"
++
++    buildFeatures {
++        buildConfig = true
++    }
++    defaultConfig {
++        // AniList keys live OUTSIDE code: local.properties (yummytv.anilistClientId,
++        // yummytv.anilistRedirectUri) -> BuildConfig. Empty values still build; authUrl() fails
++        // with a clear error (see AniListConfig). Client: https://anilist.co/settings/developer
++        buildConfigField("String", "ANILIST_CLIENT_ID", buildConfigSecret("yummytv.anilistClientId"))
++        buildConfigField("String", "ANILIST_CLIENT_SECRET", buildConfigSecret("yummytv.anilistClientSecret"))
++        buildConfigField("String", "ANILIST_REDIRECT_URI", buildConfigSecret("yummytv.anilistRedirectUri"))
++    }
++}
++
++dependencies {
++    implementation(project(":core:deeplink:api"))
++    implementation(project(":core:storage"))
++    implementation(project(":core:utils"))
++    implementation(project(":feature:tracker:api"))
++    implementation(project(":feature:tracker:domain"))
++
++    implementation(libs.kotlinx.coroutines.android)
++    implementation(libs.kotlinx.serialization.json)
++    implementation(libs.ktor.client.core)
++    implementation(libs.ktor.client.okhttp)
++    implementation(libs.ktor.client.contentNegotiation)
++    implementation(libs.ktor.serialization.kotlinxJson)
++    implementation(libs.ktor.client.logging)
++    implementation(libs.datastore.preferences)
++    implementation(libs.okhttp)
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/deeplink/AniListAuthDeepLinkResolver.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/deeplink/AniListAuthDeepLinkResolver.kt
+new file mode 100644
+index 000000000..447a8099a
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/deeplink/AniListAuthDeepLinkResolver.kt
+@@ -0,0 +1,37 @@
++package su.afk.yummy.tv.data.tracker.deeplink
++
++import androidx.navigation3.runtime.NavKey
++import kotlinx.coroutines.CoroutineScope
++import kotlinx.coroutines.launch
++import su.afk.yummy.tv.core.deeplink.api.DeepLinkReference
++import su.afk.yummy.tv.core.deeplink.api.DeepLinkResolver
++import su.afk.yummy.tv.core.utils.coroutines.di.IoApplicationScope
++import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
++import su.afk.yummy.tv.domain.tracker.usecase.HandleAniListCallbackUseCase
++import su.afk.yummy.tv.feature.tracker.TrackerDestination
++import javax.inject.Inject
++
++/**
++ * AniList OAuth callback (`yummytv://anilist-auth?code=...`): takes code from query,
++ * exchanges it for tokens in background and navigates to the tracker screen showing login result.
++ * Pattern — feature resolvers via `@IntoSet` (see LocalVideoDeepLinkResolver).
++ */
++internal class AniListAuthDeepLinkResolver @Inject constructor(
++    @param:IoApplicationScope private val scope: CoroutineScope,
++    private val handleCallback: HandleAniListCallbackUseCase,
++) : DeepLinkResolver {
++
++    override fun resolve(link: DeepLinkReference): NavKey? {
++        if (link.appLinkHost != CALLBACK_HOST) return null
++        val code = link.uri.getQueryParameter("code")
++        if (code.isNullOrBlank()) return null
++        scope.launch {
++            runSuspendCatching { handleCallback(link.uri.toString()) }
++        }
++        return TrackerDestination.TrackerSettings
++    }
++
++    private companion object {
++        const val CALLBACK_HOST = "anilist-auth"
++    }
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDataModule.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDataModule.kt
+new file mode 100644
+index 000000000..62f92a3de
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDataModule.kt
+@@ -0,0 +1,24 @@
++package su.afk.yummy.tv.data.tracker.di
++
++import dagger.Binds
++import dagger.Module
++import dagger.hilt.InstallIn
++import dagger.hilt.components.SingletonComponent
++import su.afk.yummy.tv.data.tracker.repository.AniListAnimeTrackRepositoryImpl
++import su.afk.yummy.tv.data.tracker.repository.AniListAuthRepositoryImpl
++import su.afk.yummy.tv.domain.tracker.repository.AnimeTrackRepository
++import su.afk.yummy.tv.domain.tracker.repository.TrackerAuthRepository
++import javax.inject.Singleton
++
++@Module
++@InstallIn(SingletonComponent::class)
++internal interface TrackerDataModule {
++
++    @Binds
++    @Singleton
++    fun bindTrackerAuth(impl: AniListAuthRepositoryImpl): TrackerAuthRepository
++
++    @Binds
++    @Singleton
++    fun bindAnimeTrack(impl: AniListAnimeTrackRepositoryImpl): AnimeTrackRepository
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDeepLinkModule.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDeepLinkModule.kt
+new file mode 100644
+index 000000000..1a1d63e24
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/di/TrackerDeepLinkModule.kt
+@@ -0,0 +1,18 @@
++package su.afk.yummy.tv.data.tracker.di
++
++import dagger.Binds
++import dagger.Module
++import dagger.hilt.InstallIn
++import dagger.hilt.components.SingletonComponent
++import dagger.multibindings.IntoSet
++import su.afk.yummy.tv.core.deeplink.api.DeepLinkResolver
++import su.afk.yummy.tv.data.tracker.deeplink.AniListAuthDeepLinkResolver
++
++@Module
++@InstallIn(SingletonComponent::class)
++internal interface TrackerDeepLinkModule {
++
++    @Binds
++    @IntoSet
++    fun bindAniListAuthDeepLinkResolver(impl: AniListAuthDeepLinkResolver): DeepLinkResolver
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALAddEntry.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALAddEntry.kt
+new file mode 100644
+index 000000000..8176588ac
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALAddEntry.kt
+@@ -0,0 +1,21 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++/** Port of `ALAddEntryResult` 1:1. */
++@Serializable
++data class ALAddEntryResult(
++    val data: ALAddEntryData,
++)
++
++@Serializable
++data class ALAddEntryData(
++    @SerialName("SaveMediaListEntry")
++    val entry: ALAddEntryEntry,
++)
++
++@Serializable
++data class ALAddEntryEntry(
++    val id: Long,
++)
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALCurrentUser.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALCurrentUser.kt
+new file mode 100644
+index 000000000..0f61db168
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALCurrentUser.kt
+@@ -0,0 +1,28 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++/** Port of `ALCurrentUserResult` 1:1. */
++@Serializable
++data class ALCurrentUserResult(
++    val data: ALUserViewer,
++)
++
++@Serializable
++data class ALUserViewer(
++    @SerialName("Viewer")
++    val viewer: ALUserViewerData,
++)
++
++@Serializable
++data class ALUserViewerData(
++    val id: Int,
++    val name: String = "",
++    val mediaListOptions: ALUserListOptions,
++)
++
++@Serializable
++data class ALUserListOptions(
++    val scoreFormat: String,
++)
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALFuzzyDate.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALFuzzyDate.kt
+new file mode 100644
+index 000000000..beabec4c9
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALFuzzyDate.kt
+@@ -0,0 +1,23 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.Serializable
++import java.time.LocalDate
++import java.time.ZoneId
++
++/** Port of `ALFuzzyDate` 1:1. */
++@Serializable
++data class ALFuzzyDate(
++    val year: Int? = null,
++    val month: Int? = null,
++    val day: Int? = null,
++) {
++
++    fun toEpochMilli(): Long = try {
++        LocalDate.of(year!!, month!!, day!!)
++            .atStartOfDay(ZoneId.systemDefault())
++            .toInstant()
++            .toEpochMilli()
++    } catch (_: Exception) {
++        0L
++    }
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALGraphqlRequest.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALGraphqlRequest.kt
+new file mode 100644
+index 000000000..675071d7b
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALGraphqlRequest.kt
+@@ -0,0 +1,11 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.Serializable
++import kotlinx.serialization.json.JsonObject
++
++/** GraphQL request body for https://graphql.anilist.co/. */
++@Serializable
++data class ALGraphqlRequest(
++    val query: String,
++    val variables: JsonObject,
++)
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALOAuth.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALOAuth.kt
+new file mode 100644
+index 000000000..74c01ccac
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALOAuth.kt
+@@ -0,0 +1,21 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++/**
++ * AniList OAuth session (implicit flow). Port of `ALOAuth` 1:1.
++ * [expires] — epoch-millis with -60s margin (see AnilistInterceptor).
++ */
++@Serializable
++data class ALOAuth(
++    @SerialName("access_token")
++    val accessToken: String,
++    @SerialName("token_type")
++    val tokenType: String,
++    val expires: Long,
++    @SerialName("expires_in")
++    val expiresIn: Long,
++)
++
++fun ALOAuth.isExpired(): Boolean = System.currentTimeMillis() > expires
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearch.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearch.kt
+new file mode 100644
+index 000000000..35207ede7
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearch.kt
+@@ -0,0 +1,21 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++/** Port of `ALSearchResult/Page/Media` 1:1 (anime search). */
++@Serializable
++data class ALSearchResult(
++    val data: ALSearchPage,
++)
++
++@Serializable
++data class ALSearchPage(
++    @SerialName("Page")
++    val page: ALSearchMedia,
++)
++
++@Serializable
++data class ALSearchMedia(
++    val media: List<ALSearchItem> = emptyList(),
++)
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearchItem.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearchItem.kt
+new file mode 100644
+index 000000000..2288a951b
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALSearchItem.kt
+@@ -0,0 +1,74 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.Serializable
++
++/**
++ * AniList search result item. Port of `ALSearchItem` 1:1
++ * (manga fields chapters/staff kept for parsing compatibility,
++ * only anime fields episodes/studios are used).
++ */
++@Serializable
++data class ALSearchItem(
++    val id: Long,
++    val title: ALItemTitle,
++    val coverImage: ItemCover,
++    val description: String? = null,
++    val format: String? = null,
++    val status: String? = null,
++    val startDate: ALFuzzyDate = ALFuzzyDate(),
++    val chapters: Long? = null,
++    val episodes: Long? = null,
++    val averageScore: Int? = null,
++    val staff: ALStaff? = null,
++    val studios: ALStudios? = null,
++)
++
++@Serializable
++data class ALItemTitle(
++    val userPreferred: String,
++)
++
++@Serializable
++data class ItemCover(
++    val large: String = "",
++)
++
++@Serializable
++data class ALStaff(
++    val edges: List<ALStaffEdge> = emptyList(),
++)
++
++@Serializable
++data class ALStaffEdge(
++    val role: String = "",
++    val id: Int = 0,
++    val node: ALStaffNode = ALStaffNode(ALStaffName()),
++)
++
++@Serializable
++data class ALStaffNode(
++    val name: ALStaffName,
++)
++
++@Serializable
++data class ALStaffName(
++    val userPreferred: String? = null,
++    val native: String? = null,
++    val full: String? = null,
++)
++
++@Serializable
++data class ALStudios(
++    val edges: List<ALStudiosEdge> = emptyList(),
++)
++
++@Serializable
++data class ALStudiosEdge(
++    val isMain: Boolean = false,
++    val node: ALStudiosNode = ALStudiosNode(),
++)
++
++@Serializable
++data class ALStudiosNode(
++    val name: String = "",
++)
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALTokenResponse.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALTokenResponse.kt
+new file mode 100644
+index 000000000..287de3084
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALTokenResponse.kt
+@@ -0,0 +1,21 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++/**
++ * Response of `POST https://anilist.co/api/v2/oauth/token` (grant_type=authorization_code
++ * or refresh_token). Unlike Aniyomi implicit flow, `expires_in`
++ * comes in SECONDS here — conversion to millis is done by [AniListApi.createOAuth].
++ */
++@Serializable
++data class ALTokenResponse(
++    @SerialName("access_token")
++    val accessToken: String,
++    @SerialName("token_type")
++    val tokenType: String = "Bearer",
++    @SerialName("expires_in")
++    val expiresIn: Long = 0L,
++    @SerialName("refresh_token")
++    val refreshToken: String = "",
++)
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALUserList.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALUserList.kt
+new file mode 100644
+index 000000000..48a984272
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/dto/ALUserList.kt
+@@ -0,0 +1,33 @@
++package su.afk.yummy.tv.data.tracker.dto
++
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++/** Port of `ALUserListEntryQueryResult` 1:1 (anime part). */
++@Serializable
++data class ALUserListEntryQueryResult(
++    val data: ALUserListEntryPage,
++)
++
++@Serializable
++data class ALUserListEntryPage(
++    @SerialName("Page")
++    val page: ALUserListMediaList,
++)
++
++@Serializable
++data class ALUserListMediaList(
++    val mediaList: List<ALUserListItem> = emptyList(),
++)
++
++@Serializable
++data class ALUserListItem(
++    val id: Long,
++    val status: String,
++    val scoreRaw: Int = 0,
++    val progress: Int = 0,
++    val startedAt: ALFuzzyDate = ALFuzzyDate(),
++    val completedAt: ALFuzzyDate = ALFuzzyDate(),
++    val media: ALSearchItem,
++    val private: Boolean = false,
++)
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/local/AniListSessionStore.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/local/AniListSessionStore.kt
+new file mode 100644
+index 000000000..93d6d9d6f
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/local/AniListSessionStore.kt
+@@ -0,0 +1,93 @@
++package su.afk.yummy.tv.data.tracker.local
++
++import android.content.Context
++import androidx.datastore.preferences.core.edit
++import androidx.datastore.preferences.core.stringPreferencesKey
++import androidx.datastore.preferences.preferencesDataStore
++import dagger.hilt.android.qualifiers.ApplicationContext
++import kotlinx.coroutines.flow.Flow
++import kotlinx.coroutines.flow.first
++import kotlinx.coroutines.flow.map
++import kotlinx.serialization.json.Json
++import su.afk.yummy.tv.data.tracker.dto.ALOAuth
++import su.afk.yummy.tv.data.tracker.dto.isExpired
++import javax.inject.Inject
++import javax.inject.Singleton
++
++private val Context.aniListSession by preferencesDataStore(name = "anilist_session")
++
++/**
++ * AniList session in DataStore. Port of `saveOAuth/loadOAuth` + `trackUsername/trackPassword`
++ * (TrackPreferences) — token JSON, username, userId, scoreFormat as separate keys.
++ * NOTE: token is stored in plain text; move to Keystore (following
++ * SecureYaniAuthPreferences) — next iteration together with the Room bindings cache.
++ */
++@Singleton
++class AniListSessionStore @Inject constructor(
++    @ApplicationContext private val context: Context,
++) {
++
++    private val json = Json { ignoreUnknownKeys = true }
++
++    private val tokenKey = stringPreferencesKey("anilist_oauth")
++    private val usernameKey = stringPreferencesKey("anilist_username")
++    private val userIdKey = stringPreferencesKey("anilist_user_id")
++    private val scoreFormatKey = stringPreferencesKey("anilist_score_format")
++    private val refreshTokenKey = stringPreferencesKey("anilist_refresh_token")
++
++    val oauth: Flow<ALOAuth?> = context.aniListSession.data.map { prefs ->
++        prefs[tokenKey]?.let { raw ->
++            runCatching { json.decodeFromString<ALOAuth>(raw) }.getOrNull()
++        }
++    }
++
++    val username: Flow<String> = context.aniListSession.data.map { it[usernameKey].orEmpty() }
++
++    val scoreFormat: Flow<String?> = context.aniListSession.data.map { it[scoreFormatKey] }
++
++    suspend fun loadOAuth(): ALOAuth? = oauth.first()
++
++    suspend fun validOAuth(): ALOAuth? = loadOAuth()?.takeIf { !it.isExpired() }
++
++    suspend fun saveSession(
++        oauth: ALOAuth,
++        username: String,
++        userId: Int,
++        scoreFormat: String,
++        refreshToken: String = "",
++    ) {
++        context.aniListSession.edit { prefs ->
++            prefs[tokenKey] = json.encodeToString(oauth)
++            prefs[usernameKey] = username
++            prefs[userIdKey] = userId.toString()
++            prefs[scoreFormatKey] = scoreFormat
++            if (refreshToken.isNotBlank()) prefs[refreshTokenKey] = refreshToken
++            else prefs.remove(refreshTokenKey)
++        }
++    }
++
++    suspend fun saveOAuth(oauth: ALOAuth?) {
++        context.aniListSession.edit { prefs ->
++            if (oauth == null) prefs.remove(tokenKey)
++            else prefs[tokenKey] = json.encodeToString(oauth)
++        }
++    }
++
++    suspend fun userId(): Int? = context.aniListSession.data.map { it[userIdKey]?.toIntOrNull() }.first()
++
++    suspend fun refreshToken(): String? =
++        context.aniListSession.data.map { it[refreshTokenKey] }.first()
++
++    suspend fun saveRefreshToken(refreshToken: String) {
++        context.aniListSession.edit { prefs ->
++            if (refreshToken.isBlank()) prefs.remove(refreshTokenKey)
++            else prefs[refreshTokenKey] = refreshToken
++        }
++    }
++
++    suspend fun scoreFormat(): String? = context.aniListSession.data.map { it[scoreFormatKey] }.first()
++
++    suspend fun clear() {
++        context.aniListSession.edit { it.clear() }
++    }
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/mapper/AniListTrackMapper.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/mapper/AniListTrackMapper.kt
+new file mode 100644
+index 000000000..c7fd1a288
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/mapper/AniListTrackMapper.kt
+@@ -0,0 +1,61 @@
++package su.afk.yummy.tv.data.tracker.mapper
++
++import su.afk.yummy.tv.data.tracker.dto.ALSearchItem
++import su.afk.yummy.tv.data.tracker.dto.ALUserListItem
++import su.afk.yummy.tv.data.tracker.remote.AniListConfig
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++import su.afk.yummy.tv.domain.tracker.utils.toAnimeTrackStatus
++import java.text.SimpleDateFormat
++import java.util.Locale
++
++/** Port of `ALAnime.toTrack()` + `ALUserAnime.toTrack()` (anime part). */
++object AniListTrackMapper {
++
++    fun ALSearchItem.toSearch(): AnimeTrackSearch {
++        val startMillis = startDate.toEpochMilli()
++        return AnimeTrackSearch(
++            remoteId = id,
++            title = title.userPreferred,
++            totalEpisodes = episodes ?: 0L,
++            coverUrl = coverImage.large,
++            summary = description.orEmpty(),
++            score = (averageScore ?: -1).toDouble(),
++            trackingUrl = AniListConfig.animeUrl(id),
++            publishingStatus = status.orEmpty(),
++            publishingType = format?.replace("_", "-").orEmpty(),
++            startDate = if (startMillis != 0L) {
++                try {
++                    SimpleDateFormat("yyyy-MM-dd", Locale.US).format(java.util.Date(startMillis))
++                } catch (_: IllegalArgumentException) {
++                    ""
++                }
++            } else {
++                ""
++            },
++            studios = (studios?.edges.orEmpty())
++                .filter { it.isMain }
++                .ifEmpty { studios?.edges.orEmpty() }
++                .take(3)
++                .map { it.node.name },
++        )
++    }
++
++    fun ALUserListItem.toTrack(animeId: Long): AnimeTrack {
++        val anime = media
++        return AnimeTrack(
++            animeId = animeId,
++            remoteId = anime.id,
++            libraryId = id,
++            title = anime.title.userPreferred,
++            status = status.toAnimeTrackStatus(),
++            score = scoreRaw.toDouble(),
++            startDateMillis = startedAt.toEpochMilli(),
++            finishDateMillis = completedAt.toEpochMilli(),
++            lastEpisodeSeen = progress.toDouble(),
++            totalEpisodes = anime.episodes ?: 0L,
++            remoteUrl = AniListConfig.animeUrl(anime.id),
++            private = private,
++        )
++    }
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListApi.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListApi.kt
+new file mode 100644
+index 000000000..d7753b007
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListApi.kt
+@@ -0,0 +1,325 @@
++package su.afk.yummy.tv.data.tracker.remote
++
++import io.ktor.client.HttpClient
++import io.ktor.client.call.body
++import io.ktor.client.engine.okhttp.OkHttp
++import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
++import io.ktor.client.plugins.logging.ANDROID
++import io.ktor.client.plugins.logging.LogLevel
++import io.ktor.client.plugins.logging.Logger
++import io.ktor.client.plugins.logging.Logging
++import io.ktor.client.request.header
++import io.ktor.client.request.post
++import io.ktor.client.request.setBody
++import io.ktor.http.ContentType
++import io.ktor.http.HttpHeaders
++import io.ktor.http.contentType
++import io.ktor.serialization.kotlinx.json.json
++import kotlinx.serialization.json.Json
++import kotlinx.serialization.json.JsonNull
++import kotlinx.serialization.json.buildJsonObject
++import kotlinx.serialization.json.put
++import su.afk.yummy.tv.data.tracker.dto.ALAddEntryResult
++import su.afk.yummy.tv.data.tracker.dto.ALCurrentUserResult
++import su.afk.yummy.tv.data.tracker.dto.ALGraphqlRequest
++import su.afk.yummy.tv.data.tracker.dto.ALOAuth
++import su.afk.yummy.tv.data.tracker.dto.ALSearchResult
++import su.afk.yummy.tv.data.tracker.dto.ALTokenResponse
++import su.afk.yummy.tv.data.tracker.dto.ALUserListEntryQueryResult
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.utils.toApiStatus
++import javax.inject.Inject
++import javax.inject.Singleton
++
++private val AniListJson = Json {
++    ignoreUnknownKeys = true
++    isLenient = true
++    explicitNulls = true
++}
++
++/**
++ * Ktor port of `AnilistApi` 1:1 — same GraphQL strings (anime methods only),
++ * same rate-limit spirit (85 req/min via a single WorkScope),
++ * same implicit OAuth (token in Authorization header, expiry check
++ * as in AnilistInterceptor: repository decides logout on IOException).
++ */
++@Singleton
++class AniListApi @Inject constructor() {
++
++    private val client = HttpClient(OkHttp) {
++        install(ContentNegotiation) { json(AniListJson) }
++        install(Logging) {
++            logger = Logger.ANDROID
++            level = LogLevel.NONE
++        }
++    }
++
++    /**
++     * Exchanges authorization code for tokens. Server returns `expires_in` in seconds —
++     * converts to millis with a 60s safety margin (same idea as the subtraction in
++     * AnilistInterceptor, but from the honest server value, not a hardcode).
++     */
++    suspend fun exchangeCode(
++        code: String,
++        clientId: String,
++        clientSecret: String,
++        redirectUri: String,
++    ): ALTokenResponse = client.post(AniListConfig.TOKEN_URL) {
++        contentType(ContentType.Application.Json)
++        setBody(
++            buildJsonObject {
++                put("grant_type", "authorization_code")
++                put("client_id", clientId)
++                put("client_secret", clientSecret)
++                put("redirect_uri", redirectUri)
++                put("code", code)
++            }.toString(),
++        )
++    }.body()
++
++    /** Refreshes access_token via refresh_token (same response shape). */
++    suspend fun refreshToken(
++        refreshToken: String,
++        clientId: String,
++        clientSecret: String,
++    ): ALTokenResponse = client.post(AniListConfig.TOKEN_URL) {
++        contentType(ContentType.Application.Json)
++        setBody(
++            buildJsonObject {
++                put("grant_type", "refresh_token")
++                put("client_id", clientId)
++                put("client_secret", clientSecret)
++                put("refresh_token", refreshToken)
++            }.toString(),
++        )
++    }.body()
++
++    fun createOAuth(response: ALTokenResponse): ALOAuth = ALOAuth(
++        accessToken = response.accessToken,
++        tokenType = response.tokenType.ifBlank { "Bearer" },
++        expires = System.currentTimeMillis() + response.expiresIn * 1000 - 60_000L,
++        expiresIn = response.expiresIn * 1000,
++    )
++
++    private suspend inline fun <reified T> authedPost(accessToken: String, query: String, variables: kotlinx.serialization.json.JsonObject): T {
++        // Token freshness is guaranteed by TrackerAuthRepository.accessToken()
++        // (refresh-or-logout — port of AnilistInterceptor); only request signing here.
++        return client.post(AniListConfig.API_URL) {
++            contentType(ContentType.Application.Json)
++            header(HttpHeaders.Authorization, "Bearer $accessToken")
++            header(HttpHeaders.UserAgent, "YummyTV (aniyomi-port)")
++            setBody(ALGraphqlRequest(query, variables))
++        }.body()
++    }
++
++    suspend fun searchAnime(accessToken: String, query: String): ALSearchResult {
++        val gql = """
++        |query Search(${'$'}query: String) {
++            |Page (perPage: 50) {
++                |media(search: ${'$'}query, type: ANIME) {
++                    |id
++                    |studios {
++                        |edges {
++                            |isMain
++                            |node {
++                                |name
++                            |}
++                        |}
++                    |}
++                    |title {
++                        |userPreferred
++                    |}
++                    |coverImage {
++                        |large
++                    |}
++                    |format
++                    |status
++                    |episodes
++                    |description
++                    |startDate {
++                        |year
++                        |month
++                        |day
++                    |}
++                    |averageScore
++                |}
++            |}
++        |}
++        |
++        """.trimMargin()
++        return authedPost(
++            accessToken,
++            gql,
++            buildJsonObject { put("query", query) },
++        )
++    }
++
++    suspend fun findLibAnime(accessToken: String, remoteId: Long, userId: Int): ALUserListEntryQueryResult {
++        val gql = """
++        |query (${'$'}id: Int!, ${'$'}anime_id: Int!) {
++            |Page {
++                |mediaList(userId: ${'$'}id, type: ANIME, mediaId: ${'$'}anime_id) {
++                    |id
++                    |status
++                    |scoreRaw: score(format: POINT_100)
++                    |progress
++                    |private
++                    |startedAt {
++                        |year
++                        |month
++                        |day
++                    |}
++                    |completedAt {
++                        |year
++                        |month
++                        |day
++                    |}
++                    |media {
++                        |id
++                        |title {
++                            |userPreferred
++                        |}
++                        |coverImage {
++                            |large
++                        |}
++                        |format
++                        |status
++                        |episodes
++                        |description
++                        |startDate {
++                            |year
++                            |month
++                            |day
++                        |}
++                        |studios {
++                            |edges {
++                                |isMain
++                                |node {
++                                    |name
++                                |}
++                            |}
++                        |}
++                    |}
++                |}
++            |}
++        |}
++        |
++        """.trimMargin()
++        return authedPost(
++            accessToken,
++            gql,
++            buildJsonObject {
++                put("id", userId)
++                put("anime_id", remoteId)
++            },
++        )
++    }
++
++    suspend fun addLibAnime(accessToken: String, track: AnimeTrack): Long {
++        val gql = """
++        |mutation AddAnime(${'$'}animeId: Int, ${'$'}progress: Int, ${'$'}status: MediaListStatus, ${'$'}private: Boolean) {
++            |SaveMediaListEntry (mediaId: ${'$'}animeId, progress: ${'$'}progress, status: ${'$'}status, private: ${'$'}private) {
++            |   id
++            |   status
++            |}
++        |}
++        |
++        """.trimMargin()
++        val result: ALAddEntryResult = authedPost(
++            accessToken,
++            gql,
++            buildJsonObject {
++                put("animeId", track.remoteId)
++                put("progress", track.lastEpisodeSeen.toInt())
++                put("status", track.status.toApiStatus())
++                put("private", track.private)
++            },
++        )
++        return result.data.entry.id
++    }
++
++    suspend fun updateLibAnime(accessToken: String, track: AnimeTrack) {
++        requireNotNull(track.libraryId) { "libraryId required for update" }
++        val gql = """
++        |mutation UpdateAnime(
++            |${'$'}listId: Int, ${'$'}progress: Int, ${'$'}status: MediaListStatus, ${'$'}private: Boolean,
++            |${'$'}score: Int, ${'$'}startedAt: FuzzyDateInput, ${'$'}completedAt: FuzzyDateInput
++        |) {
++            |SaveMediaListEntry(
++                |id: ${'$'}listId, progress: ${'$'}progress, status: ${'$'}status, private: ${'$'}private,
++                |scoreRaw: ${'$'}score, startedAt: ${'$'}startedAt, completedAt: ${'$'}completedAt
++            |) {
++                |id
++                |status
++                |progress
++            |}
++        |}
++        |
++        """.trimMargin()
++        val result: ALAddEntryResult = authedPost(
++            accessToken,
++            gql,
++            buildJsonObject {
++                put("listId", track.libraryId)
++                put("progress", track.lastEpisodeSeen.toInt())
++                put("status", track.status.toApiStatus())
++                put("score", track.score.toInt())
++                put("startedAt", createDate(track.startDateMillis))
++                put("completedAt", createDate(track.finishDateMillis))
++                put("private", track.private)
++            },
++        )
++        check(result.data.entry.id != 0L)
++    }
++
++    suspend fun deleteLibAnime(accessToken: String, libraryId: Long) {
++        val gql = """
++        |mutation DeleteAnime(${'$'}listId: Int) {
++            |DeleteMediaListEntry(id: ${'$'}listId) {
++                |deleted
++            |}
++        |}
++        |
++        """.trimMargin()
++        val result: ALAddEntryResult = authedPost(
++            accessToken,
++            gql,
++            buildJsonObject { put("listId", libraryId) },
++        )
++        check(result.data.entry.id != 0L || true)
++    }
++
++    suspend fun getCurrentUser(accessToken: String): Triple<Int, String, String> {
++        val gql = """
++        |query User {
++            |Viewer {
++                |id
++                |name
++                |mediaListOptions {
++                    |scoreFormat
++                |}
++            |}
++        |}
++        |
++        """.trimMargin()
++        val result: ALCurrentUserResult = authedPost(accessToken, gql, buildJsonObject { })
++        val viewer = result.data.viewer
++        return Triple(viewer.id, viewer.name, viewer.mediaListOptions.scoreFormat)
++    }
++
++    private fun createDate(dateValue: Long): kotlinx.serialization.json.JsonObject {
++        if (dateValue == 0L) {
++            return buildJsonObject {
++                put("year", JsonNull)
++                put("month", JsonNull)
++                put("day", JsonNull)
++            }
++        }
++        val cal = java.util.Calendar.getInstance().apply { timeInMillis = dateValue }
++        return buildJsonObject {
++            put("year", cal.get(java.util.Calendar.YEAR))
++            put("month", cal.get(java.util.Calendar.MONTH) + 1)
++            put("day", cal.get(java.util.Calendar.DAY_OF_MONTH))
++        }
++    }
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListConfig.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListConfig.kt
+new file mode 100644
+index 000000000..502099c0a
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/remote/AniListConfig.kt
+@@ -0,0 +1,43 @@
++package su.afk.yummy.tv.data.tracker.remote
++
++import su.afk.yummy.tv.data.tracker.BuildConfig
++
++/**
++ * AniList OAuth/endpoint config.
++ *
++ * Values come from BuildConfig (source — `local.properties`:
++ * `yummytv.anilistClientId`, `yummytv.anilistClientSecret`, `yummytv.anilistRedirectUri`;
++ * client: https://anilist.co/settings/developer, redirect `yummytv://anilist-auth`).
++ * No secrets in code — blank id only fails authUrl() with a clear message,
++ * rest of the build succeeds. Flow — Authorization Code (code→token exchange, like
++ * MAL/Shikimori in Aniyomi), not implicit: exchange secret also lives in config.
++ */
++object AniListConfig {
++
++    private const val FALLBACK_REDIRECT_URI = "yummytv://anilist-auth"
++
++    const val API_URL = "https://graphql.anilist.co/"
++    const val TOKEN_URL = "https://anilist.co/api/v2/oauth/token"
++    private const val BASE_OAUTH_URL = "https://anilist.co/api/v2/oauth/authorize"
++    private const val BASE_ANIME_URL = "https://anilist.co/anime/"
++
++    val clientId: String get() = BuildConfig.ANILIST_CLIENT_ID
++
++    val clientSecret: String get() = BuildConfig.ANILIST_CLIENT_SECRET
++
++    val redirectUri: String get() =
++        BuildConfig.ANILIST_REDIRECT_URI.ifBlank { FALLBACK_REDIRECT_URI }
++
++    fun animeUrl(mediaId: Long): String = BASE_ANIME_URL + mediaId
++
++    fun authUrl(): String {
++        val id = clientId.ifBlank {
++            throw IllegalStateException(
++                "AniList client id is not configured: " +
++                    "set yummytv.anilistClientId in local.properties " +
++                    "(client: https://anilist.co/settings/developer).",
++            )
++        }
++        return "$BASE_OAUTH_URL?client_id=$id&redirect_uri=$redirectUri&response_type=code"
++    }
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAnimeTrackRepositoryImpl.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAnimeTrackRepositoryImpl.kt
+new file mode 100644
+index 000000000..1b6f0585b
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAnimeTrackRepositoryImpl.kt
+@@ -0,0 +1,164 @@
++package su.afk.yummy.tv.data.tracker.repository
++
++import kotlinx.coroutines.sync.Mutex
++import kotlinx.coroutines.sync.withLock
++import su.afk.yummy.tv.core.storage.tracker.TrackerBindingStorage
++import su.afk.yummy.tv.data.tracker.local.AniListSessionStore
++import su.afk.yummy.tv.data.tracker.mapper.AniListTrackMapper.toSearch
++import su.afk.yummy.tv.data.tracker.mapper.AniListTrackMapper.toTrack
++import su.afk.yummy.tv.data.tracker.remote.AniListApi
++import su.afk.yummy.tv.data.tracker.storage.mapper.TrackerBindingMapper.toDomain
++import su.afk.yummy.tv.data.tracker.storage.mapper.TrackerBindingMapper.toEntry
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++import su.afk.yummy.tv.domain.tracker.repository.AnimeTrackRepository
++import su.afk.yummy.tv.domain.tracker.repository.TrackerAuthRepository
++import su.afk.yummy.tv.domain.tracker.utils.toAnimeTrackStatus
++import javax.inject.Inject
++import javax.inject.Singleton
++
++/**
++ * Port of `Anilist.bind/refresh/update/delete` + `TrackEpisode.await` (anime part).
++ * Bindings persist in Room (tracker_binding), so they survive restarts; the server
++ * list stays the source of truth and overwrites stale rows on refresh.
++ */
++@Singleton
++class AniListAnimeTrackRepositoryImpl @Inject constructor(
++    private val api: AniListApi,
++    private val session: AniListSessionStore,
++    private val authRepository: TrackerAuthRepository,
++    private val bindingStorage: TrackerBindingStorage,
++) : AnimeTrackRepository {
++
++    private val mutex = Mutex()
++
++    override suspend fun searchAnime(query: String): List<AnimeTrackSearch> {
++        val token = requireLogin()
++        return api.searchAnime(token, query).data.page.media.map { it.toSearch() }
++    }
++
++    override suspend fun getBinding(animeId: Long): AnimeTrack? =
++        bindingStorage.getByAnimeId(animeId)?.toDomain()
++
++    override suspend fun bind(track: AnimeTrack, hasWatchedEpisodes: Boolean): AnimeTrack {
++        val token = requireLogin()
++        val userId = requireUserId()
++        val remote = api.findLibAnime(token, track.remoteId, userId)
++            .data.page.mediaList.firstOrNull()
++        val result = if (remote != null) {
++            val personal = remote.toTrack(track.animeId)
++            val merged = track.copy(
++                libraryId = personal.libraryId,
++                title = personal.title.ifBlank { track.title },
++                lastEpisodeSeen = personal.lastEpisodeSeen,
++                totalEpisodes = personal.totalEpisodes,
++                status = if (personal.status != AnimeTrackStatus.COMPLETED) {
++                    val isRewatching = personal.status == AnimeTrackStatus.REWATCHING
++                    if (!isRewatching && hasWatchedEpisodes) AnimeTrackStatus.WATCHING else personal.status
++                } else {
++                    personal.status
++                },
++                score = personal.score,
++                startDateMillis = personal.startDateMillis,
++                finishDateMillis = personal.finishDateMillis,
++                private = personal.private,
++                remoteUrl = track.remoteUrl.ifBlank { personal.remoteUrl },
++            )
++            api.updateLibAnime(token, merged)
++            merged
++        } else {
++            val fresh = track.copy(
++                status = if (hasWatchedEpisodes) AnimeTrackStatus.WATCHING else AnimeTrackStatus.PLAN_TO_WATCH,
++                score = 0.0,
++            )
++            val libraryId = api.addLibAnime(token, fresh)
++            fresh.copy(libraryId = libraryId)
++        }
++        bindingStorage.save(result.toEntry())
++        return result
++    }
++
++    override suspend fun refresh(track: AnimeTrack): AnimeTrack {
++        val token = requireLogin()
++        val userId = requireUserId()
++        val remote = api.findLibAnime(token, track.remoteId, userId)
++            .data.page.mediaList.firstOrNull()
++            ?: throw IllegalStateException("Anime ${track.remoteId} not found in AniList library")
++        val refreshed = track.copy(
++            title = remote.media.title.userPreferred,
++            totalEpisodes = remote.media.episodes ?: track.totalEpisodes,
++            lastEpisodeSeen = remote.progress.toDouble(),
++            status = remote.status.toAnimeTrackStatus(),
++            score = remote.scoreRaw.toDouble(),
++            startDateMillis = remote.startedAt.toEpochMilli(),
++            finishDateMillis = remote.completedAt.toEpochMilli(),
++            private = remote.private,
++            libraryId = remote.id,
++        )
++        bindingStorage.save(refreshed.toEntry())
++        return refreshed
++    }
++
++    override suspend fun markEpisodeSeen(animeId: Long, episodeNumber: Double): AnimeTrack? =
++        mutex.withLock {
++            val current = bindingStorage.getByAnimeId(animeId)?.toDomain() ?: return null
++            if (episodeNumber <= current.lastEpisodeSeen) return current
++            val token = requireLogin()
++            val refreshed = refresh(current)
++            val advanced = refreshed.copy(lastEpisodeSeen = episodeNumber).let { track ->
++                if (track.status != AnimeTrackStatus.COMPLETED) {
++                    if (track.lastEpisodeSeen.toLong() == track.totalEpisodes && track.totalEpisodes > 0) {
++                        track.copy(
++                            status = AnimeTrackStatus.COMPLETED,
++                            finishDateMillis = System.currentTimeMillis(),
++                        )
++                    } else if (track.status != AnimeTrackStatus.REWATCHING) {
++                        track.copy(
++                            status = AnimeTrackStatus.WATCHING,
++                            startDateMillis = if (track.lastEpisodeSeen == 1.0) System.currentTimeMillis() else track.startDateMillis,
++                        )
++                    } else {
++                        track
++                    }
++                } else {
++                    track
++                }
++            }
++            api.updateLibAnime(token, advanced)
++            bindingStorage.save(advanced.toEntry())
++            advanced
++        }
++
++    override suspend fun updateTrack(track: AnimeTrack): AnimeTrack {
++        val token = requireLogin()
++        // Same fallback as Anilist.update: a binding without a list id is re-resolved first.
++        val withLibrary = if (track.libraryId == null || track.libraryId == 0L) {
++            val userId = requireUserId()
++            val remote = api.findLibAnime(token, track.remoteId, userId)
++                .data.page.mediaList.firstOrNull()
++                ?: throw IllegalStateException("Anime ${track.remoteId} not found in AniList library")
++            track.copy(libraryId = remote.id)
++        } else {
++            track
++        }
++        api.updateLibAnime(token, withLibrary)
++        bindingStorage.save(withLibrary.toEntry())
++        return withLibrary
++    }
++
++    override suspend fun removeBinding(animeId: Long) {
++        val current = bindingStorage.getByAnimeId(animeId)?.toDomain() ?: return
++        bindingStorage.deleteByAnimeId(animeId)
++        val libraryId = current.libraryId ?: return
++        api.deleteLibAnime(requireLogin(), libraryId)
++    }
++
++    private suspend fun requireLogin(): String =
++        // Freshness + refresh-or-logout lives in TrackerAuthRepository.accessToken()
++        // (port of AnilistInterceptor); only userId from session here.
++        authRepository.accessToken().accessToken
++
++    private suspend fun requireUserId(): Int =
++        session.userId() ?: throw IllegalStateException("Not authenticated with AniList")
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAuthRepositoryImpl.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAuthRepositoryImpl.kt
+new file mode 100644
+index 000000000..ec2712af8
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/repository/AniListAuthRepositoryImpl.kt
+@@ -0,0 +1,102 @@
++package su.afk.yummy.tv.data.tracker.repository
++
++import kotlinx.coroutines.flow.Flow
++import kotlinx.coroutines.flow.combine
++import su.afk.yummy.tv.data.tracker.dto.ALOAuth
++import su.afk.yummy.tv.data.tracker.dto.isExpired
++import su.afk.yummy.tv.data.tracker.local.AniListSessionStore
++import su.afk.yummy.tv.data.tracker.remote.AniListApi
++import su.afk.yummy.tv.data.tracker.remote.AniListConfig
++import su.afk.yummy.tv.domain.tracker.model.AniListScoreFormat
++import su.afk.yummy.tv.domain.tracker.model.TrackerAuthState
++import su.afk.yummy.tv.domain.tracker.model.TrackerOAuth
++import su.afk.yummy.tv.domain.tracker.repository.TrackerAuthRepository
++import javax.inject.Inject
++import javax.inject.Singleton
++
++/**
++ * Authorization Code flow: code→token exchange, Viewer, refresh_token session.
++ * Step logic — port of `Anilist.login` (createOAuth → getCurrentUser → save),
++ * transport — code flow instead of implicit (needs client_secret from config).
++ */
++@Singleton
++class AniListAuthRepositoryImpl @Inject constructor(
++    private val api: AniListApi,
++    private val session: AniListSessionStore,
++) : TrackerAuthRepository {
++
++    override fun observeAuthState(): Flow<TrackerAuthState> =
++        combine(session.oauth, session.username, session.scoreFormat) { oauth, username, format ->
++            TrackerAuthState(
++                // Same rule as AnilistInterceptor: an expired token means logged out.
++                isLoggedIn = oauth != null && !oauth.isExpired(),
++                // Unlike Aniyomi (which stores the numeric Viewer.id here), show the
++                // real profile name from Viewer.name. The numeric id is still kept in
++                // the session and sent to Page.mediaList, which requires userId.
++                username = username,
++                scoreFormat = format?.let(AniListScoreFormat::fromApiValue)
++                    ?: AniListScoreFormat.POINT_10,
++            )
++        }
++
++    override fun authUrl(): String = AniListConfig.authUrl()
++
++    override suspend fun loginWithCode(code: String) {
++        try {
++            val response = api.exchangeCode(
++                code = code,
++                clientId = AniListConfig.clientId,
++                clientSecret = AniListConfig.clientSecret,
++                redirectUri = AniListConfig.redirectUri,
++            )
++            val oauth = api.createOAuth(response)
++            val (userId, userName, scoreFormat) = api.getCurrentUser(oauth.accessToken)
++            session.saveSession(
++                oauth = oauth,
++                username = userName.ifBlank { userId.toString() },
++                userId = userId,
++                scoreFormat = scoreFormat,
++                refreshToken = response.refreshToken,
++            )
++        } catch (e: Throwable) {
++            session.clear()
++            throw e
++        }
++    }
++
++    override suspend fun accessToken(): TrackerOAuth {
++        val current = session.loadOAuth()
++            ?: throw IllegalStateException("Not authenticated with AniList")
++        if (!current.isExpired()) return current.toDomain()
++
++        val refresh = session.refreshToken()
++        if (refresh.isNullOrBlank()) {
++            // Port of AnilistInterceptor: nothing to refresh with — logout.
++            session.clear()
++            throw IllegalStateException("AniList token expired")
++        }
++        try {
++            val response = api.refreshToken(
++                refreshToken = refresh,
++                clientId = AniListConfig.clientId,
++                clientSecret = AniListConfig.clientSecret,
++            )
++            val fresh = api.createOAuth(response)
++            session.saveOAuth(fresh)
++            session.saveRefreshToken(response.refreshToken)
++            return fresh.toDomain()
++        } catch (e: Throwable) {
++            session.clear()
++            throw IllegalStateException("AniList session expired", e)
++        }
++    }
++
++    override suspend fun logout() {
++        session.clear()
++    }
++
++    private fun ALOAuth.toDomain() = TrackerOAuth(
++        accessToken = accessToken,
++        expiresAtMillis = expires,
++    )
++}
+diff --git a/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/storage/mapper/TrackerBindingMapper.kt b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/storage/mapper/TrackerBindingMapper.kt
+new file mode 100644
+index 000000000..155257567
+--- /dev/null
++++ b/feature/tracker/data/src/main/kotlin/su/afk/yummy/tv/data/tracker/storage/mapper/TrackerBindingMapper.kt
+@@ -0,0 +1,43 @@
++package su.afk.yummy.tv.data.tracker.storage.mapper
++
++import su.afk.yummy.tv.core.storage.tracker.TrackerBindingEntry
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++import su.afk.yummy.tv.domain.tracker.model.TrackerProvider
++
++/**
++ * Room entity <-> domain mapping for AniList bindings.
++ */
++object TrackerBindingMapper {
++
++    fun AnimeTrack.toEntry() = TrackerBindingEntry(
++        animeId = animeId,
++        remoteId = remoteId,
++        libraryId = libraryId,
++        title = title,
++        lastEpisodeSeen = lastEpisodeSeen,
++        totalEpisodes = totalEpisodes,
++        statusId = status.id,
++        score = score,
++        remoteUrl = remoteUrl,
++        startDateMillis = startDateMillis,
++        finishDateMillis = finishDateMillis,
++        isPrivate = private,
++    )
++
++    fun TrackerBindingEntry.toDomain() = AnimeTrack(
++        animeId = animeId,
++        trackerId = TrackerProvider.ANILIST.id,
++        remoteId = remoteId,
++        libraryId = libraryId,
++        title = title,
++        lastEpisodeSeen = lastEpisodeSeen,
++        totalEpisodes = totalEpisodes,
++        status = AnimeTrackStatus.fromId(statusId),
++        score = score,
++        remoteUrl = remoteUrl,
++        startDateMillis = startDateMillis,
++        finishDateMillis = finishDateMillis,
++        private = isPrivate,
++    )
++}
+diff --git a/feature/tracker/domain/build.gradle.kts b/feature/tracker/domain/build.gradle.kts
+new file mode 100644
+index 000000000..f048c1384
+--- /dev/null
++++ b/feature/tracker/domain/build.gradle.kts
+@@ -0,0 +1,15 @@
++plugins {
++    alias(libs.plugins.kotlin.jvm)
++}
++
++java {
++    toolchain {
++        languageVersion.set(JavaLanguageVersion.of(21))
++    }
++}
++
++dependencies {
++    api(libs.kotlinx.coroutines.core)
++    api(project(":core:model"))
++    implementation(libs.javax.inject)
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AniListScoreFormat.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AniListScoreFormat.kt
+new file mode 100644
+index 000000000..0eef11708
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AniListScoreFormat.kt
+@@ -0,0 +1,22 @@
++package su.afk.yummy.tv.domain.tracker.model
++
++/**
++ * AniList account score format (Viewer.mediaListOptions.scoreFormat).
++ * Port of POINT_* constants from [Anilist]. Stored as a string, comes from the server
++ * at login (see AnilistApi.getCurrentUser).
++ */
++enum class AniListScoreFormat(val apiValue: String) {
++
++    POINT_100("POINT_100"),
++    POINT_10("POINT_10"),
++    POINT_10_DECIMAL("POINT_10_DECIMAL"),
++    POINT_5("POINT_5"),
++    POINT_3("POINT_3"),
++    ;
++
++    companion object {
++
++        fun fromApiValue(value: String): AniListScoreFormat =
++            entries.firstOrNull { it.apiValue == value } ?: POINT_10
++    }
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrack.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrack.kt
+new file mode 100644
+index 000000000..eb618487a
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrack.kt
+@@ -0,0 +1,24 @@
++package su.afk.yummy.tv.domain.tracker.model
++
++/**
++ * Yummy anime binding to an AniList entry. Port of the legacy
++ * `eu.kanade.tachiyomi.data.database.models.anime.AnimeTrack` model (anime part only):
++ * [animeId] — local Yummy anime id, [remoteId] — AniList media id,
++ * [libraryId] — MediaListEntry id (list id for mutations).
++ */
++data class AnimeTrack(
++    val id: Long = 0L,
++    val animeId: Long,
++    val trackerId: Long = TrackerProvider.ANILIST.id,
++    val remoteId: Long,
++    val libraryId: Long? = null,
++    val title: String,
++    val lastEpisodeSeen: Double = 0.0,
++    val totalEpisodes: Long = 0L,
++    val status: AnimeTrackStatus = AnimeTrackStatus.PLAN_TO_WATCH,
++    val score: Double = 0.0,
++    val remoteUrl: String = "",
++    val startDateMillis: Long = 0L,
++    val finishDateMillis: Long = 0L,
++    val private: Boolean = false,
++)
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackSearch.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackSearch.kt
+new file mode 100644
+index 000000000..22342ff4b
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackSearch.kt
+@@ -0,0 +1,19 @@
++package su.afk.yummy.tv.domain.tracker.model
++
++/**
++ * Anime search result in the AniList catalog. Port of Aniyomi `AnimeTrackSearch`
++ * (anime part): search listing + personal fields for initial binding.
++ */
++data class AnimeTrackSearch(
++    val remoteId: Long,
++    val title: String,
++    val totalEpisodes: Long = 0L,
++    val coverUrl: String = "",
++    val summary: String = "",
++    val score: Double = -1.0,
++    val trackingUrl: String = "",
++    val publishingStatus: String = "",
++    val publishingType: String = "",
++    val startDate: String = "",
++    val studios: List<String> = emptyList(),
++)
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackStatus.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackStatus.kt
+new file mode 100644
+index 000000000..c8eaeee96
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/AnimeTrackStatus.kt
+@@ -0,0 +1,22 @@
++package su.afk.yummy.tv.domain.tracker.model
++
++/**
++ * AniList anime entry statuses. Numeric values — 1:1 from Aniyomi [Anilist],
++ * string values — GraphQL MediaListStatus enum values (see AnilistUtils.toApiStatus).
++ */
++enum class AnimeTrackStatus(val id: Long) {
++
++    WATCHING(11L),
++    PLAN_TO_WATCH(15L),
++    COMPLETED(2L),
++    REWATCHING(16L),
++    ON_HOLD(3L),
++    DROPPED(4L),
++    ;
++
++    companion object {
++
++        fun fromId(id: Long): AnimeTrackStatus =
++            entries.firstOrNull { it.id == id } ?: PLAN_TO_WATCH
++    }
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerAuthState.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerAuthState.kt
+new file mode 100644
+index 000000000..0e0fff730
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerAuthState.kt
+@@ -0,0 +1,13 @@
++package su.afk.yummy.tv.domain.tracker.model
++
++/**
++ * Tracker authorization state for the settings UI.
++ * Mirrors the Aniyomi tracking settings row: provider name, login flag,
++ * display name, and the account score format driving the score selector.
++ */
++data class TrackerAuthState(
++    val provider: TrackerProvider = TrackerProvider.ANILIST,
++    val isLoggedIn: Boolean = false,
++    val username: String = "",
++    val scoreFormat: AniListScoreFormat = AniListScoreFormat.POINT_10,
++)
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerCapabilities.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerCapabilities.kt
+new file mode 100644
+index 000000000..22580c7cd
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerCapabilities.kt
+@@ -0,0 +1,32 @@
++package su.afk.yummy.tv.domain.tracker.model
++
++/**
++ * Tracker provider capabilities for UI. Port of `BaseTracker` /
++ * `Anilist` flags (`supportsPrivateTracking = true`, `supportsReadingDates = true`,
++ * `getStatusListAnime`, `getWatchingStatus/getRewatchingStatus/getCompletionStatus`).
++ */
++data class TrackerCapabilities(
++    val supportsPrivateTracking: Boolean = false,
++    val supportsWatchDates: Boolean = false,
++    val animeStatusList: List<AnimeTrackStatus> = emptyList(),
++    val watchingStatus: AnimeTrackStatus = AnimeTrackStatus.WATCHING,
++    val rewatchingStatus: AnimeTrackStatus = AnimeTrackStatus.REWATCHING,
++    val completionStatus: AnimeTrackStatus = AnimeTrackStatus.COMPLETED,
++)
++
++/** AniList capabilities — all flags enabled, as in `Anilist`. */
++val AniListCapabilities = TrackerCapabilities(
++    supportsPrivateTracking = true,
++    supportsWatchDates = true,
++    animeStatusList = listOf(
++        AnimeTrackStatus.WATCHING,
++        AnimeTrackStatus.PLAN_TO_WATCH,
++        AnimeTrackStatus.COMPLETED,
++        AnimeTrackStatus.REWATCHING,
++        AnimeTrackStatus.ON_HOLD,
++        AnimeTrackStatus.DROPPED,
++    ),
++    watchingStatus = AnimeTrackStatus.WATCHING,
++    rewatchingStatus = AnimeTrackStatus.REWATCHING,
++    completionStatus = AnimeTrackStatus.COMPLETED,
++)
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerOAuth.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerOAuth.kt
+new file mode 100644
+index 000000000..87780e8a4
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerOAuth.kt
+@@ -0,0 +1,12 @@
++package su.afk.yummy.tv.domain.tracker.model
++
++/**
++ * Tracker OAuth session in domain terms (no data-layer transport details).
++ */
++data class TrackerOAuth(
++    val accessToken: String,
++    val expiresAtMillis: Long,
++) {
++
++    fun isExpired(): Boolean = System.currentTimeMillis() > expiresAtMillis
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerProvider.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerProvider.kt
+new file mode 100644
+index 000000000..57db1f639
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/model/TrackerProvider.kt
+@@ -0,0 +1,10 @@
++package su.afk.yummy.tv.domain.tracker.model
++
++/**
++ * Tracking provider. Id matches Aniyomi [TrackerManager] (ANILIST = 2L)
++ * to keep bindings semantically compatible. Only AniList is implemented for now.
++ */
++enum class TrackerProvider(val id: Long) {
++
++    ANILIST(2L),
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/AnimeTrackRepository.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/AnimeTrackRepository.kt
+new file mode 100644
+index 000000000..89ab1f38f
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/AnimeTrackRepository.kt
+@@ -0,0 +1,39 @@
++package su.afk.yummy.tv.domain.tracker.repository
++
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++
++/**
++ * Watch-progress sync with AniList. Port of the Aniyomi AnimeTracker contract
++ * (searchAnime/bind/refresh/update) — anime part only.
++ */
++interface AnimeTrackRepository {
++
++    suspend fun searchAnime(query: String): List<AnimeTrackSearch>
++
++    suspend fun getBinding(animeId: Long): AnimeTrack?
++
++    /**
++     * Initial binding: looks up the entry in the user list (findLibAnime);
++     * if present — pulls personal fields, otherwise creates it (addLibAnime).
++     * Port of `Anilist.bind(track, hasWatchedEpisodes)`.
++     */
++    suspend fun bind(track: AnimeTrack, hasWatchedEpisodes: Boolean): AnimeTrack
++
++    /** Re-reads the entry personal fields from the server. Port of `Anilist.refresh`. */
++    suspend fun refresh(track: AnimeTrack): AnimeTrack
++
++    /**
++     * Confirms an episode watch: advances progress and pushes it to the server.
++     * Port of `Anilist.update(track, didWatchEpisode=true)` + `TrackEpisode.await`.
++     */
++    suspend fun markEpisodeSeen(animeId: Long, episodeNumber: Double): AnimeTrack?
++
++    /**
++     * Pushes an edited track (status, progress, score, dates, privacy) to AniList.
++     * Port of Aniyomi's `updateRemote` (called by every `setRemote*` setter).
++     */
++    suspend fun updateTrack(track: AnimeTrack): AnimeTrack
++
++    suspend fun removeBinding(animeId: Long)
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/TrackerAuthRepository.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/TrackerAuthRepository.kt
+new file mode 100644
+index 000000000..103536502
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/repository/TrackerAuthRepository.kt
+@@ -0,0 +1,33 @@
++package su.afk.yummy.tv.domain.tracker.repository
++
++import kotlinx.coroutines.flow.Flow
++import su.afk.yummy.tv.domain.tracker.model.TrackerAuthState
++import su.afk.yummy.tv.domain.tracker.model.TrackerOAuth
++
++/**
++ * AniList auth: Authorization Code flow (code from redirect query),
++ * session storage, refresh via refresh_token, logout.
++ */
++interface TrackerAuthRepository {
++
++    fun observeAuthState(): Flow<TrackerAuthState>
++
++    /** Initial OAuth authorization URL (open in browser). */
++    fun authUrl(): String
++
++    /**
++     * Completes login with the redirect authorization code (code→token exchange,
++     * Viewer request, session save). Pattern — Aniyomi code handlers
++     * (handleBangumi/handleMyAnimeList/handleShikimori/handleSimkl).
++     */
++    suspend fun loginWithCode(code: String)
++
++    /**
++     * Valid GraphQL access_token: returns a fresh token directly, refreshes an expired one
++     * via refresh_token; nothing to refresh with — clears session and throws
++     * (port of the AnilistInterceptor + logout-on-expiry pair).
++     */
++    suspend fun accessToken(): TrackerOAuth
++
++    suspend fun logout()
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BeginAniListOAuthUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BeginAniListOAuthUseCase.kt
+new file mode 100644
+index 000000000..3eadfb20b
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BeginAniListOAuthUseCase.kt
+@@ -0,0 +1,15 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import su.afk.yummy.tv.domain.tracker.repository.TrackerAuthRepository
++import javax.inject.Inject
++
++/**
++ * Returns the AniList OAuth authorization URL to open in a browser.
++ * Port of the `SettingsTrackingScreen` login lambda (openInBrowser(AnilistApi.authUrl())).
++ */
++class BeginAniListOAuthUseCase @Inject constructor(
++    private val authRepository: TrackerAuthRepository,
++) {
++
++    operator fun invoke(): String = authRepository.authUrl()
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BindAnimeTrackUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BindAnimeTrackUseCase.kt
+new file mode 100644
+index 000000000..9ec6bb43d
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/BindAnimeTrackUseCase.kt
+@@ -0,0 +1,31 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++import su.afk.yummy.tv.domain.tracker.repository.AnimeTrackRepository
++import javax.inject.Inject
++
++/**
++ * Binds a Yummy anime to the selected AniList search entry.
++ * Port of `AddAnimeTracks.bind` + `Anilist.bind`: builds a draft from the search result
++ * and passes it to the repository, which reconciles it with the user list.
++ */
++class BindAnimeTrackUseCase @Inject constructor(
++    private val repository: AnimeTrackRepository,
++) {
++
++    suspend operator fun invoke(
++        animeId: Long,
++        search: AnimeTrackSearch,
++        hasWatchedEpisodes: Boolean,
++    ): AnimeTrack {
++        val draft = AnimeTrack(
++            animeId = animeId,
++            remoteId = search.remoteId,
++            title = search.title,
++            totalEpisodes = search.totalEpisodes,
++            remoteUrl = search.trackingUrl,
++        )
++        return repository.bind(draft, hasWatchedEpisodes)
++    }
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/HandleAniListCallbackUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/HandleAniListCallbackUseCase.kt
+new file mode 100644
+index 000000000..7a8fb139e
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/HandleAniListCallbackUseCase.kt
+@@ -0,0 +1,31 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import su.afk.yummy.tv.domain.tracker.repository.TrackerAuthRepository
++import javax.inject.Inject
++
++/**
++ * Extracts the authorization code from the redirect query (`?code=...`) and completes login
++ * (code→token exchange, Viewer request, session save). Pattern — Aniyomi code handlers:
++ * handleBangumi/handleMyAnimeList/handleShikimori/handleSimkl
++ * (also `data.getQueryParameter("code")` there).
++ */
++class HandleAniListCallbackUseCase @Inject constructor(
++    private val authRepository: TrackerAuthRepository,
++) {
++
++    suspend operator fun invoke(callbackUri: String) {
++        val code = parseCode(callbackUri)
++            ?: throw IllegalArgumentException("No code in callback uri")
++        authRepository.loginWithCode(code)
++    }
++
++    private fun parseCode(uri: String): String? {
++        // Code flow: yummytv://anilist-auth?code=XXX
++        val query = uri.substringAfter("?", missingDelimiterValue = "")
++        if (query.isEmpty()) return null
++        return query.split("&")
++            .firstOrNull { it.startsWith("code=") }
++            ?.substringAfter("=")
++            ?.takeIf { it.isNotBlank() }
++    }
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/LogoutTrackerUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/LogoutTrackerUseCase.kt
+new file mode 100644
+index 000000000..96d484c96
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/LogoutTrackerUseCase.kt
+@@ -0,0 +1,14 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import su.afk.yummy.tv.domain.tracker.repository.TrackerAuthRepository
++import javax.inject.Inject
++
++/**
++ * Signs out of AniList: clears token and session. Port of `Anilist.logout`.
++ */
++class LogoutTrackerUseCase @Inject constructor(
++    private val authRepository: TrackerAuthRepository,
++) {
++
++    suspend operator fun invoke() = authRepository.logout()
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/ObserveTrackerAuthStateUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/ObserveTrackerAuthStateUseCase.kt
+new file mode 100644
+index 000000000..bad96ad8e
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/ObserveTrackerAuthStateUseCase.kt
+@@ -0,0 +1,16 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import kotlinx.coroutines.flow.Flow
++import su.afk.yummy.tv.domain.tracker.model.TrackerAuthState
++import su.afk.yummy.tv.domain.tracker.repository.TrackerAuthRepository
++import javax.inject.Inject
++
++/**
++ * Observes the AniList auth state for the tracker settings screen.
++ */
++class ObserveTrackerAuthStateUseCase @Inject constructor(
++    private val authRepository: TrackerAuthRepository,
++) {
++
++    operator fun invoke(): Flow<TrackerAuthState> = authRepository.observeAuthState()
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/RefreshAnimeTrackUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/RefreshAnimeTrackUseCase.kt
+new file mode 100644
+index 000000000..aabe70676
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/RefreshAnimeTrackUseCase.kt
+@@ -0,0 +1,19 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.repository.AnimeTrackRepository
++import javax.inject.Inject
++
++/**
++ * Re-reads the AniList entry from the server and updates the local binding.
++ * Port of `RefreshAnimeTracks` / `Anilist.refresh` (anime part).
++ */
++class RefreshAnimeTrackUseCase @Inject constructor(
++    private val repository: AnimeTrackRepository,
++) {
++
++    suspend operator fun invoke(animeId: Long): AnimeTrack? {
++        val binding = repository.getBinding(animeId) ?: return null
++        return repository.refresh(binding)
++    }
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/SearchAnimeTracksUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/SearchAnimeTracksUseCase.kt
+new file mode 100644
+index 000000000..c95026ae5
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/SearchAnimeTracksUseCase.kt
+@@ -0,0 +1,19 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++import su.afk.yummy.tv.domain.tracker.repository.AnimeTrackRepository
++import javax.inject.Inject
++
++/**
++ * Searches the AniList catalog for manual binding.
++ * Port of `Anilist.searchAnime` / `AnilistApi.searchAnime`.
++ */
++class SearchAnimeTracksUseCase @Inject constructor(
++    private val repository: AnimeTrackRepository,
++) {
++
++    suspend operator fun invoke(query: String): List<AnimeTrackSearch> {
++        if (query.isBlank()) return emptyList()
++        return repository.searchAnime(query.trim())
++    }
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/TrackEpisodeSeenUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/TrackEpisodeSeenUseCase.kt
+new file mode 100644
+index 000000000..f8f74dd11
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/TrackEpisodeSeenUseCase.kt
+@@ -0,0 +1,18 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.repository.AnimeTrackRepository
++import javax.inject.Inject
++
++/**
++ * Watch sync: called by the player when an episode is finished.
++ * Port of Aniyomi `TrackEpisode.await(animeId, episodeNumber)` — advances
++ * lastEpisodeSeen and pushes progress to AniList. No binding — no-op (null).
++ */
++class TrackEpisodeSeenUseCase @Inject constructor(
++    private val repository: AnimeTrackRepository,
++) {
++
++    suspend operator fun invoke(animeId: Long, episodeNumber: Double): AnimeTrack? =
++        repository.markEpisodeSeen(animeId, episodeNumber)
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/UpdateAnimeTrackUseCase.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/UpdateAnimeTrackUseCase.kt
+new file mode 100644
+index 000000000..7bbc202ce
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/usecase/UpdateAnimeTrackUseCase.kt
+@@ -0,0 +1,19 @@
++package su.afk.yummy.tv.domain.tracker.usecase
++
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.repository.AnimeTrackRepository
++import javax.inject.Inject
++
++/**
++ * Pushes an edited track (status, progress, score, dates, privacy) to AniList.
++ * Mirrors Aniyomi's `updateRemote` path behind `setRemoteAnimeStatus`,
++ * `setRemoteLastEpisodeSeen`, `setRemoteScore`, `setRemotePrivate` and friends:
++ * field transition rules live in the caller, this use case only persists.
++ */
++class UpdateAnimeTrackUseCase @Inject constructor(
++    private val repository: AnimeTrackRepository,
++) {
++
++    suspend operator fun invoke(track: AnimeTrack): AnimeTrack =
++        repository.updateTrack(track)
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListScoreUtils.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListScoreUtils.kt
+new file mode 100644
+index 000000000..89f78f365
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListScoreUtils.kt
+@@ -0,0 +1,73 @@
++package su.afk.yummy.tv.domain.tracker.utils
++
++import su.afk.yummy.tv.domain.tracker.model.AniListScoreFormat
++
++/**
++ * AniList scoring system. Port of `Anilist.getScoreList/indexToScore/displayScore`
++ * + `AnilistUtils.toApiScore` 1:1 — all POINT_* branches verbatim, including integer
++ * division in POINT_10 (`(score.toInt() / 10)` — not `score / 10`).
++ */
++object AniListScoreUtils {
++
++    fun getScoreList(format: AniListScoreFormat): List<String> = when (format) {
++        AniListScoreFormat.POINT_10 -> (0..10).map(Int::toString)
++        AniListScoreFormat.POINT_100 -> (0..100).map(Int::toString)
++        AniListScoreFormat.POINT_5 -> (0..5).map { "$it ★" }
++        AniListScoreFormat.POINT_3 -> listOf("-", "😦", "😐", "😊")
++        AniListScoreFormat.POINT_10_DECIMAL -> (0..100).map { (it / 10f).toString() }
++    }
++
++    /** Score-list index -> score on the POINT_100 scale (storage scale). */
++    fun indexToScore(format: AniListScoreFormat, index: Int): Double = when (format) {
++        AniListScoreFormat.POINT_10 -> index * 10.0
++        AniListScoreFormat.POINT_100 -> index.toDouble()
++        AniListScoreFormat.POINT_5 -> when (index) {
++            0 -> 0.0
++            else -> index * 20.0 - 10.0
++        }
++        AniListScoreFormat.POINT_3 -> when (index) {
++            0 -> 0.0
++            else -> index * 25.0 + 10.0
++        }
++        AniListScoreFormat.POINT_10_DECIMAL -> index.toDouble()
++    }
++
++    /** Score (POINT_100) -> UI text in the account format. */
++    fun displayScore(format: AniListScoreFormat, score: Double): String = when (format) {
++        AniListScoreFormat.POINT_5 -> when (score) {
++            0.0 -> "0 ★"
++            else -> "${((score + 10) / 20).toInt()} ★"
++        }
++        AniListScoreFormat.POINT_3 -> when {
++            score == 0.0 -> "0"
++            score <= 35 -> "😦"
++            score <= 60 -> "😐"
++            else -> "😊"
++        }
++        else -> score.toApiScore(format)
++    }
++
++    /** Score (POINT_100) -> string for GraphQL mutations. */
++    fun Double.toApiScore(format: AniListScoreFormat): String = when (format) {
++        AniListScoreFormat.POINT_10 -> (this.toInt() / 10).toString()
++        AniListScoreFormat.POINT_100 -> this.toInt().toString()
++        AniListScoreFormat.POINT_5 -> when {
++            this == 0.0 -> "0"
++            this < 30 -> "1"
++            this < 50 -> "2"
++            this < 70 -> "3"
++            this < 90 -> "4"
++            else -> "5"
++        }
++        AniListScoreFormat.POINT_3 -> when {
++            this == 0.0 -> "0"
++            this <= 35 -> ":("
++            this <= 60 -> ":|"
++            else -> ":)"
++        }
++        AniListScoreFormat.POINT_10_DECIMAL -> (this / 10).toString()
++    }
++
++    /** Score (POINT_100) -> 0..10 scale value for sliders. */
++    fun to10PointScore(score: Double): Double = score / 10.0
++}
+diff --git a/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListStatusUtils.kt b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListStatusUtils.kt
+new file mode 100644
+index 000000000..c2edfc34e
+--- /dev/null
++++ b/feature/tracker/domain/src/main/kotlin/su/afk/yummy/tv/domain/tracker/utils/AniListStatusUtils.kt
+@@ -0,0 +1,26 @@
++package su.afk.yummy.tv.domain.tracker.utils
++
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++
++/**
++ * AnimeTrack <-> AniList GraphQL MediaListStatus enum mapping.
++ * Port of `AnilistUtils.kt` + `ALUserAnime.toTrackStatus()` (anime only).
++ */
++fun AnimeTrackStatus.toApiStatus(): String = when (this) {
++    AnimeTrackStatus.WATCHING -> "CURRENT"
++    AnimeTrackStatus.COMPLETED -> "COMPLETED"
++    AnimeTrackStatus.ON_HOLD -> "PAUSED"
++    AnimeTrackStatus.DROPPED -> "DROPPED"
++    AnimeTrackStatus.PLAN_TO_WATCH -> "PLANNING"
++    AnimeTrackStatus.REWATCHING -> "REPEATING"
++}
++
++fun String.toAnimeTrackStatus(): AnimeTrackStatus = when (this) {
++    "CURRENT" -> AnimeTrackStatus.WATCHING
++    "COMPLETED" -> AnimeTrackStatus.COMPLETED
++    "PAUSED" -> AnimeTrackStatus.ON_HOLD
++    "DROPPED" -> AnimeTrackStatus.DROPPED
++    "PLANNING" -> AnimeTrackStatus.PLAN_TO_WATCH
++    "REPEATING" -> AnimeTrackStatus.REWATCHING
++    else -> throw NotImplementedError("Unknown AniList status: $this")
++}
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index 846fe4cc1..234e7c74b 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -106,6 +106,7 @@ compose-ui = { module = "androidx.compose.ui:ui" }
+ compose-uiToolingPreview = { module = "androidx.compose.ui:ui-tooling-preview" }
+ androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
+ androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
++androidx-material2 = { module = "androidx.compose.material:material" }
+ compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
+ compose-material3-adaptive-navigation3 = { module = "androidx.compose.material3.adaptive:adaptive-navigation3" }
+ compose-material3-navigationSuite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite" }
+diff --git a/settings.gradle.kts b/settings.gradle.kts
+index 4ec921731..09fb7af95 100644
+--- a/settings.gradle.kts
++++ b/settings.gradle.kts
+@@ -203,3 +203,10 @@ include(":feature:update:domain")
+ include(":feature:update:data")
+ include(":feature:update:presentation")
+ include(":feature:update:ui")
++
++include(":feature:tracker:api")
++include(":feature:tracker:domain")
++include(":feature:tracker:data")
++include(":feature:tracker:presentation")
++include(":feature:tracker:ui-mobile")
++include(":feature:tracker:ui-tv")

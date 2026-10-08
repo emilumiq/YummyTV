@@ -1,0 +1,29 @@
+*.iml
+.kotlin
+.gradle
+**/build/
+**/stability/
+xcuserdata
+!src/**/build/
+local.properties
+keystore.properties
+*.jks
+.idea
+.DS_Store
+captures
+.externalNativeBuild
+.cxx
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+node_modules/
+/app/release/*
+/app/debug/*
+/.claude/*
+# Patchset model: upstream code lives in worktree/ (assembled by pnpm run setup),
+# built APKs land in out/. Neither is committed.
+/worktree/
+/out/

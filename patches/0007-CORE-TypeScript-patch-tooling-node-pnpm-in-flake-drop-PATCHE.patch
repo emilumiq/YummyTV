@@ -1,0 +1,398 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 19:53:26 +0300
+Subject: [CORE] TypeScript patch tooling, node/pnpm in flake, drop PATCHES.md
+ and shell scripts
+
+---
+ AGENTS.md                 | 71 +++++++++++++++++++++++++++++++++++++--
+ PATCHES.md                | 30 -----------------
+ flake.nix                 |  2 ++
+ package.json              | 18 ++++++++++
+ scripts/apply-patches.sh  | 12 -------
+ scripts/config.ts         |  9 +++++
+ scripts/export-patches.sh | 11 ------
+ scripts/export.ts         | 32 ++++++++++++++++++
+ scripts/lib.ts            | 54 +++++++++++++++++++++++++++++
+ scripts/lint-patches.ts   | 21 ++++++++++++
+ scripts/rebase.ts         | 31 +++++++++++++++++
+ 11 files changed, 235 insertions(+), 56 deletions(-)
+ delete mode 100644 PATCHES.md
+ create mode 100644 package.json
+ delete mode 100755 scripts/apply-patches.sh
+ create mode 100644 scripts/config.ts
+ delete mode 100755 scripts/export-patches.sh
+ create mode 100644 scripts/export.ts
+ create mode 100644 scripts/lib.ts
+ create mode 100644 scripts/lint-patches.ts
+ create mode 100644 scripts/rebase.ts
+
+diff --git a/AGENTS.md b/AGENTS.md
+index 9dbfc5dc5..1102dcad4 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,7 +1,51 @@
+-# Project Instructions
++# YummyTV agent guide
+ 
+-- Stick to clean architecture.
+-- Do not write tests unless explicitly asked.
++## Repository
++
++YummyTV is a **patchset**, not a fork. `main` is pristine upstream
++(`Helandy/YummyTV`, pinned in `upstream-commit`). Work lives as atomic commits
++on `yummy`; `patches/` and `series` are generated exports, never the source
++of truth.
++
++## Rules
++
++Explicit user instructions override these defaults.
++
++- English only: all code, comments, KDoc, commit messages and docs.
++- Comments are short and rare: one line, only where the reason is not obvious
++  from the code. Never restate the signature, never narrate the code, never
++  leave essay blocks. If in doubt, delete the comment.
++- Never hand-edit `patches/*.patch` or `series`; edit code, commit, re-export.
++- Do not run `git`/`am` unless explicitly asked. Read-only `git log`/`git status`
++  is allowed. Never run export; the user exports with `pnpm run export`.
++- Never run builds; the user builds via `gradle-fhs` inside `nix develop`.
++  Verify by reading, not by executing.
++- Secrets (`local.properties`, `*.jks`, `keystore.properties`) never enter git.
++  Check `grep -ri secret patches/` before export.
++- One commit, one topic. Subjects: `[TRACKER] ...` / `[CORE] ...` /
++  `[SETTINGS] ...` / `[CLASSIC] ...`.
++- Use `rg` to locate symbols; read small ranges in files over 2k lines.
++- Keep stock changes small: wiring or short guards inline, feature logic in the
++  feature helper. Avoid re-indenting upstream inside `if`/`else`.
++- Gate behavior changes behind settings toggles: default off behaves like stock.
++
++## Patchset workflow (TypeScript, like inugram)
++
++Shell scripts are legacy and must not be extended. Patch tooling lives in
++`scripts/*.ts`, run with `pnpm`:
++
++| Command | Use |
++| --- | --- |
++| `pnpm run export` | Regenerate `patches/` + `series` from `yummy` (`scripts/export.ts`) |
++| `pnpm run rebase [ref]` | Rebuild `yummy` on new upstream pin, apply stack (`scripts/rebase.ts`) |
++| `pnpm run lint-patches` | Validate patch hygiene: no secrets, no `patches/` self-reference |
++
++- `scripts/config.ts` holds paths and upstream URL; `scripts/lib.ts` holds
++  shared git helpers. Keep them in step.
++- Exported patches use stable headers (`--zero-commit`, index lines scrubbed),
++  like `inugram/scripts/export.ts`.
++- Conflicts stop the rebase: resolve, `git am --continue`, then re-export.
++- Removed `scripts/*.sh` stay deleted; do not reintroduce them.
+ 
+ ## Domain Structure
+ 
+@@ -57,3 +101,24 @@
+   move shared mappers to a dedicated mapper package.
+ - Keep user-facing strings in Android resources and read them with `stringResource`.
+ - Do not move business logic into UI components.
++
++## Classic UI (MD2)
++
++- Converted screens use `material.*` directly and self-wrap in
++  `ClassicMaterialTheme` (M2 colors derived from the ambient MD3 scheme, so any
++  `AppTheme` incl. Dynamic is followed). Shared atoms live in
++  `feature:classic:ui` (`ClassicThemeWrapper`, `YummyButton`, `YummyCard`,
++  `YummyDialog`); new conversions reuse them instead of copying M2 code.
++- Dual-path screens (tracker): M3 `Text`/`Icon`/`MaterialTheme` plus `Yummy*`
++  widgets, which render M2 when `LocalClassicUi` is set and M3 otherwise.
++  `Text`, `Icon`, `Surface` stay direct; they follow the ambient scheme.
++- Full classic redesigns (details mobile): separate layout under
++  `details/classic/` branched at screen level; classic-only files use M2
++  directly, share state/events with the modern screen, skip blur/animations.
++- `core/designsystem` never depends on `feature:classic`. Global M2 bridge plus
++  `LocalClassicUi` come from `ClassicThemeWrapper`, applied once in
++  `MobileMainGraph` / `TvMainGraph` and driven by `classicUiEnabled`.
++- TV focus (`TvFocusable*`, `TvFocusIndicator`) stays intact under both paths.
++
++Keep this guide to durable rules, ownership boundaries, and commands. Update it
++when those change; keep implementation walkthroughs and benchmark history out.
+diff --git a/PATCHES.md b/PATCHES.md
+deleted file mode 100644
+index a0a369491..000000000
+--- a/PATCHES.md
++++ /dev/null
+@@ -1,30 +0,0 @@
+-# Патчи, а не форк
+-
+-Ветка `main` — чистый апстрим (`Helandy/YummyTV`, пин в `upstream-commit`).
+-Вся работа живёт коммитами в ветке `yummy`; `patches/` + `series` — экспорт,
+-а не источник правды.
+-
+-## Обычный цикл
+-
+-```bash
+-# работа как обычно коммитами в yummy
+-./scripts/export-patches.sh   # после каждого коммита
+-```
+-
+-## Поднять на новый апстрим
+-
+-```bash
+-git fetch upstream
+-echo "<новый sha>" > upstream-commit
+-./scripts/apply-patches.sh    # пересоздаёт yummy поверх пина и накатывает стек
+-# конфликты: правишь, git am --continue, затем:
+-./scripts/export-patches.sh
+-```
+-
+-## Правила
+-
+-- Правишь код и коммитишь, затем экспорт. `patches/*.patch` и `series` руками не трогать.
+-- Один коммит — одна тема, сообщение в стиле `[TRACKER] ...` / `[CORE] ...` / `[SETTINGS] ...`.
+-- Секреты (`local.properties`, `*.jks`, `keystore.properties`) в коммиты и патчи
+-  не попадают никогда — они в `.gitignore`. Проверяй `grep -ri secret patches/`.
+-- Сборка только через `gradle-fhs` внутри `nix develop` (см. `flake.nix`).
+diff --git a/flake.nix b/flake.nix
+index d023625af..efc0d56f1 100644
+--- a/flake.nix
++++ b/flake.nix
+@@ -44,6 +44,8 @@
+           pkgs.git
+           pkgs.curl
+           pkgs.jq
++          pkgs.nodejs
++          pkgs.pnpm
+         ];
+ 
+         gradleFhs = pkgs.buildFHSEnv {
+diff --git a/package.json b/package.json
+new file mode 100644
+index 000000000..b1ccf0ca6
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,18 @@
++{
++  "name": "yummytv-patchset",
++  "type": "module",
++  "private": true,
++  "packageManager": "pnpm@10.33.2",
++  "scripts": {
++    "export": "tsx scripts/export.ts",
++    "rebase": "tsx scripts/rebase.ts",
++    "lint-patches": "tsx scripts/lint-patches.ts"
++  },
++  "dependencies": {
++    "zx": "^8.8.4"
++  },
++  "devDependencies": {
++    "tsx": "^4.20.6",
++    "typescript": "^5.9.3"
++  }
++}
+diff --git a/scripts/apply-patches.sh b/scripts/apply-patches.sh
+deleted file mode 100755
+index 0fd1ea5a5..000000000
+--- a/scripts/apply-patches.sh
++++ /dev/null
+@@ -1,12 +0,0 @@
+-#!/usr/bin/env bash
+-# Rebuilds the yummy stack on a fresh upstream checkout:
+-#   ./scripts/apply-patches.sh [<upstream-ref>] [<branch>]
+-# Defaults: ref from upstream-commit, branch "yummy".
+-# Conflicts stop the run — resolve, `git am --continue`, then re-export.
+-set -euo pipefail
+-cd "$(dirname "$0")/.."
+-upstream="${1:-$(cat upstream-commit)}"
+-branch="${2:-yummy}"
+-git checkout -B "$branch" "$upstream"
+-git am --empty=drop patches/*.patch
+-echo "applied $(wc -l < series) patches onto $upstream into $branch"
+diff --git a/scripts/config.ts b/scripts/config.ts
+new file mode 100644
+index 000000000..415a2ac6b
+--- /dev/null
++++ b/scripts/config.ts
+@@ -0,0 +1,9 @@
++import { dirname, join, resolve } from 'node:path'
++import { fileURLToPath } from 'node:url'
++
++export const upstreamUrl = 'https://github.com/Helandy/YummyTV.git'
++export const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
++export const patchesDir = join(rootDir, 'patches')
++export const seriesFile = join(rootDir, 'series')
++export const upstreamCommitFile = join(rootDir, 'upstream-commit')
++export const stackBranch = 'yummy'
+diff --git a/scripts/export-patches.sh b/scripts/export-patches.sh
+deleted file mode 100755
+index 40487740e..000000000
+--- a/scripts/export-patches.sh
++++ /dev/null
+@@ -1,11 +0,0 @@
+-#!/usr/bin/env bash
+-# Regenerates patches/ + series from the yummy branch stack above upstream-commit.
+-# Run after every commit; never hand-edit files under patches/.
+-set -euo pipefail
+-cd "$(dirname "$0")/.."
+-base="$(cat upstream-commit)"
+-rm -rf patches
+-mkdir -p patches
+-git format-patch --no-signature -o patches "$base"..HEAD >/dev/null
+-(cd patches && ls *.patch | sort) > series
+-echo "exported $(wc -l < series) patches onto $(cat upstream-commit)"
+diff --git a/scripts/export.ts b/scripts/export.ts
+new file mode 100644
+index 000000000..0c97561c8
+--- /dev/null
++++ b/scripts/export.ts
+@@ -0,0 +1,32 @@
++import fs from 'node:fs/promises'
++import { join, relative } from 'node:path'
++import { patchesDir, rootDir } from './config.js'
++import { cd, generateStablePatch, readPinnedUpstreamCommit, stackCommits, step, success, warn, writeSeries } from './lib.js'
++
++const base = await readPinnedUpstreamCommit()
++const repoDir = rootDir
++
++const dirty = (await cd(repoDir)`git status --porcelain`).stdout.trim()
++if (dirty) warn(`Worktree has uncommitted changes:\n${dirty}`)
++
++const commits = await stackCommits(repoDir, base)
++
++await fs.rm(patchesDir, { recursive: true, force: true })
++await fs.mkdir(patchesDir, { recursive: true })
++
++const entries: string[] = []
++for (const commitId of commits) {
++  const subject = (await cd(repoDir)`git log -1 --format=%s ${commitId}`).stdout.trim()
++  const files = (await cd(repoDir)`git diff-tree --no-commit-id --name-only -r ${commitId}`).stdout
++    .split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
++  if (files.length === 0) warn(`Commit ${commitId} ${subject} is empty`)
++  const slug = subject.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || commitId.slice(0, 8)
++  const name = `${String(entries.length + 1).padStart(4, '0')}-${slug}.patch`
++  step(`Exporting ${subject} -> ${relative(rootDir, join(patchesDir, name))}`)
++  await fs.writeFile(join(patchesDir, name), await generateStablePatch(repoDir, commitId))
++  entries.push(name)
++}
++
++await writeSeries(entries)
++if (dirty) warn(`Worktree has uncommitted changes:\n${dirty}`)
++success(`Exported ${entries.length} ${entries.length === 1 ? 'patch' : 'patches'}`)
+diff --git a/scripts/lib.ts b/scripts/lib.ts
+new file mode 100644
+index 000000000..88a912240
+--- /dev/null
++++ b/scripts/lib.ts
+@@ -0,0 +1,54 @@
++import fs from 'node:fs/promises'
++import { relative } from 'node:path'
++import { $ } from 'zx'
++import { patchesDir, rootDir, seriesFile, stackBranch, upstreamCommitFile } from './config.js'
++
++$.verbose = false
++
++export function step(message: string) {
++  console.log(`==> ${message}`)
++}
++
++export function success(message: string) {
++  console.log(`ok ${message}`)
++}
++
++export function warn(message: string) {
++  console.log(`warn ${message}`)
++}
++
++export function cd(cwd: string) {
++  return $({ cwd })
++}
++
++export async function readPinnedUpstreamCommit(): Promise<string> {
++  const value = (await fs.readFile(upstreamCommitFile, 'utf8')).trim()
++  if (!/^[0-9a-f]{7,40}$/i.test(value)) {
++    throw new Error(`Set ${relative(rootDir, upstreamCommitFile)} to a real commit hash first`)
++  }
++  return value
++}
++
++export async function writePinnedUpstreamCommit(commit: string): Promise<void> {
++  await fs.writeFile(upstreamCommitFile, `${commit}\n`)
++}
++
++export async function generateStablePatch(repoDir: string, commitId: string): Promise<string> {
++  const patch = await cd(repoDir)`git format-patch --stdout --no-signature --zero-commit --subject-prefix= -1 ${commitId}`
++  return patch.stdout.replace(/^index [0-9a-f]+\.\.[0-9a-f]+( \d+)?$/gm, 'index 0000000..0000000$1')
++}
++
++export async function stackCommits(repoDir: string, base: string): Promise<string[]> {
++  const out = await cd(repoDir)`git rev-list --reverse ${base}..${stackBranch}`
++  return out.stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
++}
++
++export async function writeSeries(entries: string[]): Promise<void> {
++  await fs.writeFile(seriesFile, entries.length > 0 ? `${entries.join('\n')}\n` : '')
++  step(`Wrote ${entries.length} entries to series`)
++}
++
++export async function patchFiles(): Promise<string[]> {
++  const entries = await fs.readdir(patchesDir).catch(() => [])
++  return entries.filter((name) => name.endsWith('.patch')).sort()
++}
+diff --git a/scripts/lint-patches.ts b/scripts/lint-patches.ts
+new file mode 100644
+index 000000000..c70fb1f23
+--- /dev/null
++++ b/scripts/lint-patches.ts
+@@ -0,0 +1,21 @@
++import fs from 'node:fs/promises'
++import { join } from 'node:path'
++import { patchesDir } from './config.js'
++import { patchFiles, step, success, warn } from './lib.js'
++
++const files = await patchFiles()
++let failed = false
++for (const name of files) {
++  const raw = await fs.readFile(join(patchesDir, name), 'utf8')
++  step(`Checking ${name}`)
++  if (/local\.properties|\.jks|keystore\.properties|client_secret|anilist.*secret/i.test(raw)) {
++    warn(`${name} may contain secrets`)
++    failed = true
++  }
++  if (/^diff --git a\/patches\//m.test(raw)) {
++    warn(`${name} touches exported patches`)
++    failed = true
++  }
++}
++if (failed) process.exit(1)
++success(`Checked ${files.length} patches`)
+diff --git a/scripts/rebase.ts b/scripts/rebase.ts
+new file mode 100644
+index 000000000..402b08a0b
+--- /dev/null
++++ b/scripts/rebase.ts
+@@ -0,0 +1,31 @@
++import { $ } from 'zx'
++import { rootDir, stackBranch, upstreamCommitFile } from './config.js'
++import { cd, patchFiles, readPinnedUpstreamCommit, step, success, warn, writePinnedUpstreamCommit } from './lib.js'
++
++const target = process.argv[2]
++if (target) {
++  const repo = cd(rootDir)
++  step('Fetching upstream')
++  await repo`git fetch upstream`
++  const resolved = (await repo`git rev-parse ${target}^{commit}`).stdout.trim()
++  await writePinnedUpstreamCommit(resolved)
++  step(`Pinned upstream to ${resolved} in ${upstreamCommitFile}`)
++}
++
++const pin = await readPinnedUpstreamCommit()
++const repo = cd(rootDir)
++step(`Rebuilding ${stackBranch} on ${pin}`)
++await repo`git checkout -B ${stackBranch} ${pin}`
++
++const files = await patchFiles()
++if (files.length === 0) {
++  warn('No patches to apply')
++} else {
++  const result = await $({ cwd: rootDir, nothrow: true })`git am --empty=drop patches/*.patch`
++  if (result.exitCode !== 0) {
++    warn('Conflicts detected. Resolve, run `git am --continue`, then `pnpm run export`.')
++    if (result.stderr.trim()) console.error(result.stderr.trim())
++    process.exit(result.exitCode)
++  }
++}
++success(`Applied ${files.length} patches onto ${pin} into ${stackBranch}`)

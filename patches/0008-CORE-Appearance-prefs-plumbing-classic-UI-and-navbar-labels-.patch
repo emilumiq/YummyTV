@@ -1,0 +1,166 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 19:53:33 +0300
+Subject: [CORE] Appearance prefs plumbing: classic UI and navbar labels
+ toggles
+
+---
+ .../afk/yummy/tv/core/model/settings/AppTheme.kt   |  6 ------
+ .../tv/core/model/settings/MainSettingsSnapshot.kt |  2 ++
+ .../tv/core/model/settings/SettingsSnapshot.kt     |  2 ++
+ .../settings/AppearanceSettingsStore.kt            |  6 ++++++
+ .../preferences/settings/SettingsPreferenceKeys.kt |  2 ++
+ .../datastore/DataStoreAppearanceSettingsStore.kt  | 14 ++++++++++++++
+ .../settings/datastore/DataStoreSettingsStore.kt   |  6 ++++++
+ 7 files changed, 32 insertions(+), 6 deletions(-)
+
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
+index cc7e7d28f..e0423e369 100644
+--- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
+@@ -7,12 +7,6 @@ enum class AppTheme {
+     OCEAN,
+     GRAPHITE,
+ 
+-    /**
+-     * Classic social-app look: Twitter-blue accent on neutral black/white,
+-     * sharp rectangular surfaces.
+-     */
+-    CLASSIC,
+-
+     /**
+      * Системная палитра Material You: цвета берутся из обоев/акцента системы (Android 12+).
+      * Доступна только на мобильном интерфейсе; на более старых версиях тема откатывается
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
+index 6929b61f5..5864b08a9 100644
+--- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/MainSettingsSnapshot.kt
+@@ -3,6 +3,8 @@ package su.afk.yummy.tv.core.model.settings
+ data class MainSettingsSnapshot(
+     val appTheme: AppTheme,
+     val backgroundStyle: BackgroundStyle,
++    val classicUiEnabled: Boolean = false,
++    val navigationBarLabelsEnabled: Boolean = false,
+     val posterQuality: PosterQuality,
+     val posterCardSize: PosterCardSize,
+     val yaniNickname: String,
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
+index b2cacdbb7..298bc555a 100644
+--- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
+@@ -4,6 +4,8 @@ data class SettingsSnapshot(
+     val appTheme: AppTheme,
+     val backgroundStyle: BackgroundStyle,
+     val backdropBlurEnabled: Boolean = true,
++    val classicUiEnabled: Boolean = false,
++    val navigationBarLabelsEnabled: Boolean = false,
+     val posterQuality: PosterQuality,
+     val posterCardSize: PosterCardSize,
+     val showTopTitleYear: Boolean,
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
+index 9cefe36cb..b66c9b388 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
+@@ -26,6 +26,10 @@ interface AppearanceSettingsStore {
+     val backgroundStyle: Flow<BackgroundStyle>
+     /** Blurred poster backdrops (hero banners). Off saves GPU on weak devices. */
+     val backdropBlurEnabled: Flow<Boolean>
++    /** Classic M2 component style for converted screens; colors follow the active theme. */
++    val classicUiEnabled: Flow<Boolean>
++    /** Text labels under bottom bar and rail icons. Off keeps icons only. */
++    val navigationBarLabelsEnabled: Flow<Boolean>
+     val detailsButtonOrder: Flow<List<DetailsButtonAction>>
+ 
+     /** Порядок вкладок на экране библиотеки. */
+@@ -50,6 +54,8 @@ interface AppearanceSettingsStore {
+     suspend fun setAppTheme(theme: AppTheme)
+     suspend fun setBackgroundStyle(style: BackgroundStyle)
+     suspend fun setBackdropBlurEnabled(enabled: Boolean)
++    suspend fun setClassicUiEnabled(enabled: Boolean)
++    suspend fun setNavigationBarLabelsEnabled(enabled: Boolean)
+     suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>)
+     suspend fun setLibraryTabOrder(order: List<LibraryTabKind>)
+     suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
+index b24029bce..c93aed397 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
+@@ -71,6 +71,8 @@ internal object SettingsPreferenceKeys {
+     val appThemeKey = stringPreferencesKey("app_theme")
+     val backgroundStyleKey = stringPreferencesKey("background_style")
+     val backdropBlurEnabledKey = booleanPreferencesKey("backdrop_blur_enabled")
++    val classicUiEnabledKey = booleanPreferencesKey("classic_ui_enabled")
++    val navigationBarLabelsKey = booleanPreferencesKey("navigation_bar_labels")
+     val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
+     val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
+     val yaniUserIdKey = intPreferencesKey("yani_user_id")
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
+index 32f1c50f2..79cd8fb74 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
+@@ -16,6 +16,8 @@ import su.afk.yummy.tv.core.model.settings.PosterQuality
+ import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backdropBlurEnabledKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.classicUiEnabledKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navigationBarLabelsKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgroundStyleKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsButtonOrderKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
+@@ -74,6 +76,12 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
+     override val backdropBlurEnabled: Flow<Boolean> =
+         store.boolean(backdropBlurEnabledKey, true)
+ 
++    override val classicUiEnabled: Flow<Boolean> =
++        store.boolean(classicUiEnabledKey, false)
++
++    override val navigationBarLabelsEnabled: Flow<Boolean> =
++        store.boolean(navigationBarLabelsKey, false)
++
+     override val detailsButtonOrder: Flow<List<DetailsButtonAction>> =
+         store.data.map { prefs -> prefs[detailsButtonOrderKey].toDetailsButtonOrder() }
+ 
+@@ -119,6 +127,12 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
+     override suspend fun setBackdropBlurEnabled(enabled: Boolean) =
+         store.setBoolean(backdropBlurEnabledKey, enabled)
+ 
++    override suspend fun setClassicUiEnabled(enabled: Boolean) =
++        store.setBoolean(classicUiEnabledKey, enabled)
++
++    override suspend fun setNavigationBarLabelsEnabled(enabled: Boolean) =
++        store.setBoolean(navigationBarLabelsKey, enabled)
++
+     override suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>) {
+         store.edit { prefs ->
+             prefs[detailsButtonOrderKey] = order.normalizedDetailsButtonOrder()
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
+index 120a293d6..8d3bb5ac6 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
+@@ -22,6 +22,8 @@ import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backdropBlurEnabledKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.classicUiEnabledKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.navigationBarLabelsKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbingOnWatchKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
+@@ -94,6 +96,8 @@ internal class DataStoreSettingsStore @Inject constructor(
+             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
+             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
+             backdropBlurEnabled = prefs[backdropBlurEnabledKey] ?: true,
++            classicUiEnabled = prefs[classicUiEnabledKey] ?: false,
++            navigationBarLabelsEnabled = prefs[navigationBarLabelsKey] ?: false,
+             posterQuality = prefs.enum(posterQualityKey, defaultPosterQuality),
+             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
+             showTopTitleYear = prefs[showTopTitleYearKey] ?: false,
+@@ -152,6 +156,8 @@ internal class DataStoreSettingsStore @Inject constructor(
+         MainSettingsSnapshot(
+             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
+             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
++            classicUiEnabled = prefs[classicUiEnabledKey] ?: false,
++            navigationBarLabelsEnabled = prefs[navigationBarLabelsKey] ?: false,
+             posterQuality = prefs.enum(posterQualityKey, defaultPosterQuality),
+             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
+             yaniNickname = prefs[yaniNicknameKey].orEmpty(),

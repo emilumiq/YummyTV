@@ -1,0 +1,239 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 15:43:07 +0300
+Subject: [CORE] Nix development environment (flake + direnv)
+
+---
+ .envrc     |   1 +
+ flake.lock |  61 ++++++++++++++++++++++++++++++
+ flake.nix  | 109 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ shell.nix  |  28 ++++++++++++++
+ 4 files changed, 199 insertions(+)
+ create mode 100644 .envrc
+ create mode 100644 flake.lock
+ create mode 100644 flake.nix
+ create mode 100644 shell.nix
+
+diff --git a/.envrc b/.envrc
+new file mode 100644
+index 000000000..3550a30f2
+--- /dev/null
++++ b/.envrc
+@@ -0,0 +1 @@
++use flake
+diff --git a/flake.lock b/flake.lock
+new file mode 100644
+index 000000000..fbd0b2cac
+--- /dev/null
++++ b/flake.lock
+@@ -0,0 +1,61 @@
++{
++  "nodes": {
++    "flake-utils": {
++      "inputs": {
++        "systems": "systems"
++      },
++      "locked": {
++        "lastModified": 1731533236,
++        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
++        "owner": "numtide",
++        "repo": "flake-utils",
++        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
++        "type": "github"
++      },
++      "original": {
++        "owner": "numtide",
++        "repo": "flake-utils",
++        "type": "github"
++      }
++    },
++    "nixpkgs": {
++      "locked": {
++        "lastModified": 1789370336,
++        "narHash": "sha256-6RSEDHIWQtesQKWSu5qRai8L2h4KgCgMEfJHstW99G4=",
++        "owner": "NixOS",
++        "repo": "nixpkgs",
++        "rev": "c7def046b9a883d46974757852106483d741586f",
++        "type": "github"
++      },
++      "original": {
++        "owner": "NixOS",
++        "ref": "nixpkgs-unstable",
++        "repo": "nixpkgs",
++        "type": "github"
++      }
++    },
++    "root": {
++      "inputs": {
++        "flake-utils": "flake-utils",
++        "nixpkgs": "nixpkgs"
++      }
++    },
++    "systems": {
++      "locked": {
++        "lastModified": 1681028828,
++        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
++        "owner": "nix-systems",
++        "repo": "default",
++        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
++        "type": "github"
++      },
++      "original": {
++        "owner": "nix-systems",
++        "repo": "default",
++        "type": "github"
++      }
++    }
++  },
++  "root": "root",
++  "version": 7
++}
+diff --git a/flake.nix b/flake.nix
+new file mode 100644
+index 000000000..d023625af
+--- /dev/null
++++ b/flake.nix
+@@ -0,0 +1,109 @@
++{
++  description = "YummyTV — anime streaming development environment";
++
++  inputs = {
++    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
++    flake-utils.url = "github:numtide/flake-utils";
++  };
++
++  outputs = { self, nixpkgs, flake-utils }:
++    flake-utils.lib.eachDefaultSystem (system:
++      let
++        pkgs = import nixpkgs {
++          inherit system;
++          config = {
++            allowUnfree = true;
++            android_sdk.accept_license = true;
++          };
++        };
++
++        java = pkgs.jdk17;
++
++        androidComposition = pkgs.androidenv.composeAndroidPackages {
++          cmdLineToolsVersion = "latest";
++          platformToolsVersion = "latest";
++          buildToolsVersions = [ "36.0.0" ];
++          platformVersions = [ "37" ];
++          abiVersions = [ "arm64-v8a" "x86_64" "armeabi-v7a" "x86" ];
++          includeNDK = false;
++          includeEmulator = false;
++          extraLicenses = [
++            "android-sdk-license"
++            "android-sdk-preview-license"
++          ];
++        };
++
++        androidSdk = androidComposition.androidsdk;
++
++        packages = [
++          java
++          pkgs.kotlin
++          pkgs.gradle
++          androidSdk
++          gradleFhs
++          pkgs.git
++          pkgs.curl
++          pkgs.jq
++        ];
++
++        gradleFhs = pkgs.buildFHSEnv {
++          name = "gradle-fhs";
++          targetPkgs = pkgs': with pkgs'; [
++            androidSdk
++            java
++            zlib
++            glib
++            nss
++            nspr
++            fontconfig
++            freetype
++            expat
++            libdrm
++            mesa
++            gcc
++          ];
++          runScript = "./gradlew";
++          profile = ''
++            export ANDROID_HOME="${androidSdk}/libexec/android-sdk"
++            export ANDROID_SDK_ROOT="$ANDROID_HOME"
++            export JAVA_HOME="${java}"
++          '';
++        };
++
++        javaFhs = pkgs.buildFHSEnv {
++          name = "java-fhs";
++          targetPkgs = pkgs': with pkgs'; [
++            java
++            zlib
++          ];
++          runScript = "java";
++        };
++
++      in
++      {
++        devShells.default = pkgs.mkShell {
++          name = "yummytv";
++
++          inherit packages;
++
++          JAVA_HOME = "${java}";
++          ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
++          ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
++
++          shellHook = ''
++            echo ""
++            echo "  yummytv  |  kotlin $(kotlin -version 2>&1 | head -1)"
++            echo "  java $(java -version 2>&1 | head -1 | cut -d'"' -f2)"
++            echo ""
++            echo "  gradle-fhs :app:assembleDebug          — Build debug APK"
++            echo "  gradle-fhs :app:assembleRelease        — Build release APK"
++            echo ""
++            export GRADLE_OPTS="-Xmx2048M -Dfile.encoding=UTF-8"
++          '';
++        };
++
++        packages.gradle-fhs = gradleFhs;
++        packages.java-fhs = javaFhs;
++      }
++    );
++}
+diff --git a/shell.nix b/shell.nix
+new file mode 100644
+index 000000000..97bfc41ee
+--- /dev/null
++++ b/shell.nix
+@@ -0,0 +1,28 @@
++{ pkgs ? import <nixpkgs> {} }:
++
++pkgs.mkShell {
++  buildInputs = with pkgs; [
++    jdk17
++    kotlin
++    gradle
++    git
++    curl
++    jq
++  ];
++
++  shellHook = ''
++    echo "YummyTV development shell"
++    echo ""
++    echo "Available commands:"
++    echo "  gradle :app:assembleDebug   - Build debug APK"
++    echo "  gradle :app:assembleRelease - Build release APK"
++    echo ""
++
++    if [ -z "$JAVA_HOME" ]; then
++      export JAVA_HOME="${pkgs.jdk17}/lib/openjdk"
++      echo "JAVA_HOME set to: $JAVA_HOME"
++    fi
++
++    export GRADLE_OPTS="-Xmx2048M -Dfile.encoding=UTF-8"
++  '';
++}

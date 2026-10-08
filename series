@@ -1,0 +1,15 @@
+0001-CORE-Nix-development-environment-flake-direnv.patch
+0002-TRACKER-AniList-sync-core-api-domain-data-Room-binding-cache.patch
+0003-TRACKER-AniList-screens-M2-classic-navigation-entries-WebVie.patch
+0004-TRACKER-Settings-details-player-integration-locale-blur-M2-t.patch
+0005-CORE-AppMetrica-no-op-without-key-swipe-transitions-blur-thr.patch
+0006-CORE-Patch-workflow-upstream-pin-patches-export-apply-script.patch
+0007-CORE-TypeScript-patch-tooling-node-pnpm-in-flake-drop-PATCHE.patch
+0008-CORE-Appearance-prefs-plumbing-classic-UI-and-navbar-labels-.patch
+0009-CLASSIC-Theme-engine-wrappers-main-graphs-labels-aware-scaff.patch
+0010-TRACKER-Custom-Tabs-sign-in-dual-path-screens-app-following-.patch
+0011-SETTINGS-Mobile-settings-on-M2-atoms-classic-and-navbar-labe.patch
+0012-DETAILS-Classic-Jellyfin-like-mobile-layout.patch
+0013-HOME-Home-classic-pass-square-shapes-no-heavy-effects.patch
+0014-CORE-Pin-upstream-to-1-25-c8dc943b.patch
+0015-CORE-Fix-stable-patch-headers-for-binary-files.patch

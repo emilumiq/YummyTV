@@ -1,0 +1,3051 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 15:43:32 +0300
+Subject: [TRACKER] AniList screens (M2 classic), navigation entries, WebView
+ auth
+
+---
+ feature/main/ui-mobile/build.gradle.kts       |   1 +
+ .../mobile/navigation/MobileNavTransitions.kt |  42 +-
+ .../navigation/MobileNavigationHolder.kt      |   3 +
+ feature/main/ui-tv/build.gradle.kts           |   1 +
+ .../main/navigation/TvNavTransitions.kt       |  27 +-
+ .../main/navigation/TvNavigationHolder.kt     |   3 +
+ feature/tracker/presentation/build.gradle.kts |  20 +
+ .../yummy/tv/feature/tracker/TrackerState.kt  |  71 +++
+ .../tv/feature/tracker/TrackerViewModel.kt    | 207 ++++++++
+ .../tracker/di/TrackerNavigatorModule.kt      |  16 +
+ .../tracker/navigator/TrackerNavigator.kt     |  19 +
+ feature/tracker/ui-mobile/build.gradle.kts    |  23 +
+ .../tracker/mobile/TrackerAuthMobileScreen.kt |  97 ++++
+ .../tracker/mobile/TrackerMobileScreen.kt     | 491 ++++++++++++++++++
+ .../di/TrackerMobileNavigationModule.kt       |  16 +
+ .../mobile/navigator/TrackerNavRegistrar.kt   |  59 +++
+ .../tracker/mobile/utils/TrackerIntents.kt    |  22 +
+ .../mobile/utils/TrackerStatusLabels.kt       |  18 +
+ .../mobile/view/TrackerClassicTheme.kt        |  51 ++
+ .../tracker/mobile/view/TrackerEditDialog.kt  | 181 +++++++
+ .../tracker/mobile/view/TrackerLogo.kt        |  38 ++
+ .../drawable-nodpi/ic_tracker_anilist.webp    | Bin 0 -> 2048 bytes
+ .../src/main/res/values-ru/strings.xml        |  33 ++
+ .../src/main/res/values-uk/strings.xml        |  33 ++
+ .../ui-mobile/src/main/res/values/strings.xml |  33 ++
+ feature/tracker/ui-tv/build.gradle.kts        |  26 +
+ .../feature/tracker/tv/TrackerAuthTvScreen.kt |  88 ++++
+ .../tv/feature/tracker/tv/TrackerTvScreen.kt  | 463 +++++++++++++++++
+ .../tv/di/TrackerTvNavigationModule.kt        |  16 +
+ .../tv/navigator/TrackerNavRegistrar.kt       |  59 +++
+ .../tracker/tv/utils/TrackerIntents.kt        |  22 +
+ .../tracker/tv/utils/TrackerStatusLabels.kt   |  18 +
+ .../tracker/tv/view/TrackerClassicTheme.kt    |  51 ++
+ .../tracker/tv/view/TrackerEditDialog.kt      | 183 +++++++
+ .../tv/feature/tracker/tv/view/TrackerLogo.kt |  39 ++
+ .../drawable-nodpi/ic_tracker_anilist.webp    | Bin 0 -> 2048 bytes
+ .../ui-tv/src/main/res/values-ru/strings.xml  |  32 ++
+ .../ui-tv/src/main/res/values-uk/strings.xml  |  32 ++
+ .../ui-tv/src/main/res/values/strings.xml     |  32 ++
+ 39 files changed, 2529 insertions(+), 37 deletions(-)
+ create mode 100644 feature/tracker/presentation/build.gradle.kts
+ create mode 100644 feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt
+ create mode 100644 feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerViewModel.kt
+ create mode 100644 feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/di/TrackerNavigatorModule.kt
+ create mode 100644 feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/navigator/TrackerNavigator.kt
+ create mode 100644 feature/tracker/ui-mobile/build.gradle.kts
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/di/TrackerMobileNavigationModule.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/navigator/TrackerNavRegistrar.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerStatusLabels.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerLogo.kt
+ create mode 100644 feature/tracker/ui-mobile/src/main/res/drawable-nodpi/ic_tracker_anilist.webp
+ create mode 100644 feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml
+ create mode 100644 feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml
+ create mode 100644 feature/tracker/ui-mobile/src/main/res/values/strings.xml
+ create mode 100644 feature/tracker/ui-tv/build.gradle.kts
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/di/TrackerTvNavigationModule.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/navigator/TrackerNavRegistrar.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerIntents.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerStatusLabels.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerLogo.kt
+ create mode 100644 feature/tracker/ui-tv/src/main/res/drawable-nodpi/ic_tracker_anilist.webp
+ create mode 100644 feature/tracker/ui-tv/src/main/res/values-ru/strings.xml
+ create mode 100644 feature/tracker/ui-tv/src/main/res/values-uk/strings.xml
+ create mode 100644 feature/tracker/ui-tv/src/main/res/values/strings.xml
+
+diff --git a/feature/main/ui-mobile/build.gradle.kts b/feature/main/ui-mobile/build.gradle.kts
+index e3d7f7bff..462142fd0 100644
+--- a/feature/main/ui-mobile/build.gradle.kts
++++ b/feature/main/ui-mobile/build.gradle.kts
+@@ -37,6 +37,7 @@ dependencies {
+     implementation(project(":feature:search:ui-mobile"))
+     implementation(project(":feature:settings:api"))
+     implementation(project(":feature:top:api"))
++    implementation(project(":feature:tracker:api"))
+     implementation(project(":feature:top:ui-mobile"))
+     implementation(project(":feature:update:api"))
+     implementation(project(":feature:video-download:api"))
+diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
+index 1b69d3e6a..4c399c1bc 100644
+--- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
++++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavTransitions.kt
+@@ -5,41 +5,37 @@ import androidx.compose.animation.ContentTransform
+ import androidx.compose.animation.core.tween
+ import androidx.compose.animation.fadeIn
+ import androidx.compose.animation.fadeOut
+-import androidx.compose.animation.scaleIn
+-import androidx.compose.animation.scaleOut
++import androidx.compose.animation.slideInHorizontally
++import androidx.compose.animation.slideOutHorizontally
+ import androidx.compose.animation.togetherWith
+ import androidx.navigation3.runtime.NavKey
+ import androidx.navigation3.scene.Scene
+ 
+-/** Переход вперёд: новый экран проявляется с лёгким увеличением, старый гаснет. */
++/** Forward: new screen swipes in from the right, current one shifts left and fades. */
+ internal val mobileNavTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
+-    fadeIn(
+-        tween(
+-            durationMillis = MOBILE_NAV_FADE_IN_MILLIS,
+-            delayMillis = MOBILE_NAV_FADE_IN_DELAY_MILLIS,
+-        ),
+-    ) + scaleIn(
+-        initialScale = MOBILE_NAV_TRANSITION_SCALE,
++    slideInHorizontally(
+         animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
+-    ) togetherWith fadeOut(tween(MOBILE_NAV_FADE_OUT_MILLIS))
++        initialOffsetX = { it },
++    ) + fadeIn(tween(MOBILE_NAV_FADE_IN_MILLIS)) togetherWith
++        slideOutHorizontally(
++            animationSpec = tween(MOBILE_NAV_FADE_OUT_MILLIS),
++            targetOffsetX = { -it / MOBILE_NAV_EXIT_SHIFT_DIVISOR },
++        ) + fadeOut(tween(MOBILE_NAV_FADE_OUT_MILLIS))
+ }
+ 
+-/** Переход назад: уходящий экран уменьшается и гаснет, предыдущий проявляется. */
++/** Back: previous screen swipes back from the left, current one exits right. */
+ internal val mobileNavPopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
+-    fadeIn(
+-        tween(
+-            durationMillis = MOBILE_NAV_FADE_IN_MILLIS,
+-            delayMillis = MOBILE_NAV_FADE_IN_DELAY_MILLIS,
+-        ),
+-    ) togetherWith fadeOut(tween(MOBILE_NAV_FADE_OUT_MILLIS)) +
+-        scaleOut(
+-            targetScale = MOBILE_NAV_TRANSITION_SCALE,
++    slideInHorizontally(
++        animationSpec = tween(MOBILE_NAV_FADE_OUT_MILLIS),
++        initialOffsetX = { -it / MOBILE_NAV_EXIT_SHIFT_DIVISOR },
++    ) + fadeIn(tween(MOBILE_NAV_FADE_IN_MILLIS)) togetherWith
++        slideOutHorizontally(
+             animationSpec = tween(MOBILE_NAV_TRANSITION_MILLIS),
+-        )
++            targetOffsetX = { it },
++        ) + fadeOut(tween(MOBILE_NAV_FADE_OUT_MILLIS))
+ }
+ 
+ private const val MOBILE_NAV_TRANSITION_MILLIS = 300
+ private const val MOBILE_NAV_FADE_IN_MILLIS = 220
+-private const val MOBILE_NAV_FADE_IN_DELAY_MILLIS = 60
+ private const val MOBILE_NAV_FADE_OUT_MILLIS = 120
+-private const val MOBILE_NAV_TRANSITION_SCALE = 0.94f
++private const val MOBILE_NAV_EXIT_SHIFT_DIVISOR = 4
+diff --git a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavigationHolder.kt b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavigationHolder.kt
+index 6c8467d7b..a0359ca5b 100644
+--- a/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavigationHolder.kt
++++ b/feature/main/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/main/mobile/navigation/MobileNavigationHolder.kt
+@@ -21,6 +21,7 @@ import su.afk.yummy.tv.feature.schedule.IMobileScheduleEntry
+ import su.afk.yummy.tv.feature.search.IMobileSearchEntry
+ import su.afk.yummy.tv.feature.settings.IMobileSettingsEntry
+ import su.afk.yummy.tv.feature.top.IMobileTopEntry
++import su.afk.yummy.tv.feature.tracker.IMobileTrackerEntry
+ import su.afk.yummy.tv.feature.update.navigator.IUpdateEntry
+ import su.afk.yummy.tv.feature.videodownload.IMobileVideoDownloadEntry
+ import su.afk.yummy.tv.feature.watchlater.IMobileWatchLaterEntry
+@@ -51,6 +52,7 @@ class MobileNavigationHolder @Inject constructor(
+     search: IMobileSearchEntry,
+     settings: IMobileSettingsEntry,
+     top: IMobileTopEntry,
++    tracker: IMobileTrackerEntry,
+     videoDownload: IMobileVideoDownloadEntry,
+     watchLater: IMobileWatchLaterEntry,
+     playerSetup: IMobilePlayerSetupEntry,
+@@ -76,6 +78,7 @@ class MobileNavigationHolder @Inject constructor(
+         search,
+         settings,
+         top,
++        tracker,
+         videoDownload,
+         watchLater,
+         playerSetup,
+diff --git a/feature/main/ui-tv/build.gradle.kts b/feature/main/ui-tv/build.gradle.kts
+index aef470cdb..b348d5d6c 100644
+--- a/feature/main/ui-tv/build.gradle.kts
++++ b/feature/main/ui-tv/build.gradle.kts
+@@ -34,6 +34,7 @@ dependencies {
+     implementation(project(":feature:playersetup:api"))
+     implementation(project(":feature:settings:api"))
+     implementation(project(":feature:top:api"))
++    implementation(project(":feature:tracker:api"))
+     implementation(project(":feature:top:ui-tv"))
+     implementation(project(":feature:update:api"))
+ 
+diff --git a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavTransitions.kt b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavTransitions.kt
+index ed37d3728..c5d9e7aa8 100644
+--- a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavTransitions.kt
++++ b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavTransitions.kt
+@@ -5,30 +5,29 @@ import androidx.compose.animation.ContentTransform
+ import androidx.compose.animation.core.tween
+ import androidx.compose.animation.fadeIn
+ import androidx.compose.animation.fadeOut
+-import androidx.compose.animation.scaleIn
+-import androidx.compose.animation.scaleOut
++import androidx.compose.animation.slideInHorizontally
++import androidx.compose.animation.slideOutHorizontally
+ import androidx.compose.animation.togetherWith
+ import androidx.navigation3.runtime.NavKey
+ import androidx.navigation3.scene.Scene
+ 
+-/** Переход вперёд: новый экран проявляется, слегка уменьшаясь до своего размера. */
++/** Forward: new screen swipes in from the right with a shorter travel on TV. */
+ internal val tvNavTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
+-    fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) +
+-        scaleIn(
+-            initialScale = TV_NAV_TRANSITION_SCALE,
+-            animationSpec = tween(TV_NAV_TRANSITION_MILLIS),
+-        ) togetherWith fadeOut(tween(TV_NAV_TRANSITION_MILLIS))
++    slideInHorizontally(
++        animationSpec = tween(TV_NAV_TRANSITION_MILLIS),
++        initialOffsetX = { it / TV_NAV_TRAVEL_DIVISOR },
++    ) + fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) togetherWith
++        fadeOut(tween(TV_NAV_TRANSITION_MILLIS))
+ }
+ 
+-/** Переход назад: уходящий экран гаснет, увеличиваясь. */
++/** Back: current screen swipes out right, previous one fades back in. */
+ internal val tvNavPopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = {
+     fadeIn(tween(TV_NAV_TRANSITION_MILLIS)) togetherWith
+-        fadeOut(tween(TV_NAV_TRANSITION_MILLIS)) +
+-        scaleOut(
+-            targetScale = TV_NAV_TRANSITION_SCALE,
++        slideOutHorizontally(
+             animationSpec = tween(TV_NAV_TRANSITION_MILLIS),
+-        )
++            targetOffsetX = { it / TV_NAV_TRAVEL_DIVISOR },
++        ) + fadeOut(tween(TV_NAV_TRANSITION_MILLIS))
+ }
+ 
+ private const val TV_NAV_TRANSITION_MILLIS = 280
+-private const val TV_NAV_TRANSITION_SCALE = 1.05f
++private const val TV_NAV_TRAVEL_DIVISOR = 3
+diff --git a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavigationHolder.kt b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavigationHolder.kt
+index e379b06a1..dd111fde0 100644
+--- a/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavigationHolder.kt
++++ b/feature/main/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/main/navigation/TvNavigationHolder.kt
+@@ -18,6 +18,7 @@ import su.afk.yummy.tv.feature.schedule.ITvScheduleEntry
+ import su.afk.yummy.tv.feature.search.ITvSearchEntry
+ import su.afk.yummy.tv.feature.settings.ITvSettingsEntry
+ import su.afk.yummy.tv.feature.top.ITvTopEntry
++import su.afk.yummy.tv.feature.tracker.ITvTrackerEntry
+ import su.afk.yummy.tv.feature.update.navigator.IUpdateEntry
+ import javax.inject.Inject
+ import javax.inject.Singleton
+@@ -42,6 +43,7 @@ class TvNavigationHolder @Inject constructor(
+     search: ITvSearchEntry,
+     settings: ITvSettingsEntry,
+     top: ITvTopEntry,
++    tracker: ITvTrackerEntry,
+     playerSetup: ITvPlayerSetupEntry,
+     update: IUpdateEntry,
+     errorScreen: IErrorScreenEntry,
+@@ -62,6 +64,7 @@ class TvNavigationHolder @Inject constructor(
+         search,
+         settings,
+         top,
++        tracker,
+         playerSetup,
+         update,
+         errorScreen,
+diff --git a/feature/tracker/presentation/build.gradle.kts b/feature/tracker/presentation/build.gradle.kts
+new file mode 100644
+index 000000000..4f90e9980
+--- /dev/null
++++ b/feature/tracker/presentation/build.gradle.kts
+@@ -0,0 +1,20 @@
++plugins {
++    id("yummytv.android.library")
++    id("yummytv.android.hilt")
++}
++
++android {
++    namespace = "su.afk.yummy.tv.feature.tracker.presentation"
++}
++
++dependencies {
++    implementation(project(":core:error:api"))
++    implementation(project(":core:mvi"))
++    api(project(":core:mvi"))
++    implementation(project(":core:navigation"))
++    implementation(project(":core:utils"))
++    implementation(project(":feature:tracker:api"))
++    implementation(project(":feature:tracker:domain"))
++
++    implementation(libs.kotlinx.collections.immutable)
++}
+diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt
+new file mode 100644
+index 000000000..8d5429211
+--- /dev/null
++++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerState.kt
+@@ -0,0 +1,71 @@
++package su.afk.yummy.tv.feature.tracker
++
++import androidx.compose.runtime.Immutable
++import kotlinx.collections.immutable.ImmutableList
++import kotlinx.collections.immutable.persistentListOf
++import su.afk.yummy.tv.core.mvi.UiEffect
++import su.afk.yummy.tv.core.mvi.UiEvent
++import su.afk.yummy.tv.core.mvi.UiState
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++import su.afk.yummy.tv.domain.tracker.model.TrackerAuthState
++
++class TrackerState {
++    @Immutable
++    data class State(
++        val authState: TrackerAuthState = TrackerAuthState(),
++        val animeId: Long? = null,
++        val animeTitle: String = "",
++        val authUrl: String = "",
++        val isBusy: Boolean = false,
++        val error: String? = null,
++        val searchQuery: String = "",
++        val searchResults: ImmutableList<AnimeTrackSearch> = persistentListOf(),
++        val isSearching: Boolean = false,
++        val binding: AnimeTrack? = null,
++    ) : UiState
++
++    /** User actions on the tracker screens. */
++    sealed interface Event : UiEvent {
++        /** User pressed back. */
++        data object BackSelected : Event
++
++        /** User pressed "Sign in with AniList" — open the in-app OAuth page. */
++        data object LoginClicked : Event
++
++        /** The OAuth page redirected back with a result URI (code flow). */
++        data class AuthCodeReceived(val callbackUri: String) : Event
++
++        /** User signed out of AniList. */
++        data object LogoutClicked : Event
++
++        /** User is typing an anime search query for the AniList catalog. */
++        data class SearchQueryChanged(val query: String) : Event
++
++        /** User submitted the search. */
++        data object SearchSubmitted : Event
++
++        /** User picked a search entry to bind. */
++        data class BindSelected(val search: AnimeTrackSearch) : Event
++
++        /** User requested a binding refresh from the server. */
++        data object RefreshClicked : Event
++
++        /** User confirmed the edit dialog: new status, episode count, score index, privacy. */
++        data class TrackSaved(
++            val status: AnimeTrackStatus,
++            val episodes: Int,
++            val scoreIndex: Int,
++            val private: Boolean,
++        ) : Event
++
++        /** User unlinked the anime from AniList. */
++        data object UnbindClicked : Event
++
++        /** User dismissed the error. */
++        data object ErrorDismissed : Event
++    }
++
++    sealed interface Effect : UiEffect
++}
+diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerViewModel.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerViewModel.kt
+new file mode 100644
+index 000000000..18af15698
+--- /dev/null
++++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/TrackerViewModel.kt
+@@ -0,0 +1,207 @@
++package su.afk.yummy.tv.feature.tracker
++
++import dagger.assisted.Assisted
++import dagger.assisted.AssistedFactory
++import dagger.assisted.AssistedInject
++import dagger.hilt.android.lifecycle.HiltViewModel
++import kotlinx.collections.immutable.persistentListOf
++import kotlinx.collections.immutable.toImmutableList
++import kotlinx.coroutines.Job
++import kotlinx.coroutines.flow.launchIn
++import kotlinx.coroutines.flow.onEach
++import kotlinx.coroutines.launch
++import su.afk.yummy.tv.core.error.api.ErrorHandler
++import su.afk.yummy.tv.core.error.api.RetryStorage
++import su.afk.yummy.tv.core.mvi.BaseViewModel
++import su.afk.yummy.tv.core.navigation.manager.INavigationManager
++import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++import su.afk.yummy.tv.domain.tracker.repository.AnimeTrackRepository
++import su.afk.yummy.tv.domain.tracker.usecase.BeginAniListOAuthUseCase
++import su.afk.yummy.tv.domain.tracker.usecase.BindAnimeTrackUseCase
++import su.afk.yummy.tv.domain.tracker.usecase.HandleAniListCallbackUseCase
++import su.afk.yummy.tv.domain.tracker.usecase.LogoutTrackerUseCase
++import su.afk.yummy.tv.domain.tracker.usecase.ObserveTrackerAuthStateUseCase
++import su.afk.yummy.tv.domain.tracker.usecase.RefreshAnimeTrackUseCase
++import su.afk.yummy.tv.domain.tracker.usecase.SearchAnimeTracksUseCase
++import su.afk.yummy.tv.domain.tracker.usecase.UpdateAnimeTrackUseCase
++import su.afk.yummy.tv.domain.tracker.utils.AniListScoreUtils
++
++/**
++ * Tracker screens: AniList sign-in + anime binding (AniList catalog search,
++ * entry create/update/delete). Port of SettingsTrackingScreen +
++ * Aniyomi AnimeTrackerSearch/AnimeTrackInfoDialog.
++ */
++@HiltViewModel(assistedFactory = TrackerViewModel.Factory::class)
++class TrackerViewModel @AssistedInject internal constructor(
++    @Assisted private val dest: TrackerDestination,
++    override val errorHandler: ErrorHandler,
++    override val retryStorage: RetryStorage,
++    private val nav: INavigationManager,
++    private val observeAuthState: ObserveTrackerAuthStateUseCase,
++    private val beginOAuth: BeginAniListOAuthUseCase,
++    private val handleCallback: HandleAniListCallbackUseCase,
++    private val logout: LogoutTrackerUseCase,
++    private val searchAnime: SearchAnimeTracksUseCase,
++    private val bindAnime: BindAnimeTrackUseCase,
++    private val refreshTrack: RefreshAnimeTrackUseCase,
++    private val updateTrack: UpdateAnimeTrackUseCase,
++    private val animeTrackRepository: AnimeTrackRepository,
++) : BaseViewModel<TrackerState.State, TrackerState.Event, TrackerState.Effect>() {
++
++    @AssistedFactory
++    interface Factory {
++        fun create(dest: TrackerDestination): TrackerViewModel
++    }
++
++    override fun createInitialState(): TrackerState.State {
++        val anime = dest as? TrackerDestination.TrackerAnime
++        return TrackerState.State(
++            animeId = anime?.animeId,
++            animeTitle = anime?.title.orEmpty(),
++            searchQuery = anime?.title.orEmpty(),
++        )
++    }
++
++    private var searchJob: Job? = null
++
++    init {
++        runCatching { beginOAuth() }
++            .onSuccess { url -> setState { copy(authUrl = url) } }
++            .onFailure { setState { copy(error = it.message) } }
++        observeAuthState()
++            .onEach { auth -> setState { copy(authState = auth) } }
++            .launchIn(viewModelScope)
++        currentState.animeId?.let { loadBinding(it) }
++    }
++
++    override fun onEvent(event: TrackerState.Event) {
++        when (event) {
++            TrackerState.Event.BackSelected -> nav.back()
++
++            TrackerState.Event.LoginClicked -> nav.navigate(TrackerDestination.TrackerAuth)
++
++            is TrackerState.Event.AuthCodeReceived -> {
++                setState { copy(isBusy = true, error = null) }
++                viewModelScope.launch {
++                    runSuspendCatching { handleCallback(event.callbackUri) }
++                        .onSuccess { nav.back() }
++                        .onFailure { setState { copy(isBusy = false, error = it.message) } }
++                }
++            }
++
++            TrackerState.Event.LogoutClicked -> viewModelScope.launch {
++                runSuspendCatching { logout() }
++                    .onFailure { setState { copy(error = it.message) } }
++            }
++
++            is TrackerState.Event.SearchQueryChanged ->
++                setState { copy(searchQuery = event.query, error = null) }
++
++            TrackerState.Event.SearchSubmitted -> search(currentState.searchQuery)
++
++            is TrackerState.Event.BindSelected -> bind(event.search)
++
++            TrackerState.Event.RefreshClicked -> {
++                val animeId = currentState.animeId ?: return
++                setState { copy(isBusy = true, error = null) }
++                viewModelScope.launch {
++                    runSuspendCatching { refreshTrack(animeId) }
++                        .onSuccess { track -> setState { copy(isBusy = false, binding = track) } }
++                        .onFailure { setState { copy(isBusy = false, error = it.message) } }
++                }
++            }
++
++            is TrackerState.Event.TrackSaved -> saveTrack(event)
++
++            TrackerState.Event.UnbindClicked -> {
++                val animeId = currentState.animeId ?: return
++                viewModelScope.launch {
++                    runSuspendCatching { animeTrackRepository.removeBinding(animeId) }
++                        .onSuccess { setState { copy(binding = null) } }
++                        .onFailure { setState { copy(error = it.message) } }
++                }
++            }
++
++            TrackerState.Event.ErrorDismissed -> setState { copy(error = null) }
++        }
++    }
++
++    private fun loadBinding(animeId: Long) {
++        viewModelScope.launch {
++            runSuspendCatching { animeTrackRepository.getBinding(animeId) }
++                .onSuccess { setState { copy(binding = it) } }
++        }
++    }
++
++    private fun search(query: String) {
++        searchJob?.cancel()
++        if (query.isBlank()) {
++            setState { copy(searchResults = persistentListOf(), isSearching = false) }
++            return
++        }
++        setState { copy(isSearching = true, error = null) }
++        searchJob = viewModelScope.launch {
++            runSuspendCatching { searchAnime(query) }
++                .onSuccess {
++                    setState { copy(isSearching = false, searchResults = it.toImmutableList()) }
++                }
++                .onFailure { setState { copy(isSearching = false, error = it.message) } }
++        }
++    }
++
++    /**
++     * Applies the edit-dialog draft with the same transition rules as Aniyomi's
++     * `setRemoteAnimeStatus` (completing fills progress) and `setRemoteLastEpisodeSeen`
++     * (first progress starts watching, full progress completes).
++     */
++    private fun saveTrack(event: TrackerState.Event.TrackSaved) {
++        val current = currentState.binding ?: return
++        val format = currentState.authState.scoreFormat
++        var episodes = event.episodes.toDouble()
++        var status = event.status
++        if (status == AnimeTrackStatus.COMPLETED && current.totalEpisodes > 0) {
++            episodes = current.totalEpisodes.toDouble()
++        }
++        if (current.lastEpisodeSeen == 0.0 &&
++            current.lastEpisodeSeen < episodes &&
++            status != AnimeTrackStatus.REWATCHING
++        ) {
++            status = AnimeTrackStatus.WATCHING
++        }
++        var finishDate = current.finishDateMillis
++        if (current.totalEpisodes > 0 && episodes.toLong() == current.totalEpisodes) {
++            status = AnimeTrackStatus.COMPLETED
++            finishDate = System.currentTimeMillis()
++        }
++        val updated = current.copy(
++            status = status,
++            lastEpisodeSeen = episodes,
++            score = AniListScoreUtils.indexToScore(format, event.scoreIndex),
++            finishDateMillis = finishDate,
++            private = event.private,
++        )
++        setState { copy(isBusy = true, error = null) }
++        viewModelScope.launch {
++            runSuspendCatching { updateTrack(updated) }
++                .onSuccess { track -> setState { copy(isBusy = false, binding = track) } }
++                .onFailure { setState { copy(isBusy = false, error = it.message) } }
++        }
++    }
++
++    private fun bind(search: AnimeTrackSearch) {        val animeId = currentState.animeId ?: return
++        setState { copy(isBusy = true, error = null) }
++        viewModelScope.launch {
++            runSuspendCatching {
++                bindAnime(
++                    animeId = animeId,
++                    search = search,
++                    // Port of AddAnimeTracks.bind: whether anything was watched — from the current binding.
++                    hasWatchedEpisodes = (currentState.binding?.lastEpisodeSeen ?: 0.0) > 0.0,
++                )
++            }.onSuccess { track -> setState { copy(isBusy = false, binding = track) } }
++                .onFailure { setState { copy(isBusy = false, error = it.message) } }
++        }
++    }
++}
+diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/di/TrackerNavigatorModule.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/di/TrackerNavigatorModule.kt
+new file mode 100644
+index 000000000..b1a8fab27
+--- /dev/null
++++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/di/TrackerNavigatorModule.kt
+@@ -0,0 +1,16 @@
++package su.afk.yummy.tv.feature.tracker.di
++
++import dagger.Binds
++import dagger.Module
++import dagger.hilt.InstallIn
++import dagger.hilt.components.SingletonComponent
++import su.afk.yummy.tv.feature.tracker.ITrackerNavigator
++import su.afk.yummy.tv.feature.tracker.navigator.TrackerNavigator
++
++@Module
++@InstallIn(SingletonComponent::class)
++internal interface TrackerNavigatorModule {
++
++    @Binds
++    fun bindTrackerNavigator(impl: TrackerNavigator): ITrackerNavigator
++}
+diff --git a/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/navigator/TrackerNavigator.kt b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/navigator/TrackerNavigator.kt
+new file mode 100644
+index 000000000..43ac5e634
+--- /dev/null
++++ b/feature/tracker/presentation/src/main/kotlin/su/afk/yummy/tv/feature/tracker/navigator/TrackerNavigator.kt
+@@ -0,0 +1,19 @@
++package su.afk.yummy.tv.feature.tracker.navigator
++
++import su.afk.yummy.tv.core.navigation.manager.INavigationManager
++import su.afk.yummy.tv.feature.tracker.ITrackerNavigator
++import su.afk.yummy.tv.feature.tracker.TrackerDestination
++import javax.inject.Inject
++
++internal class TrackerNavigator @Inject constructor(
++    private val nav: INavigationManager,
++) : ITrackerNavigator {
++
++    override fun openTrackerSettings() {
++        nav.navigate(TrackerDestination.TrackerSettings)
++    }
++
++    override fun openAnimeTrack(animeId: Long, title: String) {
++        nav.navigate(TrackerDestination.TrackerAnime(animeId, title))
++    }
++}
+diff --git a/feature/tracker/ui-mobile/build.gradle.kts b/feature/tracker/ui-mobile/build.gradle.kts
+new file mode 100644
+index 000000000..98dc62f49
+--- /dev/null
++++ b/feature/tracker/ui-mobile/build.gradle.kts
+@@ -0,0 +1,23 @@
++plugins {
++    id("yummytv.android.library.compose")
++    id("yummytv.android.hilt")
++}
++
++android {
++    namespace = "su.afk.yummy.tv.feature.tracker.mobile"
++}
++
++dependencies {
++    implementation(project(":core:designsystem"))
++    implementation(project(":core:navigation"))
++    implementation(project(":feature:tracker:api"))
++    implementation(project(":feature:tracker:domain"))
++    implementation(project(":feature:tracker:presentation"))
++
++    implementation(libs.bundles.compose.screen)
++    implementation(libs.bundles.navigation.serialization)
++    implementation(libs.bundles.coil.full)
++
++    implementation(libs.androidx.material.icons.extended)
++    implementation(libs.androidx.material2)
++}
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
+new file mode 100644
+index 000000000..26c318304
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerAuthMobileScreen.kt
+@@ -0,0 +1,97 @@
++package su.afk.yummy.tv.feature.tracker.mobile
++
++import android.annotation.SuppressLint
++import android.webkit.WebChromeClient
++import android.webkit.WebResourceRequest
++import android.webkit.WebView
++import android.webkit.WebViewClient
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.padding
++import androidx.compose.material.Icon
++import androidx.compose.material.IconButton
++import androidx.compose.material.LinearProgressIndicator
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Scaffold
++import androidx.compose.material.Text
++import androidx.compose.material.TopAppBar
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.automirrored.filled.ArrowBack
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.viewinterop.AndroidView
++import kotlinx.coroutines.flow.Flow
++import su.afk.yummy.tv.feature.tracker.TrackerState
++import su.afk.yummy.tv.feature.tracker.mobile.R
++import su.afk.yummy.tv.feature.tracker.mobile.view.TrackerClassicTheme
++
++/**
++ * In-app AniList sign-in page. The OAuth redirect back to the app scheme is
++ * intercepted here and exchanged for tokens, no external browser involved.
++ */
++@SuppressLint("SetJavaScriptEnabled")
++@Composable
++fun TrackerAuthMobileScreen(
++    state: TrackerState.State,
++    effect: Flow<TrackerState.Effect>,
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    var progress by remember { mutableStateOf(0) }
++
++    TrackerClassicTheme {
++        Scaffold(
++            topBar = {
++                TopAppBar(
++                    title = { Text(stringResource(R.string.tracker_title)) },
++                    navigationIcon = {
++                        IconButton(onClick = { onEvent(TrackerState.Event.BackSelected) }) {
++                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
++                        }
++                    },
++                    backgroundColor = MaterialTheme.colors.surface,
++                )
++            },
++        ) { padding ->
++            if (progress in 1..99) {
++                LinearProgressIndicator(progress = progress / 100f)
++            }
++            if (state.authUrl.isNotBlank()) {
++                AndroidView(
++                    factory = { context ->
++                        WebView(context).apply {
++                            settings.javaScriptEnabled = true
++                            settings.domStorageEnabled = true
++                            webViewClient = object : WebViewClient() {
++                                override fun shouldOverrideUrlLoading(
++                                    view: WebView,
++                                    request: WebResourceRequest,
++                                ): Boolean {
++                                    val url = request.url.toString()
++                                    // App-scheme redirect carries ?code=… — consume, never load it.
++                                    if (url.startsWith("yummytv://anilist-auth")) {
++                                        onEvent(TrackerState.Event.AuthCodeReceived(url))
++                                        return true
++                                    }
++                                    return false
++                                }
++                            }
++                            webChromeClient = object : WebChromeClient() {
++                                override fun onProgressChanged(view: WebView, newProgress: Int) {
++                                    progress = newProgress
++                                }
++                            }
++                            loadUrl(state.authUrl)
++                        }
++                    },
++                    modifier = Modifier
++                        .fillMaxSize()
++                        .padding(padding),
++                )
++            }
++        }
++    }
++}
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
+new file mode 100644
+index 000000000..2a24b8c91
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/TrackerMobileScreen.kt
+@@ -0,0 +1,491 @@
++package su.afk.yummy.tv.feature.tracker.mobile
++
++import androidx.compose.foundation.background
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.IntrinsicSize
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.fillMaxHeight
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.foundation.layout.statusBarsPadding
++import androidx.compose.foundation.layout.width
++import androidx.compose.foundation.lazy.LazyColumn
++import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.material.AlertDialog
++import androidx.compose.material.AlertDialog
++import androidx.compose.material.Button
++import androidx.compose.material.CircularProgressIndicator
++import androidx.compose.material.Divider
++import androidx.compose.material.DropdownMenu
++import androidx.compose.material.DropdownMenuItem
++import androidx.compose.material.Icon
++import androidx.compose.material.IconButton
++import androidx.compose.material.LinearProgressIndicator
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.OutlinedButton
++import androidx.compose.material.OutlinedTextField
++import androidx.compose.material.Scaffold
++import androidx.compose.material.Text
++import androidx.compose.material.TextButton
++import androidx.compose.material.TopAppBar
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.MoreVert
++import androidx.compose.material.icons.outlined.Done
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.draw.clip
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.layout.ContentScale
++import androidx.compose.ui.platform.LocalContext
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.style.TextOverflow
++import androidx.compose.ui.unit.dp
++import coil3.compose.AsyncImage
++import kotlinx.coroutines.flow.Flow
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++import su.afk.yummy.tv.domain.tracker.model.AniListCapabilities
++import su.afk.yummy.tv.domain.tracker.utils.AniListScoreUtils
++import su.afk.yummy.tv.feature.tracker.TrackerState
++import su.afk.yummy.tv.feature.tracker.mobile.R
++import su.afk.yummy.tv.feature.tracker.mobile.utils.copyTrackerLink
++import su.afk.yummy.tv.feature.tracker.mobile.utils.label
++import su.afk.yummy.tv.feature.tracker.mobile.utils.openTrackerUrl
++import su.afk.yummy.tv.feature.tracker.mobile.view.TrackerClassicTheme
++import su.afk.yummy.tv.feature.tracker.mobile.view.TrackerEditDialog
++import su.afk.yummy.tv.feature.tracker.mobile.view.TrackerLogo
++
++@Composable
++fun TrackerMobileScreen(
++    state: TrackerState.State,
++    effect: Flow<TrackerState.Effect>,
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    // Sign-in runs on the in-app OAuth page (TrackerAuth); no side effects to handle here.
++    TrackerClassicTheme {
++        Scaffold(
++            // M2 Scaffold ignores window insets: pad the whole frame from the status bar.
++            modifier = Modifier.statusBarsPadding(),
++            topBar = {
++                TopAppBar(
++                    title = {
++                        Text(
++                            if (state.animeTitle.isNotBlank()) state.animeTitle
++                            else stringResource(R.string.tracker_title),
++                        )
++                    },
++                    backgroundColor = MaterialTheme.colors.surface,
++                )
++            },
++        ) { padding ->
++            LazyColumn(
++                modifier = Modifier
++                    .fillMaxSize()
++                    .padding(padding)
++                    .padding(horizontal = 16.dp, vertical = 12.dp),
++                verticalArrangement = Arrangement.spacedBy(16.dp),
++            ) {
++                if (state.isBusy) {
++                    item(key = "busy") {
++                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
++                    }
++                }
++                state.error?.let { error ->
++                    item(key = "error") {
++                        Text(
++                            text = error,
++                            color = MaterialTheme.colors.error,
++                            style = MaterialTheme.typography.body2,
++                        )
++                    }
++                }
++                if (state.animeId == null) {
++                    item(key = "auth") {
++                        TrackerAuthBlock(
++                            state = state,
++                            onEvent = onEvent,
++                        )
++                    }
++                } else if (!state.authState.isLoggedIn) {
++                    item(key = "login") {
++                        TrackerLoginBlock(onEvent = onEvent)
++                    }
++                }
++                if (state.animeId != null) {
++                    item(key = "anime") {
++                        TrackerAnimeBlock(
++                            state = state,
++                            onEvent = onEvent,
++                        )
++                    }
++                }
++            }
++        }
++    }
++}
++
++@Composable
++private fun TrackerAuthBlock(
++    state: TrackerState.State,
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    var showLogoutConfirm by remember { mutableStateOf(false) }
++    // Same row as Aniyomi's TrackingPreferenceWidget: logo, name, status check.
++    // Tapping it asks for sign-out confirmation instead of a button below.
++    Row(
++        modifier = Modifier
++            .fillMaxWidth()
++            .clickable(enabled = state.authState.isLoggedIn) { showLogoutConfirm = true },
++        verticalAlignment = Alignment.CenterVertically,
++    ) {
++        TrackerLogo()
++        Text(
++            text = stringResource(R.string.tracker_title),
++            modifier = Modifier
++                .weight(1f)
++                .padding(horizontal = 16.dp),
++            style = MaterialTheme.typography.h6,
++        )
++        if (state.authState.isLoggedIn) {
++            Icon(
++                imageVector = Icons.Outlined.Done,
++                contentDescription = null,
++                modifier = Modifier
++                    .padding(4.dp)
++                    .size(32.dp),
++                tint = Color(0xFF4CAF50),
++            )
++        }
++    }
++    if (showLogoutConfirm) {
++        AlertDialog(
++            onDismissRequest = { showLogoutConfirm = false },
++            title = { Text(stringResource(R.string.tracker_logout_title)) },
++            text = {
++                Text(
++                    stringResource(
++                        R.string.tracker_logged_in_as,
++                        state.authState.username.ifBlank { "AniList" },
++                    ),
++                )
++            },
++            confirmButton = {
++                TextButton(
++                    onClick = {
++                        showLogoutConfirm = false
++                        onEvent(TrackerState.Event.LogoutClicked)
++                    },
++                ) {
++                    Text(stringResource(R.string.tracker_logout))
++                }
++            },
++            dismissButton = {
++                TextButton(onClick = { showLogoutConfirm = false }) {
++                    Text(stringResource(R.string.tracker_cancel))
++                }
++            },
++        )
++    }
++    if (!state.authState.isLoggedIn) {
++        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
++            Text(
++                text = stringResource(R.string.tracker_login_hint),
++                style = MaterialTheme.typography.body1,
++                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++            )
++            Button(onClick = { onEvent(TrackerState.Event.LoginClicked) }) {
++                Text(stringResource(R.string.tracker_login))
++            }
++        }
++    }
++}
++
++@Composable
++private fun TrackerLoginBlock(
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
++        Text(
++            text = stringResource(R.string.tracker_login_hint),
++            style = MaterialTheme.typography.body1,
++            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++        )
++        Button(onClick = { onEvent(TrackerState.Event.LoginClicked) }) {
++            Text(stringResource(R.string.tracker_login))
++        }
++    }
++}
++
++@Composable
++private fun TrackerAnimeBlock(
++    state: TrackerState.State,
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    var showEdit by remember { mutableStateOf(false) }
++    var showMenu by remember { mutableStateOf(false) }
++    val context = LocalContext.current
++    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
++        val binding = state.binding
++        if (binding != null) {
++            Row(
++                modifier = Modifier.fillMaxWidth(),
++                verticalAlignment = Alignment.CenterVertically,
++            ) {
++                TrackerLogo()
++                Text(
++                    text = binding.title,
++                    modifier = Modifier
++                        .weight(1f)
++                        .padding(horizontal = 16.dp),
++                    style = MaterialTheme.typography.h6,
++                    maxLines = 2,
++                    overflow = TextOverflow.Ellipsis,
++                )
++                IconButton(onClick = { showMenu = true }) {
++                    Icon(Icons.Filled.MoreVert, contentDescription = null)
++                }
++                DropdownMenu(
++                    expanded = showMenu,
++                    onDismissRequest = { showMenu = false },
++                ) {
++                    DropdownMenuItem(
++                        onClick = {
++                            showMenu = false
++                            openTrackerUrl(context, binding.remoteUrl)
++                        },
++                    ) {
++                        Text(stringResource(R.string.tracker_open_in_browser))
++                    }
++                    DropdownMenuItem(
++                        onClick = {
++                            showMenu = false
++                            copyTrackerLink(context, binding.remoteUrl)
++                        },
++                    ) {
++                        Text(stringResource(R.string.tracker_copy_link))
++                    }
++                    DropdownMenuItem(
++                        onClick = {
++                            showMenu = false
++                            onEvent(TrackerState.Event.UnbindClicked)
++                        },
++                    ) {
++                        Text(stringResource(R.string.tracker_unbind))
++                    }
++                }
++            }
++            TrackerInfoGrid(
++                state = state,
++                onCellClick = { showEdit = true },
++            )
++            OutlinedButton(onClick = { onEvent(TrackerState.Event.RefreshClicked) }) {
++                Text(stringResource(R.string.tracker_refresh))
++            }
++            if (showEdit) {
++                TrackerEditDialog(
++                    binding = binding,
++                    scoreFormat = state.authState.scoreFormat,
++                    capabilities = AniListCapabilities,
++                    onDismiss = { showEdit = false },
++                    onSave = { status, episodes, scoreIndex, private ->
++                        showEdit = false
++                        onEvent(
++                            TrackerState.Event.TrackSaved(status, episodes, scoreIndex, private),
++                        )
++                    },
++                )
++            }
++        }
++        OutlinedTextField(
++            value = state.searchQuery,
++            onValueChange = { onEvent(TrackerState.Event.SearchQueryChanged(it)) },
++            modifier = Modifier.fillMaxWidth(),
++            label = { Text(stringResource(R.string.tracker_search_label)) },
++            singleLine = true,
++        )
++        Button(
++            onClick = { onEvent(TrackerState.Event.SearchSubmitted) },
++            enabled = !state.isSearching,
++        ) {
++            Text(stringResource(R.string.tracker_search_action))
++        }
++        if (state.isSearching) {
++            CircularProgressIndicator()
++        }
++        state.searchResults.forEach { item ->
++            TrackerSearchRow(
++                item = item,
++                onBind = { onEvent(TrackerState.Event.BindSelected(item)) },
++            )
++        }
++    }
++}
++
++@Composable
++private fun TrackerInfoGrid(
++    state: TrackerState.State,
++    onCellClick: () -> Unit,
++) {
++    val binding = state.binding ?: return
++    val context = LocalContext.current
++    val dateFormat = remember { android.text.format.DateFormat.getDateFormat(context) }
++    val dividerColor = MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
++    Column(
++        modifier = Modifier
++            .fillMaxWidth()
++            .clip(RoundedCornerShape(12.dp))
++            .background(MaterialTheme.colors.onSurface.copy(alpha = 0.06f))
++            .clickable(onClick = onCellClick)
++            .padding(12.dp),
++        verticalArrangement = Arrangement.spacedBy(8.dp),
++    ) {
++        Row(
++            modifier = Modifier
++                .fillMaxWidth()
++                .height(IntrinsicSize.Min),
++        ) {
++            TrackerInfoCell(
++                label = stringResource(R.string.tracker_status),
++                value = binding.status.label(),
++                modifier = Modifier.weight(1f),
++            )
++            Box(
++                modifier = Modifier
++                    .fillMaxHeight()
++                    .width(1.dp)
++                    .background(dividerColor),
++            )
++            TrackerInfoCell(
++                label = stringResource(R.string.tracker_episodes),
++                value = if (binding.totalEpisodes > 0) {
++                    "${binding.lastEpisodeSeen.toInt()} / ${binding.totalEpisodes}"
++                } else {
++                    "${binding.lastEpisodeSeen.toInt()}"
++                },
++                modifier = Modifier.weight(1f),
++            )
++            Box(
++                modifier = Modifier
++                    .fillMaxHeight()
++                    .width(1.dp)
++                    .background(dividerColor),
++            )
++            TrackerInfoCell(
++                label = stringResource(R.string.tracker_score),
++                value = if (binding.score != 0.0) {
++                    AniListScoreUtils.displayScore(state.authState.scoreFormat, binding.score)
++                } else {
++                    stringResource(R.string.tracker_not_set)
++                },
++                modifier = Modifier.weight(1f),
++            )
++        }
++        if (binding.startDateMillis > 0 || binding.finishDateMillis > 0) {
++            Divider(color = dividerColor)
++            Row(
++                modifier = Modifier
++                    .fillMaxWidth()
++                    .height(IntrinsicSize.Min),
++            ) {
++                TrackerInfoCell(
++                    label = "",
++                    value = if (binding.startDateMillis > 0) {
++                        dateFormat.format(java.util.Date(binding.startDateMillis))
++                    } else {
++                        stringResource(R.string.tracker_not_set)
++                    },
++                    modifier = Modifier.weight(1f),
++                )
++                Box(
++                    modifier = Modifier
++                        .fillMaxHeight()
++                        .width(1.dp)
++                        .background(dividerColor),
++                )
++                TrackerInfoCell(
++                    label = "",
++                    value = if (binding.finishDateMillis > 0) {
++                        dateFormat.format(java.util.Date(binding.finishDateMillis))
++                    } else {
++                        stringResource(R.string.tracker_not_set)
++                    },
++                    modifier = Modifier.weight(1f),
++                )
++            }
++        }
++    }
++}
++
++@Composable
++private fun TrackerInfoCell(
++    label: String,
++    value: String,
++    modifier: Modifier = Modifier,
++) {
++    Column(
++        modifier = modifier.padding(horizontal = 4.dp),
++        horizontalAlignment = Alignment.CenterHorizontally,
++    ) {
++        if (label.isNotBlank()) {
++            Text(
++                text = label,
++                style = MaterialTheme.typography.caption,
++                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++            )
++        }
++        Text(
++            text = value,
++            style = MaterialTheme.typography.subtitle1,
++        )
++    }
++}
++
++@Composable
++private fun TrackerSearchRow(
++    item: AnimeTrackSearch,
++    onBind: () -> Unit,
++) {
++    Row(
++        modifier = Modifier.fillMaxWidth(),
++        horizontalArrangement = Arrangement.spacedBy(12.dp),
++        verticalAlignment = Alignment.CenterVertically,
++    ) {
++        AsyncImage(
++            model = item.coverUrl,
++            contentDescription = null,
++            modifier = Modifier
++                .size(width = 48.dp, height = 72.dp)
++                .clip(RoundedCornerShape(8.dp)),
++            contentScale = ContentScale.Crop,
++        )
++        Column(modifier = Modifier.weight(1f)) {
++            Text(
++                text = item.title,
++                style = MaterialTheme.typography.body1,
++            )
++            if (item.totalEpisodes > 0 || item.score >= 0) {
++                Text(
++                    text = listOfNotNull(
++                        item.totalEpisodes.takeIf { it > 0 }?.let { "$it ep." },
++                        item.score.takeIf { it >= 0 }?.let { "★ ${it.toInt()}" },
++                    ).joinToString(" · "),
++                    style = MaterialTheme.typography.caption,
++                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++                )
++            }
++        }
++        OutlinedButton(onClick = onBind) {
++            Text(stringResource(R.string.tracker_bind))
++        }
++    }
++}
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/di/TrackerMobileNavigationModule.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/di/TrackerMobileNavigationModule.kt
+new file mode 100644
+index 000000000..20c9a9e1a
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/di/TrackerMobileNavigationModule.kt
+@@ -0,0 +1,16 @@
++package su.afk.yummy.tv.feature.tracker.mobile.di
++
++import dagger.Binds
++import dagger.Module
++import dagger.hilt.InstallIn
++import dagger.hilt.components.SingletonComponent
++import su.afk.yummy.tv.feature.tracker.IMobileTrackerEntry
++import su.afk.yummy.tv.feature.tracker.mobile.navigator.TrackerNavRegistrar
++
++@Module
++@InstallIn(SingletonComponent::class)
++interface TrackerMobileNavigationModule {
++
++    @Binds
++    fun bindTrackerNavRegistrar(impl: TrackerNavRegistrar): IMobileTrackerEntry
++}
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/navigator/TrackerNavRegistrar.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/navigator/TrackerNavRegistrar.kt
+new file mode 100644
+index 000000000..518436854
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/navigator/TrackerNavRegistrar.kt
+@@ -0,0 +1,59 @@
++package su.afk.yummy.tv.feature.tracker.mobile.navigator
++
++import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
++import androidx.navigation3.runtime.EntryProviderScope
++import androidx.navigation3.runtime.NavKey
++import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
++import su.afk.yummy.tv.core.navigation.manager.INavigationManager
++import su.afk.yummy.tv.feature.tracker.IMobileTrackerEntry
++import su.afk.yummy.tv.feature.tracker.TrackerDestination
++import su.afk.yummy.tv.feature.tracker.TrackerViewModel
++import su.afk.yummy.tv.feature.tracker.mobile.TrackerAuthMobileScreen
++import su.afk.yummy.tv.feature.tracker.mobile.TrackerMobileScreen
++import javax.inject.Inject
++
++class TrackerNavRegistrar @Inject constructor() : IMobileTrackerEntry {
++    override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
++        with(builder) {
++            entry<TrackerDestination.TrackerAuth> {
++                val viewModel = hiltViewModel<TrackerViewModel, TrackerViewModel.Factory>(
++                    creationCallback = { factory ->
++                        factory.create(TrackerDestination.TrackerAuth)
++                    },
++                )
++                ScreenNavigator(viewModel) { state, effect, onEvent ->
++                    TrackerAuthMobileScreen(
++                        state = state,
++                        effect = effect,
++                        onEvent = onEvent,
++                    )
++                }
++            }
++            entry<TrackerDestination.TrackerSettings> {
++                val viewModel = hiltViewModel<TrackerViewModel, TrackerViewModel.Factory>(
++                    creationCallback = { factory ->
++                        factory.create(TrackerDestination.TrackerSettings)
++                    },
++                )
++                ScreenNavigator(viewModel) { state, effect, onEvent ->
++                    TrackerMobileScreen(
++                        state = state,
++                        effect = effect,
++                        onEvent = onEvent,
++                    )
++                }
++            }
++            entry<TrackerDestination.TrackerAnime> { dest ->
++                val viewModel = hiltViewModel<TrackerViewModel, TrackerViewModel.Factory>(
++                    creationCallback = { factory -> factory.create(dest) },
++                )
++                ScreenNavigator(viewModel) { state, effect, onEvent ->
++                    TrackerMobileScreen(
++                        state = state,
++                        effect = effect,
++                        onEvent = onEvent,
++                    )
++                }
++            }
++        }
++}
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt
+new file mode 100644
+index 000000000..c15fa1641
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerIntents.kt
+@@ -0,0 +1,22 @@
++package su.afk.yummy.tv.feature.tracker.mobile.utils
++
++import android.content.ClipData
++import android.content.ClipboardManager
++import android.content.Context
++import android.content.Intent
++import androidx.core.net.toUri
++
++internal fun openTrackerUrl(context: Context, url: String) {
++    if (url.isBlank()) return
++    context.startActivity(
++        Intent(Intent.ACTION_VIEW, url.toUri()).apply {
++            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
++        },
++    )
++}
++
++internal fun copyTrackerLink(context: Context, url: String) {
++    if (url.isBlank()) return
++    val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return
++    clipboard.setPrimaryClip(ClipData.newPlainText(url, url))
++}
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerStatusLabels.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerStatusLabels.kt
+new file mode 100644
+index 000000000..fe0a1385e
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/utils/TrackerStatusLabels.kt
+@@ -0,0 +1,18 @@
++package su.afk.yummy.tv.feature.tracker.mobile.utils
++
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++import su.afk.yummy.tv.feature.tracker.mobile.R
++
++@Composable
++internal fun AnimeTrackStatus.label(): String = stringResource(
++    when (this) {
++        AnimeTrackStatus.WATCHING -> R.string.tracker_status_watching
++        AnimeTrackStatus.PLAN_TO_WATCH -> R.string.tracker_status_plan_to_watch
++        AnimeTrackStatus.COMPLETED -> R.string.tracker_status_completed
++        AnimeTrackStatus.REWATCHING -> R.string.tracker_status_rewatching
++        AnimeTrackStatus.ON_HOLD -> R.string.tracker_status_on_hold
++        AnimeTrackStatus.DROPPED -> R.string.tracker_status_dropped
++    },
++)
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt
+new file mode 100644
+index 000000000..77c677a7a
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerClassicTheme.kt
+@@ -0,0 +1,51 @@
++package su.afk.yummy.tv.feature.tracker.mobile.view
++
++import androidx.compose.foundation.isSystemInDarkTheme
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.darkColors
++import androidx.compose.material.lightColors
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.graphics.Color
++
++private val TwitterBlue = Color(0xFF1D9BF0)
++
++private val ClassicDarkColors = darkColors(
++    primary = TwitterBlue,
++    primaryVariant = Color(0xFF0F4C81),
++    secondary = Color(0xFF71767B),
++    background = Color(0xFF000000),
++    surface = Color(0xFF16181C),
++    error = Color(0xFFF4212E),
++    onPrimary = Color(0xFFFFFFFF),
++    onSecondary = Color(0xFFFFFFFF),
++    onBackground = Color(0xFFE7E9EA),
++    onSurface = Color(0xFFE7E9EA),
++    onError = Color(0xFFFFFFFF),
++)
++
++private val ClassicLightColors = lightColors(
++    primary = TwitterBlue,
++    primaryVariant = Color(0xFF1A8CD8),
++    secondary = Color(0xFF536471),
++    background = Color(0xFFFFFFFF),
++    surface = Color(0xFFFFFFFF),
++    error = Color(0xFFF4212E),
++    onPrimary = Color(0xFFFFFFFF),
++    onSecondary = Color(0xFFFFFFFF),
++    onBackground = Color(0xFF0F1419),
++    onSurface = Color(0xFF0F1419),
++    onError = Color(0xFFFFFFFF),
++)
++
++/**
++ * Classic Material (M2) look for the tracker screens: Twitter-blue accent on
++ * neutral black/white. The rest of the app stays on Material3; both toolkits
++ * render in the same composition.
++ */
++@Composable
++internal fun TrackerClassicTheme(content: @Composable () -> Unit) {
++    MaterialTheme(
++        colors = if (isSystemInDarkTheme()) ClassicDarkColors else ClassicLightColors,
++        content = content,
++    )
++}
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt
+new file mode 100644
+index 000000000..768be10d5
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerEditDialog.kt
+@@ -0,0 +1,181 @@
++package su.afk.yummy.tv.feature.tracker.mobile.view
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.material.AlertDialog
++import androidx.compose.material.Checkbox
++import androidx.compose.material.DropdownMenuItem
++import androidx.compose.material.ExperimentalMaterialApi
++import androidx.compose.material.ExposedDropdownMenuBox
++import androidx.compose.material.ExposedDropdownMenuDefaults
++import androidx.compose.material.Icon
++import androidx.compose.material.IconButton
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.OutlinedTextField
++import androidx.compose.material.Text
++import androidx.compose.material.TextButton
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.Add
++import androidx.compose.material.icons.filled.Remove
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableIntStateOf
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.domain.tracker.model.AniListScoreFormat
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++import su.afk.yummy.tv.domain.tracker.model.TrackerCapabilities
++import su.afk.yummy.tv.domain.tracker.utils.AniListScoreUtils
++import su.afk.yummy.tv.feature.tracker.mobile.R
++import su.afk.yummy.tv.feature.tracker.mobile.utils.label
++
++/**
++ * Entry editor: status, episode stepper, score and privacy.
++ * Mirrors Aniyomi's TrackStatusSelector + TrackEpisodeSelector + TrackScoreSelector
++ * + private toggle, packed into a single dialog with one confirm push.
++ */
++@OptIn(ExperimentalMaterialApi::class)
++@Composable
++internal fun TrackerEditDialog(
++    binding: AnimeTrack,
++    scoreFormat: AniListScoreFormat,
++    capabilities: TrackerCapabilities,
++    onDismiss: () -> Unit,
++    onSave: (status: AnimeTrackStatus, episodes: Int, scoreIndex: Int, private: Boolean) -> Unit,
++) {
++    val statuses = capabilities.animeStatusList
++    var status by remember(binding) { mutableStateOf(binding.status) }
++    val maxEpisodes = binding.totalEpisodes.takeIf { it > 0 }?.toInt() ?: 10_000
++    var episodes by remember(binding) {
++        mutableIntStateOf(binding.lastEpisodeSeen.toInt().coerceIn(0, maxEpisodes))
++    }
++    val scoreOptions = remember(scoreFormat) { AniListScoreUtils.getScoreList(scoreFormat) }
++    var scoreIndex by remember(binding, scoreOptions) {
++        mutableIntStateOf(
++            scoreOptions.indexOf(AniListScoreUtils.displayScore(scoreFormat, binding.score))
++                .takeIf { it >= 0 } ?: 0,
++        )
++    }
++    var isPrivate by remember(binding) { mutableStateOf(binding.private) }
++
++    AlertDialog(
++        onDismissRequest = onDismiss,
++        title = { Text(binding.title) },
++        text = {
++            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
++                var statusExpanded by remember { mutableStateOf(false) }
++                ExposedDropdownMenuBox(
++                    expanded = statusExpanded,
++                    onExpandedChange = { statusExpanded = it },
++                ) {
++                    OutlinedTextField(
++                        value = status.label(),
++                        onValueChange = {},
++                        readOnly = true,
++                        label = { Text(stringResource(R.string.tracker_status)) },
++                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(statusExpanded) },
++                        modifier = Modifier.fillMaxWidth(),
++                    )
++                    ExposedDropdownMenu(
++                        expanded = statusExpanded,
++                        onDismissRequest = { statusExpanded = false },
++                    ) {
++                        statuses.forEach { option ->
++                            DropdownMenuItem(
++                                onClick = {
++                                    status = option
++                                    statusExpanded = false
++                                },
++                            ) {
++                                Text(option.label())
++                            }
++                        }
++                    }
++                }
++                Row(
++                    verticalAlignment = Alignment.CenterVertically,
++                    horizontalArrangement = Arrangement.spacedBy(12.dp),
++                ) {
++                    Text(
++                        text = stringResource(R.string.tracker_episodes),
++                        modifier = Modifier.weight(1f),
++                        style = MaterialTheme.typography.body1,
++                    )
++                    IconButton(
++                        onClick = { episodes = (episodes - 1).coerceAtLeast(0) },
++                        enabled = episodes > 0,
++                    ) {
++                        Icon(Icons.Filled.Remove, contentDescription = null)
++                    }
++                    Text(
++                        text = if (binding.totalEpisodes > 0) "$episodes / ${binding.totalEpisodes}"
++                        else "$episodes",
++                        style = MaterialTheme.typography.subtitle1,
++                    )
++                    IconButton(
++                        onClick = { episodes = (episodes + 1).coerceAtMost(maxEpisodes) },
++                        enabled = episodes < maxEpisodes,
++                    ) {
++                        Icon(Icons.Filled.Add, contentDescription = null)
++                    }
++                }
++                var scoreExpanded by remember { mutableStateOf(false) }
++                ExposedDropdownMenuBox(
++                    expanded = scoreExpanded,
++                    onExpandedChange = { scoreExpanded = it },
++                ) {
++                    OutlinedTextField(
++                        value = scoreOptions.getOrElse(scoreIndex) { "" },
++                        onValueChange = {},
++                        readOnly = true,
++                        label = { Text(stringResource(R.string.tracker_score)) },
++                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(scoreExpanded) },
++                        modifier = Modifier.fillMaxWidth(),
++                    )
++                    ExposedDropdownMenu(
++                        expanded = scoreExpanded,
++                        onDismissRequest = { scoreExpanded = false },
++                    ) {
++                        scoreOptions.forEachIndexed { index, option ->
++                            DropdownMenuItem(
++                                onClick = {
++                                    scoreIndex = index
++                                    scoreExpanded = false
++                                },
++                            ) {
++                                Text(option)
++                            }
++                        }
++                    }
++                }
++                if (capabilities.supportsPrivateTracking) {
++                    Row(verticalAlignment = Alignment.CenterVertically) {
++                        Checkbox(
++                            checked = isPrivate,
++                            onCheckedChange = { isPrivate = it },
++                        )
++                        Text(stringResource(R.string.tracker_private))
++                    }
++                }
++            }
++        },
++        confirmButton = {
++            TextButton(onClick = { onSave(status, episodes, scoreIndex, isPrivate) }) {
++                Text(stringResource(R.string.tracker_save))
++            }
++        },
++        dismissButton = {
++            TextButton(onClick = onDismiss) {
++                Text(stringResource(R.string.tracker_cancel))
++            }
++        },
++    )
++}
+diff --git a/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerLogo.kt b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerLogo.kt
+new file mode 100644
+index 000000000..1d41281bf
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/tracker/mobile/view/TrackerLogo.kt
+@@ -0,0 +1,38 @@
++package su.afk.yummy.tv.feature.tracker.mobile.view
++
++import androidx.compose.foundation.Image
++import androidx.compose.foundation.background
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.draw.clip
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.res.painterResource
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.feature.tracker.mobile.R
++
++/**
++ * AniList logo on its brand-dark tile, like Aniyomi's TrackLogoIcon.
++ * The bare webp has transparency and breaks on light backgrounds.
++ */
++@Composable
++internal fun TrackerLogo(
++    modifier: Modifier = Modifier,
++    iconSize: androidx.compose.ui.unit.Dp = 28.dp,
++) {
++    Box(
++        modifier = modifier
++            .clip(RoundedCornerShape(8.dp))
++            .background(Color(0xFF121923))
++            .padding(6.dp),
++    ) {
++        Image(
++            painter = painterResource(R.drawable.ic_tracker_anilist),
++            contentDescription = null,
++            modifier = Modifier.size(iconSize),
++        )
++    }
++}
+diff --git a/feature/tracker/ui-mobile/src/main/res/drawable-nodpi/ic_tracker_anilist.webp b/feature/tracker/ui-mobile/src/main/res/drawable-nodpi/ic_tracker_anilist.webp
+new file mode 100644
+index 0000000000000000000000000000000000000000..b553d6c497d12fdd6ba931a7672e3c17eb88b7f8
+GIT binary patch
+literal 2048
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml b/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml
+new file mode 100644
+index 000000000..af5109d35
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/res/values-ru/strings.xml
+@@ -0,0 +1,33 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="tracker_title">AniList</string>
++    <string name="tracker_login_hint">Синхронизируйте прогресс просмотра с AniList. Войдите через браузер и вернитесь в приложение.</string>
++    <string name="tracker_login">Войти через AniList</string>
++    <string name="tracker_logged_in_as">Вы вошли как %1$s</string>
++    <string name="tracker_logout">Выйти</string>
++    <string name="tracker_search_label">Поиск аниме</string>
++    <string name="tracker_search_action">Найти</string>
++    <string name="tracker_bind">Привязать</string>
++    <string name="tracker_linked">Привязано: %1$s</string>
++    <string name="tracker_progress">Прогресс: %1$d / %2$d</string>
++    <string name="tracker_refresh">Обновить</string>
++    <string name="tracker_unbind">Отвязать</string>
++    <string name="tracker_open_auth_failed">Не удалось открыть браузер</string>
++    <string name="tracker_open_in_browser">Открыть в браузере</string>
++    <string name="tracker_copy_link">Скопировать ссылку</string>
++    <string name="tracker_not_set">Не задано</string>
++    <string name="tracker_logout_title">Выйти из AniList?</string>
++    <string name="tracker_edit">Редактировать запись</string>
++    <string name="tracker_save">Сохранить</string>
++    <string name="tracker_cancel">Отмена</string>
++    <string name="tracker_status">Статус</string>
++    <string name="tracker_episodes">Просмотрено серий</string>
++    <string name="tracker_score">Оценка</string>
++    <string name="tracker_private">Приватная запись</string>
++    <string name="tracker_status_watching">Смотрю</string>
++    <string name="tracker_status_plan_to_watch">В планах</string>
++    <string name="tracker_status_completed">Завершено</string>
++    <string name="tracker_status_rewatching">Пересматриваю</string>
++    <string name="tracker_status_on_hold">Отложено</string>
++    <string name="tracker_status_dropped">Брошено</string>
++</resources>
+diff --git a/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml b/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml
+new file mode 100644
+index 000000000..c53a5f465
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/res/values-uk/strings.xml
+@@ -0,0 +1,33 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="tracker_title">AniList</string>
++    <string name="tracker_login_hint">Синхронізуйте прогрес перегляду з AniList. Увійдіть через браузер і поверніться в застосунок.</string>
++    <string name="tracker_login">Увійти через AniList</string>
++    <string name="tracker_logged_in_as">Ви увійшли як %1$s</string>
++    <string name="tracker_logout">Вийти</string>
++    <string name="tracker_search_label">Пошук аніме</string>
++    <string name="tracker_search_action">Знайти</string>
++    <string name="tracker_bind">Прив\'язати</string>
++    <string name="tracker_linked">Прив\'язано: %1$s</string>
++    <string name="tracker_progress">Прогрес: %1$d / %2$d</string>
++    <string name="tracker_refresh">Оновити</string>
++    <string name="tracker_unbind">Відв\'язати</string>
++    <string name="tracker_open_auth_failed">Не вдалося відкрити браузер</string>
++    <string name="tracker_open_in_browser">Відкрити в браузері</string>
++    <string name="tracker_copy_link">Скопіювати посилання</string>
++    <string name="tracker_not_set">Не задано</string>
++    <string name="tracker_logout_title">Вийти з AniList?</string>
++    <string name="tracker_edit">Редагувати запис</string>
++    <string name="tracker_save">Зберегти</string>
++    <string name="tracker_cancel">Скасувати</string>
++    <string name="tracker_status">Статус</string>
++    <string name="tracker_episodes">Переглянуто серій</string>
++    <string name="tracker_score">Оцінка</string>
++    <string name="tracker_private">Приватний запис</string>
++    <string name="tracker_status_watching">Дивлюся</string>
++    <string name="tracker_status_plan_to_watch">В планах</string>
++    <string name="tracker_status_completed">Завершено</string>
++    <string name="tracker_status_rewatching">Передивляюся</string>
++    <string name="tracker_status_on_hold">Відкладено</string>
++    <string name="tracker_status_dropped">Покинуто</string>
++</resources>
+diff --git a/feature/tracker/ui-mobile/src/main/res/values/strings.xml b/feature/tracker/ui-mobile/src/main/res/values/strings.xml
+new file mode 100644
+index 000000000..2356cf829
+--- /dev/null
++++ b/feature/tracker/ui-mobile/src/main/res/values/strings.xml
+@@ -0,0 +1,33 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="tracker_title">AniList</string>
++    <string name="tracker_login_hint">Sync watch progress with AniList. Sign in via browser, then return to the app.</string>
++    <string name="tracker_login">Sign in with AniList</string>
++    <string name="tracker_logged_in_as">Signed in as %1$s</string>
++    <string name="tracker_logout">Sign out</string>
++    <string name="tracker_search_label">Anime search</string>
++    <string name="tracker_search_action">Search</string>
++    <string name="tracker_bind">Link</string>
++    <string name="tracker_linked">Linked: %1$s</string>
++    <string name="tracker_progress">Progress: %1$d / %2$d</string>
++    <string name="tracker_refresh">Refresh</string>
++    <string name="tracker_unbind">Unlink</string>
++    <string name="tracker_open_auth_failed">Could not open browser</string>
++    <string name="tracker_open_in_browser">Open in browser</string>
++    <string name="tracker_copy_link">Copy link</string>
++    <string name="tracker_not_set">Not set</string>
++    <string name="tracker_logout_title">Sign out of AniList?</string>
++    <string name="tracker_edit">Edit entry</string>
++    <string name="tracker_save">Save</string>
++    <string name="tracker_cancel">Cancel</string>
++    <string name="tracker_status">Status</string>
++    <string name="tracker_episodes">Episodes watched</string>
++    <string name="tracker_score">Score</string>
++    <string name="tracker_private">Private entry</string>
++    <string name="tracker_status_watching">Watching</string>
++    <string name="tracker_status_plan_to_watch">Plan to watch</string>
++    <string name="tracker_status_completed">Completed</string>
++    <string name="tracker_status_rewatching">Rewatching</string>
++    <string name="tracker_status_on_hold">Paused</string>
++    <string name="tracker_status_dropped">Dropped</string>
++</resources>
+diff --git a/feature/tracker/ui-tv/build.gradle.kts b/feature/tracker/ui-tv/build.gradle.kts
+new file mode 100644
+index 000000000..bc46c8136
+--- /dev/null
++++ b/feature/tracker/ui-tv/build.gradle.kts
+@@ -0,0 +1,26 @@
++plugins {
++    id("yummytv.android.library.compose")
++    id("yummytv.android.hilt")
++}
++
++android {
++    namespace = "su.afk.yummy.tv.feature.tracker.tv"
++}
++
++dependencies {
++    implementation(project(":core:designsystem"))
++    implementation(project(":core:navigation"))
++    implementation(project(":feature:tracker:api"))
++    implementation(project(":feature:tracker:domain"))
++    implementation(project(":feature:tracker:presentation"))
++
++    implementation(libs.bundles.compose.core)
++    implementation(libs.bundles.navigation.serialization)
++    implementation(libs.bundles.coil.full)
++
++    implementation(libs.hilt.navigation.compose)
++    implementation(libs.androidx.lifecycle.runtimeCompose)
++    implementation(libs.androidx.material.icons.core)
++    implementation(libs.androidx.material.icons.extended)
++    implementation(libs.androidx.material2)
++}
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt
+new file mode 100644
+index 000000000..36da211e9
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerAuthTvScreen.kt
+@@ -0,0 +1,88 @@
++package su.afk.yummy.tv.feature.tracker.tv
++
++import android.annotation.SuppressLint
++import android.webkit.WebChromeClient
++import android.webkit.WebResourceRequest
++import android.webkit.WebView
++import android.webkit.WebViewClient
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.padding
++import androidx.compose.material.LinearProgressIndicator
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.unit.dp
++import androidx.compose.ui.viewinterop.AndroidView
++import kotlinx.coroutines.flow.Flow
++import su.afk.yummy.tv.feature.tracker.TrackerState
++import su.afk.yummy.tv.feature.tracker.tv.R
++import su.afk.yummy.tv.feature.tracker.tv.view.TrackerClassicTheme
++
++/**
++ * TV variant of the in-app AniList sign-in page. Same interception as mobile;
++ * d-pad navigation inside the page is limited, the flow stays fully in-app.
++ */
++@SuppressLint("SetJavaScriptEnabled")
++@Composable
++fun TrackerAuthTvScreen(
++    state: TrackerState.State,
++    effect: Flow<TrackerState.Effect>,
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    var progress by remember { mutableStateOf(0) }
++
++    TrackerClassicTheme {
++        Column(
++            modifier = Modifier
++                .fillMaxSize()
++                .padding(horizontal = 48.dp, vertical = 24.dp),
++        ) {
++            Text(
++                text = stringResource(R.string.tracker_title),
++                style = MaterialTheme.typography.h5,
++                fontWeight = FontWeight.Bold,
++            )
++            if (progress in 1..99) {
++                LinearProgressIndicator(progress = progress / 100f)
++            }
++            if (state.authUrl.isNotBlank()) {
++                AndroidView(
++                    factory = { context ->
++                        WebView(context).apply {
++                            settings.javaScriptEnabled = true
++                            settings.domStorageEnabled = true
++                            webViewClient = object : WebViewClient() {
++                                override fun shouldOverrideUrlLoading(
++                                    view: WebView,
++                                    request: WebResourceRequest,
++                                ): Boolean {
++                                    val url = request.url.toString()
++                                    if (url.startsWith("yummytv://anilist-auth")) {
++                                        onEvent(TrackerState.Event.AuthCodeReceived(url))
++                                        return true
++                                    }
++                                    return false
++                                }
++                            }
++                            webChromeClient = object : WebChromeClient() {
++                                override fun onProgressChanged(view: WebView, newProgress: Int) {
++                                    progress = newProgress
++                                }
++                            }
++                            loadUrl(state.authUrl)
++                        }
++                    },
++                    modifier = Modifier.fillMaxSize(),
++                )
++            }
++        }
++    }
++}
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt
+new file mode 100644
+index 000000000..455fc14b5
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/TrackerTvScreen.kt
+@@ -0,0 +1,463 @@
++package su.afk.yummy.tv.feature.tracker.tv
++
++import androidx.compose.foundation.background
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.IntrinsicSize
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.fillMaxHeight
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.foundation.layout.width
++import androidx.compose.foundation.rememberScrollState
++import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.foundation.verticalScroll
++import androidx.compose.material.AlertDialog
++import androidx.compose.material.Button
++import androidx.compose.material.CircularProgressIndicator
++import androidx.compose.material.Divider
++import androidx.compose.material.DropdownMenu
++import androidx.compose.material.DropdownMenuItem
++import androidx.compose.material.Icon
++import androidx.compose.material.IconButton
++import androidx.compose.material.LinearProgressIndicator
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.OutlinedButton
++import androidx.compose.material.OutlinedTextField
++import androidx.compose.material.Text
++import androidx.compose.material.TextButton
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.MoreVert
++import androidx.compose.material.icons.outlined.Done
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.draw.clip
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.layout.ContentScale
++import androidx.compose.ui.platform.LocalContext
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.style.TextOverflow
++import androidx.compose.ui.unit.dp
++import coil3.compose.AsyncImage
++import kotlinx.coroutines.flow.Flow
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackSearch
++import su.afk.yummy.tv.domain.tracker.model.AniListCapabilities
++import su.afk.yummy.tv.domain.tracker.utils.AniListScoreUtils
++import su.afk.yummy.tv.feature.tracker.TrackerState
++import su.afk.yummy.tv.feature.tracker.tv.R
++import su.afk.yummy.tv.feature.tracker.tv.utils.copyTrackerLink
++import su.afk.yummy.tv.feature.tracker.tv.utils.label
++import su.afk.yummy.tv.feature.tracker.tv.utils.openTrackerUrl
++import su.afk.yummy.tv.feature.tracker.tv.view.TrackerClassicTheme
++import su.afk.yummy.tv.feature.tracker.tv.view.TrackerEditDialog
++import su.afk.yummy.tv.feature.tracker.tv.view.TrackerLogo
++
++@Composable
++fun TrackerTvScreen(
++    state: TrackerState.State,
++    effect: Flow<TrackerState.Effect>,
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    // Sign-in runs on the in-app OAuth page (TrackerAuth); no side effects to handle here.
++    TrackerClassicTheme {
++        Column(
++            modifier = Modifier
++                .fillMaxSize()
++                .verticalScroll(rememberScrollState())
++                .padding(horizontal = 48.dp, vertical = 32.dp),
++            verticalArrangement = Arrangement.spacedBy(20.dp),
++        ) {
++            Text(
++                text = if (state.animeTitle.isNotBlank()) state.animeTitle
++                else stringResource(R.string.tracker_title),
++                style = MaterialTheme.typography.h5,
++                fontWeight = FontWeight.Bold,
++            )
++            if (state.isBusy) {
++                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
++            }
++            state.error?.let { error ->
++                Text(
++                    text = error,
++                    color = MaterialTheme.colors.error,
++                    style = MaterialTheme.typography.body2,
++                )
++            }
++            if (state.animeId == null) {
++                TrackerTvAuthBlock(state = state, onEvent = onEvent)
++            } else if (!state.authState.isLoggedIn) {
++                TrackerTvLoginBlock(onEvent = onEvent)
++            }
++            if (state.animeId != null) {
++                TrackerTvAnimeBlock(state = state, onEvent = onEvent)
++            }
++        }
++    }
++}
++
++@Composable
++private fun TrackerTvAuthBlock(
++    state: TrackerState.State,
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    var showLogoutConfirm by remember { mutableStateOf(false) }
++    // Same row as Aniyomi's TrackingPreferenceWidget: logo, name, status check.
++    // Tapping it asks for sign-out confirmation instead of a button below.
++    Row(
++        modifier = Modifier
++            .fillMaxWidth()
++            .clickable(enabled = state.authState.isLoggedIn) { showLogoutConfirm = true },
++        verticalAlignment = Alignment.CenterVertically,
++    ) {
++        TrackerLogo()
++        Text(
++            text = stringResource(R.string.tracker_title),
++            modifier = Modifier
++                .weight(1f)
++                .padding(horizontal = 16.dp),
++            style = MaterialTheme.typography.h6,
++        )
++        if (state.authState.isLoggedIn) {
++            Icon(
++                imageVector = Icons.Outlined.Done,
++                contentDescription = null,
++                modifier = Modifier
++                    .padding(4.dp)
++                    .size(36.dp),
++                tint = Color(0xFF4CAF50),
++            )
++        }
++    }
++    if (showLogoutConfirm) {
++        AlertDialog(
++            onDismissRequest = { showLogoutConfirm = false },
++            title = { Text(stringResource(R.string.tracker_logout_title)) },
++            text = {
++                Text(
++                    stringResource(
++                        R.string.tracker_logged_in_as,
++                        state.authState.username.ifBlank { "AniList" },
++                    ),
++                )
++            },
++            confirmButton = {
++                TextButton(
++                    onClick = {
++                        showLogoutConfirm = false
++                        onEvent(TrackerState.Event.LogoutClicked)
++                    },
++                ) {
++                    Text(stringResource(R.string.tracker_logout))
++                }
++            },
++            dismissButton = {
++                TextButton(onClick = { showLogoutConfirm = false }) {
++                    Text(stringResource(R.string.tracker_cancel))
++                }
++            },
++        )
++    }
++    if (!state.authState.isLoggedIn) {
++        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
++            Text(
++                text = stringResource(R.string.tracker_login_hint),
++                style = MaterialTheme.typography.body1,
++                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++            )
++            Button(onClick = { onEvent(TrackerState.Event.LoginClicked) }) {
++                Text(stringResource(R.string.tracker_login))
++            }
++        }
++    }
++}
++
++@Composable
++private fun TrackerTvLoginBlock(
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
++        Text(
++            text = stringResource(R.string.tracker_login_hint),
++            style = MaterialTheme.typography.body1,
++            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++        )
++        Button(onClick = { onEvent(TrackerState.Event.LoginClicked) }) {
++            Text(stringResource(R.string.tracker_login))
++        }
++    }
++}
++
++@Composable
++private fun TrackerTvAnimeBlock(
++    state: TrackerState.State,
++    onEvent: (TrackerState.Event) -> Unit,
++) {
++    var showEdit by remember { mutableStateOf(false) }
++    var showMenu by remember { mutableStateOf(false) }
++    val context = LocalContext.current
++    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
++        val binding = state.binding
++        if (binding != null) {
++            Row(
++                modifier = Modifier.fillMaxWidth(),
++                verticalAlignment = Alignment.CenterVertically,
++            ) {
++                TrackerLogo()
++                Text(
++                    text = binding.title,
++                    modifier = Modifier
++                        .weight(1f)
++                        .padding(horizontal = 16.dp),
++                    style = MaterialTheme.typography.h6,
++                    maxLines = 2,
++                    overflow = TextOverflow.Ellipsis,
++                )
++                IconButton(onClick = { showMenu = true }) {
++                    Icon(Icons.Filled.MoreVert, contentDescription = null)
++                }
++                DropdownMenu(
++                    expanded = showMenu,
++                    onDismissRequest = { showMenu = false },
++                ) {
++                    DropdownMenuItem(
++                        onClick = {
++                            showMenu = false
++                            openTrackerUrl(context, binding.remoteUrl)
++                        },
++                    ) {
++                        Text(stringResource(R.string.tracker_open_in_browser))
++                    }
++                    DropdownMenuItem(
++                        onClick = {
++                            showMenu = false
++                            copyTrackerLink(context, binding.remoteUrl)
++                        },
++                    ) {
++                        Text(stringResource(R.string.tracker_copy_link))
++                    }
++                    DropdownMenuItem(
++                        onClick = {
++                            showMenu = false
++                            onEvent(TrackerState.Event.UnbindClicked)
++                        },
++                    ) {
++                        Text(stringResource(R.string.tracker_unbind))
++                    }
++                }
++            }
++            TrackerTvInfoGrid(
++                state = state,
++                onCellClick = { showEdit = true },
++            )
++            OutlinedButton(onClick = { onEvent(TrackerState.Event.RefreshClicked) }) {
++                Text(stringResource(R.string.tracker_refresh))
++            }
++            if (showEdit) {
++                TrackerEditDialog(
++                    binding = binding,
++                    scoreFormat = state.authState.scoreFormat,
++                    capabilities = AniListCapabilities,
++                    onDismiss = { showEdit = false },
++                    onSave = { status, episodes, scoreIndex, private ->
++                        showEdit = false
++                        onEvent(
++                            TrackerState.Event.TrackSaved(status, episodes, scoreIndex, private),
++                        )
++                    },
++                )
++            }
++        }
++        OutlinedTextField(
++            value = state.searchQuery,
++            onValueChange = { onEvent(TrackerState.Event.SearchQueryChanged(it)) },
++            modifier = Modifier.fillMaxWidth(0.6f),
++            label = { Text(stringResource(R.string.tracker_search_label)) },
++            singleLine = true,
++        )
++        Button(
++            onClick = { onEvent(TrackerState.Event.SearchSubmitted) },
++            enabled = !state.isSearching,
++        ) {
++            Text(stringResource(R.string.tracker_search_action))
++        }
++        if (state.isSearching) {
++            CircularProgressIndicator()
++        }
++        state.searchResults.forEach { item ->
++            TrackerTvSearchRow(
++                item = item,
++                onBind = { onEvent(TrackerState.Event.BindSelected(item)) },
++            )
++        }
++    }
++}
++
++@Composable
++private fun TrackerTvInfoGrid(
++    state: TrackerState.State,
++    onCellClick: () -> Unit,
++) {
++    val binding = state.binding ?: return
++    val context = LocalContext.current
++    val dateFormat = remember { android.text.format.DateFormat.getDateFormat(context) }
++    val dividerColor = MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
++    Column(
++        modifier = Modifier
++            .fillMaxWidth()
++            .clip(RoundedCornerShape(12.dp))
++            .background(MaterialTheme.colors.onSurface.copy(alpha = 0.06f))
++            .clickable(onClick = onCellClick)
++            .padding(16.dp),
++        verticalArrangement = Arrangement.spacedBy(12.dp),
++    ) {
++        Row(
++            modifier = Modifier
++                .fillMaxWidth()
++                .height(IntrinsicSize.Min),
++        ) {
++            TrackerTvInfoCell(
++                label = stringResource(R.string.tracker_status),
++                value = binding.status.label(),
++                modifier = Modifier.weight(1f),
++            )
++            Box(
++                modifier = Modifier
++                    .fillMaxHeight()
++                    .width(1.dp)
++                    .background(dividerColor),
++            )
++            TrackerTvInfoCell(
++                label = stringResource(R.string.tracker_episodes),
++                value = if (binding.totalEpisodes > 0) {
++                    "${binding.lastEpisodeSeen.toInt()} / ${binding.totalEpisodes}"
++                } else {
++                    "${binding.lastEpisodeSeen.toInt()}"
++                },
++                modifier = Modifier.weight(1f),
++            )
++            Box(
++                modifier = Modifier
++                    .fillMaxHeight()
++                    .width(1.dp)
++                    .background(dividerColor),
++            )
++            TrackerTvInfoCell(
++                label = stringResource(R.string.tracker_score),
++                value = if (binding.score != 0.0) {
++                    AniListScoreUtils.displayScore(state.authState.scoreFormat, binding.score)
++                } else {
++                    stringResource(R.string.tracker_not_set)
++                },
++                modifier = Modifier.weight(1f),
++            )
++        }
++        if (binding.startDateMillis > 0 || binding.finishDateMillis > 0) {
++            Divider(color = dividerColor)
++            Row(
++                modifier = Modifier
++                    .fillMaxWidth()
++                    .height(IntrinsicSize.Min),
++            ) {
++                TrackerTvInfoCell(
++                    label = "",
++                    value = if (binding.startDateMillis > 0) {
++                        dateFormat.format(java.util.Date(binding.startDateMillis))
++                    } else {
++                        stringResource(R.string.tracker_not_set)
++                    },
++                    modifier = Modifier.weight(1f),
++                )
++                Box(
++                    modifier = Modifier
++                        .fillMaxHeight()
++                        .width(1.dp)
++                        .background(dividerColor),
++                )
++                TrackerTvInfoCell(
++                    label = "",
++                    value = if (binding.finishDateMillis > 0) {
++                        dateFormat.format(java.util.Date(binding.finishDateMillis))
++                    } else {
++                        stringResource(R.string.tracker_not_set)
++                    },
++                    modifier = Modifier.weight(1f),
++                )
++            }
++        }
++    }
++}
++
++@Composable
++private fun TrackerTvInfoCell(
++    label: String,
++    value: String,
++    modifier: Modifier = Modifier,
++) {
++    Column(
++        modifier = modifier.padding(horizontal = 4.dp),
++        horizontalAlignment = Alignment.CenterHorizontally,
++    ) {
++        if (label.isNotBlank()) {
++            Text(
++                text = label,
++                style = MaterialTheme.typography.body1,
++                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++            )
++        }
++        Text(
++            text = value,
++            style = MaterialTheme.typography.h6,
++        )
++    }
++}
++
++@Composable
++private fun TrackerTvSearchRow(
++    item: AnimeTrackSearch,
++    onBind: () -> Unit,
++) {
++    Row(
++        modifier = Modifier.fillMaxWidth(),
++        horizontalArrangement = Arrangement.spacedBy(16.dp),
++        verticalAlignment = Alignment.CenterVertically,
++    ) {
++        AsyncImage(
++            model = item.coverUrl,
++            contentDescription = null,
++            modifier = Modifier
++                .size(width = 64.dp, height = 96.dp)
++                .clip(RoundedCornerShape(10.dp)),
++            contentScale = ContentScale.Crop,
++        )
++        Column(modifier = Modifier.weight(1f)) {
++            Text(
++                text = item.title,
++                style = MaterialTheme.typography.subtitle1,
++            )
++            if (item.totalEpisodes > 0 || item.score >= 0) {
++                Text(
++                    text = listOfNotNull(
++                        item.totalEpisodes.takeIf { it > 0 }?.let { "$it ep." },
++                        item.score.takeIf { it >= 0 }?.let { "★ ${it.toInt()}" },
++                    ).joinToString(" · "),
++                    style = MaterialTheme.typography.body1,
++                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
++                )
++            }
++        }
++        OutlinedButton(onClick = onBind) {
++            Text(stringResource(R.string.tracker_bind))
++        }
++    }
++}
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/di/TrackerTvNavigationModule.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/di/TrackerTvNavigationModule.kt
+new file mode 100644
+index 000000000..102a82d3d
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/di/TrackerTvNavigationModule.kt
+@@ -0,0 +1,16 @@
++package su.afk.yummy.tv.feature.tracker.tv.di
++
++import dagger.Binds
++import dagger.Module
++import dagger.hilt.InstallIn
++import dagger.hilt.components.SingletonComponent
++import su.afk.yummy.tv.feature.tracker.ITvTrackerEntry
++import su.afk.yummy.tv.feature.tracker.tv.navigator.TrackerNavRegistrar
++
++@Module
++@InstallIn(SingletonComponent::class)
++interface TrackerTvNavigationModule {
++
++    @Binds
++    fun bindTrackerNavRegistrar(impl: TrackerNavRegistrar): ITvTrackerEntry
++}
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/navigator/TrackerNavRegistrar.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/navigator/TrackerNavRegistrar.kt
+new file mode 100644
+index 000000000..c9055272a
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/navigator/TrackerNavRegistrar.kt
+@@ -0,0 +1,59 @@
++package su.afk.yummy.tv.feature.tracker.tv.navigator
++
++import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
++import androidx.navigation3.runtime.EntryProviderScope
++import androidx.navigation3.runtime.NavKey
++import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
++import su.afk.yummy.tv.core.navigation.manager.INavigationManager
++import su.afk.yummy.tv.feature.tracker.ITvTrackerEntry
++import su.afk.yummy.tv.feature.tracker.TrackerDestination
++import su.afk.yummy.tv.feature.tracker.TrackerViewModel
++import su.afk.yummy.tv.feature.tracker.tv.TrackerAuthTvScreen
++import su.afk.yummy.tv.feature.tracker.tv.TrackerTvScreen
++import javax.inject.Inject
++
++class TrackerNavRegistrar @Inject constructor() : ITvTrackerEntry {
++    override fun register(builder: EntryProviderScope<NavKey>, nav: INavigationManager) =
++        with(builder) {
++            entry<TrackerDestination.TrackerAuth> {
++                val viewModel = hiltViewModel<TrackerViewModel, TrackerViewModel.Factory>(
++                    creationCallback = { factory ->
++                        factory.create(TrackerDestination.TrackerAuth)
++                    },
++                )
++                ScreenNavigator(viewModel) { state, effect, onEvent ->
++                    TrackerAuthTvScreen(
++                        state = state,
++                        effect = effect,
++                        onEvent = onEvent,
++                    )
++                }
++            }
++            entry<TrackerDestination.TrackerSettings> {
++                val viewModel = hiltViewModel<TrackerViewModel, TrackerViewModel.Factory>(
++                    creationCallback = { factory ->
++                        factory.create(TrackerDestination.TrackerSettings)
++                    },
++                )
++                ScreenNavigator(viewModel) { state, effect, onEvent ->
++                    TrackerTvScreen(
++                        state = state,
++                        effect = effect,
++                        onEvent = onEvent,
++                    )
++                }
++            }
++            entry<TrackerDestination.TrackerAnime> { dest ->
++                val viewModel = hiltViewModel<TrackerViewModel, TrackerViewModel.Factory>(
++                    creationCallback = { factory -> factory.create(dest) },
++                )
++                ScreenNavigator(viewModel) { state, effect, onEvent ->
++                    TrackerTvScreen(
++                        state = state,
++                        effect = effect,
++                        onEvent = onEvent,
++                    )
++                }
++            }
++        }
++}
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerIntents.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerIntents.kt
+new file mode 100644
+index 000000000..fd3a08ebd
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerIntents.kt
+@@ -0,0 +1,22 @@
++package su.afk.yummy.tv.feature.tracker.tv.utils
++
++import android.content.ClipData
++import android.content.ClipboardManager
++import android.content.Context
++import android.content.Intent
++import androidx.core.net.toUri
++
++internal fun openTrackerUrl(context: Context, url: String) {
++    if (url.isBlank()) return
++    context.startActivity(
++        Intent(Intent.ACTION_VIEW, url.toUri()).apply {
++            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
++        },
++    )
++}
++
++internal fun copyTrackerLink(context: Context, url: String) {
++    if (url.isBlank()) return
++    val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return
++    clipboard.setPrimaryClip(ClipData.newPlainText(url, url))
++}
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerStatusLabels.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerStatusLabels.kt
+new file mode 100644
+index 000000000..5c1101c56
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/utils/TrackerStatusLabels.kt
+@@ -0,0 +1,18 @@
++package su.afk.yummy.tv.feature.tracker.tv.utils
++
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++import su.afk.yummy.tv.feature.tracker.tv.R
++
++@Composable
++internal fun AnimeTrackStatus.label(): String = stringResource(
++    when (this) {
++        AnimeTrackStatus.WATCHING -> R.string.tracker_status_watching
++        AnimeTrackStatus.PLAN_TO_WATCH -> R.string.tracker_status_plan_to_watch
++        AnimeTrackStatus.COMPLETED -> R.string.tracker_status_completed
++        AnimeTrackStatus.REWATCHING -> R.string.tracker_status_rewatching
++        AnimeTrackStatus.ON_HOLD -> R.string.tracker_status_on_hold
++        AnimeTrackStatus.DROPPED -> R.string.tracker_status_dropped
++    },
++)
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt
+new file mode 100644
+index 000000000..ed3c124c4
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerClassicTheme.kt
+@@ -0,0 +1,51 @@
++package su.afk.yummy.tv.feature.tracker.tv.view
++
++import androidx.compose.foundation.isSystemInDarkTheme
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.darkColors
++import androidx.compose.material.lightColors
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.graphics.Color
++
++private val TwitterBlue = Color(0xFF1D9BF0)
++
++private val ClassicDarkColors = darkColors(
++    primary = TwitterBlue,
++    primaryVariant = Color(0xFF0F4C81),
++    secondary = Color(0xFF71767B),
++    background = Color(0xFF000000),
++    surface = Color(0xFF16181C),
++    error = Color(0xFFF4212E),
++    onPrimary = Color(0xFFFFFFFF),
++    onSecondary = Color(0xFFFFFFFF),
++    onBackground = Color(0xFFE7E9EA),
++    onSurface = Color(0xFFE7E9EA),
++    onError = Color(0xFFFFFFFF),
++)
++
++private val ClassicLightColors = lightColors(
++    primary = TwitterBlue,
++    primaryVariant = Color(0xFF1A8CD8),
++    secondary = Color(0xFF536471),
++    background = Color(0xFFFFFFFF),
++    surface = Color(0xFFFFFFFF),
++    error = Color(0xFFF4212E),
++    onPrimary = Color(0xFFFFFFFF),
++    onSecondary = Color(0xFFFFFFFF),
++    onBackground = Color(0xFF0F1419),
++    onSurface = Color(0xFF0F1419),
++    onError = Color(0xFFFFFFFF),
++)
++
++/**
++ * Classic Material (M2) look for the tracker screens: Twitter-blue accent on
++ * neutral black/white. The rest of the app stays on Material3; both toolkits
++ * render in the same composition.
++ */
++@Composable
++internal fun TrackerClassicTheme(content: @Composable () -> Unit) {
++    MaterialTheme(
++        colors = if (isSystemInDarkTheme()) ClassicDarkColors else ClassicLightColors,
++        content = content,
++    )
++}
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt
+new file mode 100644
+index 000000000..d0afc14bf
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerEditDialog.kt
+@@ -0,0 +1,183 @@
++package su.afk.yummy.tv.feature.tracker.tv.view
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.material.AlertDialog
++import androidx.compose.material.Checkbox
++import androidx.compose.material.DropdownMenuItem
++import androidx.compose.material.ExperimentalMaterialApi
++import androidx.compose.material.ExposedDropdownMenuBox
++import androidx.compose.material.ExposedDropdownMenuDefaults
++import androidx.compose.material.Icon
++import androidx.compose.material.IconButton
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.OutlinedTextField
++import androidx.compose.material.Text
++import androidx.compose.material.TextButton
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.Add
++import androidx.compose.material.icons.filled.Remove
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableIntStateOf
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.domain.tracker.model.AniListScoreFormat
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrack
++import su.afk.yummy.tv.domain.tracker.model.AnimeTrackStatus
++import su.afk.yummy.tv.domain.tracker.model.TrackerCapabilities
++import su.afk.yummy.tv.domain.tracker.utils.AniListScoreUtils
++import su.afk.yummy.tv.feature.tracker.tv.R
++import su.afk.yummy.tv.feature.tracker.tv.utils.label
++
++/**
++ * TV entry editor: status, episode stepper, score and privacy.
++ * Same draft as the mobile dialog, adjusted spacing for focus navigation.
++ */
++@OptIn(ExperimentalMaterialApi::class)
++@Composable
++internal fun TrackerEditDialog(
++    binding: AnimeTrack,
++    scoreFormat: AniListScoreFormat,
++    capabilities: TrackerCapabilities,
++    onDismiss: () -> Unit,
++    onSave: (status: AnimeTrackStatus, episodes: Int, scoreIndex: Int, private: Boolean) -> Unit,
++) {
++    val statuses = capabilities.animeStatusList
++    var status by remember(binding) { mutableStateOf(binding.status) }
++    val maxEpisodes = binding.totalEpisodes.takeIf { it > 0 }?.toInt() ?: 10_000
++    var episodes by remember(binding) {
++        mutableIntStateOf(binding.lastEpisodeSeen.toInt().coerceIn(0, maxEpisodes))
++    }
++    val scoreOptions = remember(scoreFormat) { AniListScoreUtils.getScoreList(scoreFormat) }
++    var scoreIndex by remember(binding, scoreOptions) {
++        mutableIntStateOf(
++            scoreOptions.indexOf(AniListScoreUtils.displayScore(scoreFormat, binding.score))
++                .takeIf { it >= 0 } ?: 0,
++        )
++    }
++    var isPrivate by remember(binding) { mutableStateOf(binding.private) }
++
++    AlertDialog(
++        onDismissRequest = onDismiss,
++        title = { Text(binding.title) },
++        text = {
++            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
++                var statusExpanded by remember { mutableStateOf(false) }
++                ExposedDropdownMenuBox(
++                    expanded = statusExpanded,
++                    onExpandedChange = { statusExpanded = it },
++                ) {
++                    OutlinedTextField(
++                        value = status.label(),
++                        onValueChange = {},
++                        readOnly = true,
++                        label = { Text(stringResource(R.string.tracker_status)) },
++                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(statusExpanded) },
++                        modifier = Modifier.fillMaxWidth(),
++                    )
++                    ExposedDropdownMenu(
++                        expanded = statusExpanded,
++                        onDismissRequest = { statusExpanded = false },
++                    ) {
++                        statuses.forEach { option ->
++                            DropdownMenuItem(
++                                onClick = {
++                                    status = option
++                                    statusExpanded = false
++                                },
++                            ) {
++                                Text(option.label())
++                            }
++                        }
++                    }
++                }
++                Row(
++                    verticalAlignment = Alignment.CenterVertically,
++                    horizontalArrangement = Arrangement.spacedBy(16.dp),
++                ) {
++                    Text(
++                        text = stringResource(R.string.tracker_episodes),
++                        modifier = Modifier.weight(1f),
++                        style = MaterialTheme.typography.body1,
++                    )
++                    IconButton(
++                        onClick = { episodes = (episodes - 1).coerceAtLeast(0) },
++                        enabled = episodes > 0,
++                    ) {
++                        Icon(Icons.Filled.Remove, contentDescription = null)
++                    }
++                    Text(
++                        text = if (binding.totalEpisodes > 0) "$episodes / ${binding.totalEpisodes}"
++                        else "$episodes",
++                        style = MaterialTheme.typography.h6,
++                    )
++                    IconButton(
++                        onClick = { episodes = (episodes + 1).coerceAtMost(maxEpisodes) },
++                        enabled = episodes < maxEpisodes,
++                    ) {
++                        Icon(Icons.Filled.Add, contentDescription = null)
++                    }
++                }
++                var scoreExpanded by remember { mutableStateOf(false) }
++                ExposedDropdownMenuBox(
++                    expanded = scoreExpanded,
++                    onExpandedChange = { scoreExpanded = it },
++                ) {
++                    OutlinedTextField(
++                        value = scoreOptions.getOrElse(scoreIndex) { "" },
++                        onValueChange = {},
++                        readOnly = true,
++                        label = { Text(stringResource(R.string.tracker_score)) },
++                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(scoreExpanded) },
++                        modifier = Modifier.fillMaxWidth(),
++                    )
++                    ExposedDropdownMenu(
++                        expanded = scoreExpanded,
++                        onDismissRequest = { scoreExpanded = false },
++                    ) {
++                        scoreOptions.forEachIndexed { index, option ->
++                            DropdownMenuItem(
++                                onClick = {
++                                    scoreIndex = index
++                                    scoreExpanded = false
++                                },
++                            ) {
++                                Text(option)
++                            }
++                        }
++                    }
++                }
++                if (capabilities.supportsPrivateTracking) {
++                    Row(verticalAlignment = Alignment.CenterVertically) {
++                        Checkbox(
++                            checked = isPrivate,
++                            onCheckedChange = { isPrivate = it },
++                        )
++                        Text(
++                            stringResource(R.string.tracker_private),
++                            style = MaterialTheme.typography.body1,
++                        )
++                    }
++                }
++            }
++        },
++        confirmButton = {
++            TextButton(onClick = { onSave(status, episodes, scoreIndex, isPrivate) }) {
++                Text(stringResource(R.string.tracker_save))
++            }
++        },
++        dismissButton = {
++            TextButton(onClick = onDismiss) {
++                Text(stringResource(R.string.tracker_cancel))
++            }
++        },
++    )
++}
+diff --git a/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerLogo.kt b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerLogo.kt
+new file mode 100644
+index 000000000..c16eca0f9
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/tracker/tv/view/TrackerLogo.kt
+@@ -0,0 +1,39 @@
++package su.afk.yummy.tv.feature.tracker.tv.view
++
++import androidx.compose.foundation.Image
++import androidx.compose.foundation.background
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.draw.clip
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.res.painterResource
++import androidx.compose.ui.unit.Dp
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.feature.tracker.tv.R
++
++/**
++ * AniList logo on its brand-dark tile, like Aniyomi's TrackLogoIcon.
++ * The bare webp has transparency and breaks on light backgrounds.
++ */
++@Composable
++internal fun TrackerLogo(
++    modifier: Modifier = Modifier,
++    iconSize: Dp = 32.dp,
++) {
++    Box(
++        modifier = modifier
++            .clip(RoundedCornerShape(10.dp))
++            .background(Color(0xFF121923))
++            .padding(8.dp),
++    ) {
++        Image(
++            painter = painterResource(R.drawable.ic_tracker_anilist),
++            contentDescription = null,
++            modifier = Modifier.size(iconSize),
++        )
++    }
++}
+diff --git a/feature/tracker/ui-tv/src/main/res/drawable-nodpi/ic_tracker_anilist.webp b/feature/tracker/ui-tv/src/main/res/drawable-nodpi/ic_tracker_anilist.webp
+new file mode 100644
+index 0000000000000000000000000000000000000000..b553d6c497d12fdd6ba931a7672e3c17eb88b7f8
+GIT binary patch
+literal 2048
+zcmWIYbaVT`&cG1v>J$(bU=hK^z`!8Dz`(E?j2wLeJXn|+7#P<-S&*yjShc*m{Ey{&
+zIcJwA{V{@1ye=G;x>lHEyd`Sq<Ife=TiVW5Dmm}uI-O?9uJw~YbGw=3B$4FX+j2qZ
+z+pJj8{S_A^FV6j#d*1C!J=25#|Nk4x%w1&n(DwQc5p7}S(x(N@uXGRQFVXqu@LK=&
+zoGnv2r>tGyRlo3-sJLwJ1Q`a03+5qr*D5|w7c!PwAUt)y#Vd9G%-sxOR}&}IE$cYP
+zc#gAZ>*J5D9FreRTi{@w>Ty@Qi*=JUyW@|)YKMIsuPFW9ps-EC=A`14ga-el4EMhK
+zM+(jyn&4z}Ye!m@OR4J0kSQVim&m+Vnc6#P)`Tgq)jdTQE=f~)`ZYLcs>VuDPu71^
+zLxjDu;)5<OTe2(Q=VF(0SEkPX<l*wPywCm9i%@em*+&IC0>c>umzfv^{tP#7V9xAW
+zF`Ko)EYZS#^=hVu0%x(x6?Y!-Gi*@r)-1LDu*+3MF8)gC9>FY+MLbuJ?_u0MDI%bp
+zFW;Q&(EIJX?v*$3T3%W7YfE`TFkkemce3|ai#xAam?v|Of0M^T*{k9;4A+(xta-Qk
+zw|iErK>w@f4;M4mr(SRl_^KE&`QTJ5?*qrPTqbnADu4L+U%iTf!-YiFH5>;%_9>j3
+zmBpB{_!swvYu~s3Q{$*w+obw-XPuJA_H|y>t}Ff(=WMxpQta+ofg3AoKmXHQ={4m_
+z*Ak}xUaL4&x9YFV2o8$XSZVC3x@bw2>eB+{l|EChbi`KeNUPj+Me@wqpEvbB{*61R
+zBmXt;<RjCimUmL0esnEwvtMp>rOs+O>))rwpMJ01&*Zk%W2dE;b>ge^*@t>q9yz~l
+zkrMgsaChO{vL!jH-3Fz_K8Y-o4>qPfnpnjA;<m|U=b+OHcdnckJvyI(ZNu`ZAxmP|
+z`qoBCs;o>BOv^a(vG37xbM6~gJ<Nj6F`iHB^_eimh|}<mBOm{Df06q(GY)LC^>`B4
+zGUf7ttq1vPiXIs{2c1y6kyKrK;L>mPqw3*i8#0U4<!rPj776{hcJsz}MgIpggPbIf
+zo><<pVcF`IT^ff)|NZ}ee^*$5g~B-&28Itx409Q^)-bGLu$$;M&s%lzqJ>L?GB0cp
+z;!MqZn9Kddf7Qz+U;0m1&9Mu&+xtEKUGg9H4ZIuc66}5Ky=*_&GE_R0Hq_ny%}|-}
+zTk46*kHx>2=f*!UT^(8d=XvA&2CHrh4#WPJ_6o9(>!<yn{n+QH`-0`4>%ZKaI{#|z
+ziR$2=mv0FFxc~Y7uh`OBX8Yv-|0iyL@q<GrK_=q(e)j`h`mxIekEMUtn|P6}hxhFI
+zRT=9aEt1Tes@3{N@|)YOM@~ntnrD1yx0~%DyZ<x8%)9D&5i8P8iA+*l*QK$>a87O3
+z*A-_qw`kw3{}L^{BJ$AmBki}J-2XMZVc%(~(!E=)0)33zGR#C`*8KD3i+|F*bzN<n
+zIm@*-%J#iG!fgMx_Sf|{G#N1b`&YprR&s0pyEW%iB-wb@&5{v!FqJ-Jc+Nn1pO%f=
+zRTGiinbn>-Zsx-Jy+1Xw9)Fea`F>%;RO8m}n}QP~Heap}op?61+|Ks%=Ad;^&*$i=
+zyL!x9vt|XOoZy#r=l=5e2ypj_9H|r!nX*!GwP3i%Yt?P{9(+%KYE%5LNM7Od*Yh*g
+zHMK-n-?eY$iQ+bqEZyijH&pM^wfi><-o?$amzimhqT98?=2pxXy9EXJ75c0N4hA*F
+z|9{5T`Ty94;D0x!AKq{$RCw?9%EqjincT}S>KvPGKZi4P@?5zl*(LA3ZQ3&ZL!0i3
+z?`JJ-rPO>Me)m^8|2l{#d-7qI5*hVhiS{mcv?u+jW7~hsN{pFDXy4xU5|&q%A@!5Y
+z+frVBS-ha8>cESm4NoV0zG=(wzF;zw{>O83*NOf<|LEn?8rEH0_r6cjKF3~rFLb}(
+z6#ImC<;yeov9Ixe!BusAmGex~CpRTiKQu)MHt$??y8Xe1BJTBHEquP(Onm8VJ$w0D
+z`5h*jFYnD%Dw~=7M^(ut`tOd@`p4I(DK>2U8*<`F&K@Bh@#fP_kJo*?{r_p#n*ApX
+zw<+iRzB&E!8L_oT>Q5=Ym>AW(+jz?X!!3K(eQP?9@BE<qn%=}C7s4c`IvNLZg_X_l
+z{{2?(sD$_9FD2az;uEA#O-x#%s_3}QHRwdnvx7@cdK+YyH=N>k=+4|-y>9VA3CaD<
+z#Shs$!~V^&%UByP;kCd%?rf@F;rzF5EL;C1Og?P0OL|vJ=Y6L|iJzPqZ>5(RJ+50~
+zwPIFR_@;{uuLII~0<LraJ#D3D<7<35!ZfJw<b^ebrze~@D{Yhbl2&}|{;R**X;OdI
+zCdGR_`Q;wtzcWX0-oNjOA18)?oyRXbJJR$?`1|FXuM3I#e>!{bS;B_(f`>Z0>;9_M
+zz4*tNq34$n*&mX1n5Q~*+kd}5-<-p@Pf=5P%n`vb@!QtTA0K&q;jR1oOJ{LZ#NA0n
+zDWQ{=wQn$Mde42aSm+~5%poJ8YgQ6x&TP^xy5}hLCjNVn-J4^fuJhNmUt0bmblsGW
+zhy3f#XDcvjyK!xJvSi282dh)0Y-ee{3->nO7L>?5wZ1yz`IkfbU%H-by<@b?VN3nN
+zl{a6XTVmsP>cO-6AF=f=O4hri1sDFeU$ZrF@ePkX-<R+5`t|)`Wy6A~?FGA5yeY5S
+zRqwslKw)#hlHCvQp6{Dl^Y}o0r*q+kr+H^hIyXEom|eFdSTf{O`XcjlstuQ3*{YvB
+g$FBJ2&#dg;jekNlqP_WN{tGdls8YG0jDdjx0JE$F5C8xG
+
+literal 0
+HcmV?d00001
+
+diff --git a/feature/tracker/ui-tv/src/main/res/values-ru/strings.xml b/feature/tracker/ui-tv/src/main/res/values-ru/strings.xml
+new file mode 100644
+index 000000000..37804d26e
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/res/values-ru/strings.xml
+@@ -0,0 +1,32 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="tracker_title">AniList</string>
++    <string name="tracker_login_hint">Синхронизируйте прогресс просмотра с AniList. Войдите через браузер и вернитесь в приложение.</string>
++    <string name="tracker_login">Войти через AniList</string>
++    <string name="tracker_logged_in_as">Вы вошли как %1$s</string>
++    <string name="tracker_logout">Выйти</string>
++    <string name="tracker_search_label">Поиск аниме</string>
++    <string name="tracker_search_action">Найти</string>
++    <string name="tracker_bind">Привязать</string>
++    <string name="tracker_linked">Привязано: %1$s</string>
++    <string name="tracker_progress">Прогресс: %1$d / %2$d</string>
++    <string name="tracker_refresh">Обновить</string>
++    <string name="tracker_unbind">Отвязать</string>
++    <string name="tracker_edit">Редактировать запись</string>
++    <string name="tracker_save">Сохранить</string>
++    <string name="tracker_cancel">Отмена</string>
++    <string name="tracker_status">Статус</string>
++    <string name="tracker_episodes">Просмотрено серий</string>
++    <string name="tracker_score">Оценка</string>
++    <string name="tracker_private">Приватная запись</string>
++    <string name="tracker_status_watching">Смотрю</string>
++    <string name="tracker_status_plan_to_watch">В планах</string>
++    <string name="tracker_status_completed">Завершено</string>
++    <string name="tracker_status_rewatching">Пересматриваю</string>
++    <string name="tracker_status_on_hold">Отложено</string>
++    <string name="tracker_status_dropped">Брошено</string>
++    <string name="tracker_open_in_browser">Открыть в браузере</string>
++    <string name="tracker_copy_link">Скопировать ссылку</string>
++    <string name="tracker_not_set">Не задано</string>
++    <string name="tracker_logout_title">Выйти из AniList?</string>
++</resources>
+diff --git a/feature/tracker/ui-tv/src/main/res/values-uk/strings.xml b/feature/tracker/ui-tv/src/main/res/values-uk/strings.xml
+new file mode 100644
+index 000000000..dd80ff2cb
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/res/values-uk/strings.xml
+@@ -0,0 +1,32 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="tracker_title">AniList</string>
++    <string name="tracker_login_hint">Синхронізуйте прогрес перегляду з AniList. Увійдіть через браузер і поверніться в застосунок.</string>
++    <string name="tracker_login">Увійти через AniList</string>
++    <string name="tracker_logged_in_as">Ви увійшли як %1$s</string>
++    <string name="tracker_logout">Вийти</string>
++    <string name="tracker_search_label">Пошук аніме</string>
++    <string name="tracker_search_action">Знайти</string>
++    <string name="tracker_bind">Прив\'язати</string>
++    <string name="tracker_linked">Прив\'язано: %1$s</string>
++    <string name="tracker_progress">Прогрес: %1$d / %2$d</string>
++    <string name="tracker_refresh">Оновити</string>
++    <string name="tracker_unbind">Відв\'язати</string>
++    <string name="tracker_edit">Редагувати запис</string>
++    <string name="tracker_save">Зберегти</string>
++    <string name="tracker_cancel">Скасувати</string>
++    <string name="tracker_status">Статус</string>
++    <string name="tracker_episodes">Переглянуто серій</string>
++    <string name="tracker_score">Оцінка</string>
++    <string name="tracker_private">Приватний запис</string>
++    <string name="tracker_status_watching">Дивлюся</string>
++    <string name="tracker_status_plan_to_watch">В планах</string>
++    <string name="tracker_status_completed">Завершено</string>
++    <string name="tracker_status_rewatching">Передивляюся</string>
++    <string name="tracker_status_on_hold">Відкладено</string>
++    <string name="tracker_status_dropped">Покинуто</string>
++    <string name="tracker_open_in_browser">Відкрити в браузері</string>
++    <string name="tracker_copy_link">Скопіювати посилання</string>
++    <string name="tracker_not_set">Не задано</string>
++    <string name="tracker_logout_title">Вийти з AniList?</string>
++</resources>
+diff --git a/feature/tracker/ui-tv/src/main/res/values/strings.xml b/feature/tracker/ui-tv/src/main/res/values/strings.xml
+new file mode 100644
+index 000000000..38808f8ed
+--- /dev/null
++++ b/feature/tracker/ui-tv/src/main/res/values/strings.xml
+@@ -0,0 +1,32 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="tracker_title">AniList</string>
++    <string name="tracker_login_hint">Sync watch progress with AniList. Sign in via browser, then return to the app.</string>
++    <string name="tracker_login">Sign in with AniList</string>
++    <string name="tracker_logged_in_as">Signed in as %1$s</string>
++    <string name="tracker_logout">Sign out</string>
++    <string name="tracker_search_label">Anime search</string>
++    <string name="tracker_search_action">Search</string>
++    <string name="tracker_bind">Link</string>
++    <string name="tracker_linked">Linked: %1$s</string>
++    <string name="tracker_progress">Progress: %1$d / %2$d</string>
++    <string name="tracker_refresh">Refresh</string>
++    <string name="tracker_unbind">Unlink</string>
++    <string name="tracker_edit">Edit entry</string>
++    <string name="tracker_save">Save</string>
++    <string name="tracker_cancel">Cancel</string>
++    <string name="tracker_status">Status</string>
++    <string name="tracker_episodes">Episodes watched</string>
++    <string name="tracker_score">Score</string>
++    <string name="tracker_private">Private entry</string>
++    <string name="tracker_status_watching">Watching</string>
++    <string name="tracker_status_plan_to_watch">Plan to watch</string>
++    <string name="tracker_status_completed">Completed</string>
++    <string name="tracker_status_rewatching">Rewatching</string>
++    <string name="tracker_status_on_hold">Paused</string>
++    <string name="tracker_status_dropped">Dropped</string>
++    <string name="tracker_open_in_browser">Open in browser</string>
++    <string name="tracker_copy_link">Copy link</string>
++    <string name="tracker_not_set">Not set</string>
++    <string name="tracker_logout_title">Sign out of AniList?</string>
++</resources>

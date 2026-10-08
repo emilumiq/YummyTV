@@ -1,0 +1,1828 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 15:43:58 +0300
+Subject: [TRACKER] Settings/details/player integration, locale, blur, M2 theme
+ entries
+
+---
+ .gitignore                                    |  2 ++
+ app/build.gradle.kts                          | 28 ++++++++++++++++
+ app/proguard-rules.pro                        |  9 +++++
+ app/src/main/AndroidManifest.xml              | 10 ++++++
+ .../tv/android/InterfaceRouterActivity.kt     |  7 ++++
+ .../su/afk/yummy/tv/android/MobileActivity.kt |  7 ++++
+ .../su/afk/yummy/tv/android/TvActivity.kt     |  7 ++++
+ .../yummy/tv/core/model/settings/AppLocale.kt | 12 +++++++
+ .../yummy/tv/core/model/settings/AppTheme.kt  |  6 ++++
+ .../model/settings/DetailsButtonAction.kt     |  1 +
+ .../core/model/settings/SettingsSnapshot.kt   |  1 +
+ .../core/preferences/di/PreferencesModule.kt  |  8 +++++
+ .../preferences/locale/AppLocaleContext.kt    | 33 +++++++++++++++++++
+ .../locale/AppLocalePreferences.kt            | 11 +++++++
+ .../SharedPreferencesAppLocalePreferences.kt  | 25 ++++++++++++++
+ .../settings/AppearanceSettingsStore.kt       |  4 +++
+ .../settings/SettingsPreferenceKeys.kt        |  1 +
+ .../DataStoreAppearanceSettingsStore.kt       |  7 ++++
+ .../datastore/DataStoreSettingsStore.kt       |  2 ++
+ feature/details/presentation/build.gradle.kts |  1 +
+ .../feature/details/details/DetailsState.kt   |  4 +++
+ .../details/details/DetailsViewModel.kt       | 10 ++++++
+ .../handler/DetailsScreenDataHandler.kt       |  1 +
+ .../mobile/details/DetailsMobileScreen.kt     |  1 +
+ .../mobile/details/view/DetailsMobileHero.kt  |  2 +-
+ .../details/view/DetailsSecondaryActions.kt   |  2 ++
+ .../mobile/details/view/buildMobileActions.kt | 10 ++++++
+ .../src/main/res/values-ru/strings.xml        |  1 +
+ .../src/main/res/values-uk/strings.xml        |  1 +
+ .../ui-mobile/src/main/res/values/strings.xml |  1 +
+ .../details/details/DetailsTvScreen.kt        |  2 ++
+ .../details/details/view/DetailsBody.kt       |  4 +++
+ .../details/details/view/DetailsButtonBar.kt  |  9 +++++
+ .../details/details/view/DetailsHero.kt       |  5 ++-
+ .../details/details/view/HeroBackdrop.kt      |  4 +--
+ .../ui-tv/src/main/res/values-ru/strings.xml  |  1 +
+ .../ui-tv/src/main/res/values-uk/strings.xml  |  1 +
+ .../ui-tv/src/main/res/values/strings.xml     |  1 +
+ feature/player/presentation/build.gradle.kts  |  1 +
+ .../tv/feature/player/PlayerViewModel.kt      | 11 +++++++
+ .../settings/navigator/SettingsDestination.kt |  1 +
+ .../settings/presentation/build.gradle.kts    |  1 +
+ .../tv/feature/settings/SettingsState.kt      | 16 ++++++++-
+ .../tv/feature/settings/SettingsViewModel.kt  | 23 +++++++++++++
+ .../mobile/SettingsMobileCategoryScreen.kt    |  4 ++-
+ .../mobile/model/SettingsMobileCategoryUi.kt  |  4 +++
+ .../mobile/model/SettingsMobilePicker.kt      |  1 +
+ .../mobile/utils/SettingsMobileFormatters.kt  | 12 +++++++
+ .../mobile/view/SettingsMobileDialogsHost.kt  | 17 ++++++++++
+ .../mobile/view/SettingsMobileEffects.kt      |  5 +++
+ .../SettingsMobileAppearanceContent.kt        | 10 ++++++
+ .../category/SettingsMobileGeneralContent.kt  |  5 +++
+ .../category/SettingsMobileTrackersContent.kt | 30 +++++++++++++++++
+ .../src/main/res/values-ru/strings.xml        | 11 +++++++
+ .../src/main/res/values-uk/strings.xml        | 11 +++++++
+ .../ui-mobile/src/main/res/values/strings.xml | 11 +++++++
+ .../tv/feature/settings/SettingsTvScreen.kt   |  5 +++
+ .../tv/feature/settings/model/SettingsTab.kt  |  1 +
+ .../settings/model/SettingsTvPicker.kt        |  1 +
+ .../settings/utils/SettingsUiFormatters.kt    | 12 +++++++
+ .../settings/view/SettingsTvPanelHost.kt      |  8 +++++
+ .../settings/view/SettingsTvPickerPanel.kt    | 10 ++++++
+ .../category/SettingsTvAppearanceContent.kt   | 12 +++++++
+ .../view/category/SettingsTvGeneralContent.kt |  2 ++
+ .../category/SettingsTvTrackersContent.kt     | 28 ++++++++++++++++
+ .../ui-tv/src/main/res/values-ru/strings.xml  | 10 ++++++
+ .../ui-tv/src/main/res/values-uk/strings.xml  | 10 ++++++
+ .../ui-tv/src/main/res/values/strings.xml     | 10 ++++++
+ gradle.properties                             |  7 ++++
+ 69 files changed, 526 insertions(+), 6 deletions(-)
+ create mode 100644 core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppLocale.kt
+ create mode 100644 core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocaleContext.kt
+ create mode 100644 core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocalePreferences.kt
+ create mode 100644 core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/SharedPreferencesAppLocalePreferences.kt
+ create mode 100644 feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileTrackersContent.kt
+ create mode 100644 feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvTrackersContent.kt
+
+diff --git a/.gitignore b/.gitignore
+index ea6db619f..28a457656 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -6,6 +6,8 @@
+ xcuserdata
+ !src/**/build/
+ local.properties
++keystore.properties
++*.jks
+ .idea
+ .DS_Store
+ captures
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 8990910cb..fdd19a03a 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -1,4 +1,5 @@
+ import su.afk.yummy.tv.buildlogic.buildConfigSecret
++import java.util.Properties
+ 
+ plugins {
+     id("yummytv.android.application")
+@@ -13,6 +14,26 @@ val appVersionCode = providers.gradleProperty("yummytv.versionCode").get().toInt
+ android {
+     namespace = "su.afk.yummy.tv"
+ 
++    // Релизная подпись: keystore.properties в корне (НЕ коммитится, см. .gitignore).
++    // Нет файла — молча подписываем debug-ключом, сборка не падает.
++    val releaseKeystoreFile = rootProject.file("keystore.properties")
++
++    signingConfigs {
++        create("release") {
++            if (releaseKeystoreFile.isFile) {
++                val props = Properties().apply {
++                    releaseKeystoreFile.reader().use(::load)
++                }
++                storeFile = rootProject.file(props.getProperty("storeFile"))
++                storePassword = props.getProperty("storePassword")
++                keyAlias = props.getProperty("keyAlias")
++                keyPassword = props.getProperty("keyPassword")
++            } else {
++                initWith(signingConfigs.getByName("debug"))
++            }
++        }
++    }
++
+     defaultConfig {
+         applicationId = baseApplicationId
+         targetSdk = libs.versions.android.compileSdk.get().toInt()
+@@ -35,6 +56,7 @@ android {
+             resValue("string", "search_suggest_authority", "$baseApplicationId.search")
+             isMinifyEnabled = true
+             isShrinkResources = true
++            signingConfig = signingConfigs.getByName("release")
+             proguardFiles(
+                 getDefaultProguardFile("proguard-android-optimize.txt"),
+                 "proguard-rules.pro",
+@@ -160,6 +182,12 @@ dependencies {
+     implementation(project(":feature:top:ui-mobile"))
+     implementation(project(":feature:top:ui-tv"))
+     implementation(project(":feature:top:data"))
++    implementation(project(":feature:tracker:api"))
++    implementation(project(":feature:tracker:domain"))
++    implementation(project(":feature:tracker:data"))
++    implementation(project(":feature:tracker:presentation"))
++    implementation(project(":feature:tracker:ui-mobile"))
++    implementation(project(":feature:tracker:ui-tv"))
+     implementation(project(":feature:video-download:api"))
+     implementation(project(":feature:video-download:data"))
+     implementation(project(":feature:video-download:domain"))
+diff --git a/app/proguard-rules.pro b/app/proguard-rules.pro
+index f59cb1887..42f2631ce 100644
+--- a/app/proguard-rules.pro
++++ b/app/proguard-rules.pro
+@@ -10,6 +10,15 @@
+ -dontwarn java.lang.management.ManagementFactory
+ -dontwarn java.lang.management.RuntimeMXBean
+ 
++# Tracker (AniList): DTO kotlinx.serialization — сериализаторы резолвятся через Companion,
++# R8 в full mode вырезает их -> краш парсинга GraphQL-ответов и DataStore-сессии (ALOAuth).
++-keep @kotlinx.serialization.Serializable class su.afk.yummy.tv.data.tracker.dto.** { *; }
++-keepclassmembers class su.afk.yummy.tv.data.tracker.dto.** {
++    *** Companion;
++    kotlinx.serialization.KSerializer serializer(...);
++}
++# Ktor-клиент трекера ходит только явно типизированными body<T>() — рефлексии нет, правил не надо.
++
+ # ML Kit (сканер QR для входа на ТВ) находит свои компоненты через ComponentDiscovery —
+ # рефлексией по именам из манифеста. R8 вырезал конструкторы регистраторов, MlKitContext
+ # оставался пустым, и GmsBarcodeScanning.getClient падал с NPE при открытии «Войти на ТВ».
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 67b38a781..d1244e835 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -157,6 +157,16 @@
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+ 
++                <data
++                    android:scheme="yummytv"
++                    android:host="anilist-auth" />
++            </intent-filter>
++            <intent-filter>
++                <action android:name="android.intent.action.VIEW" />
++
++                <category android:name="android.intent.category.DEFAULT" />
++                <category android:name="android.intent.category.BROWSABLE" />
++
+                 <data android:mimeType="video/*" />
+             </intent-filter>
+         </activity>
+diff --git a/app/src/main/kotlin/su/afk/yummy/tv/android/InterfaceRouterActivity.kt b/app/src/main/kotlin/su/afk/yummy/tv/android/InterfaceRouterActivity.kt
+index 22fdebbb7..80aeda053 100644
+--- a/app/src/main/kotlin/su/afk/yummy/tv/android/InterfaceRouterActivity.kt
++++ b/app/src/main/kotlin/su/afk/yummy/tv/android/InterfaceRouterActivity.kt
+@@ -1,5 +1,6 @@
+ package su.afk.yummy.tv.android
+ 
++import android.content.Context
+ import android.content.Intent
+ import android.os.Bundle
+ import androidx.activity.ComponentActivity
+@@ -9,6 +10,7 @@ import su.afk.yummy.tv.android.view.InterfaceModeDialog
+ import su.afk.yummy.tv.core.designsystem.theme.YummyTvTheme
+ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
+ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
++import su.afk.yummy.tv.core.preferences.locale.AppLocaleContext
+ import javax.inject.Inject
+ 
+ /**
+@@ -23,6 +25,11 @@ class InterfaceRouterActivity : ComponentActivity() {
+     @Inject
+     lateinit var interfaceModePreferences: AppInterfaceModePreferences
+ 
++    override fun attachBaseContext(newBase: Context) {
++        // Interface language: ComponentActivity ignores AppCompat per-app locales.
++        super.attachBaseContext(AppLocaleContext.wrap(newBase))
++    }
++
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+ 
+diff --git a/app/src/main/kotlin/su/afk/yummy/tv/android/MobileActivity.kt b/app/src/main/kotlin/su/afk/yummy/tv/android/MobileActivity.kt
+index 4b1aa2510..eda00512d 100644
+--- a/app/src/main/kotlin/su/afk/yummy/tv/android/MobileActivity.kt
++++ b/app/src/main/kotlin/su/afk/yummy/tv/android/MobileActivity.kt
+@@ -1,5 +1,6 @@
+ package su.afk.yummy.tv.android
+ 
++import android.content.Context
+ import android.content.Intent
+ import android.content.res.Configuration
+ import android.os.Bundle
+@@ -13,6 +14,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
+ import androidx.core.view.WindowCompat
+ import dagger.hilt.android.AndroidEntryPoint
+ import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
++import su.afk.yummy.tv.core.preferences.locale.AppLocaleContext
+ import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
+ import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
+ import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
+@@ -34,6 +36,11 @@ class MobileActivity : ComponentActivity() {
+     @Inject
+     lateinit var keyboardShortcuts: MobileKeyboardShortcuts
+ 
++    override fun attachBaseContext(newBase: Context) {
++        // Interface language: ComponentActivity ignores AppCompat per-app locales.
++        super.attachBaseContext(AppLocaleContext.wrap(newBase))
++    }
++
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         WindowCompat.setDecorFitsSystemWindows(window, false)
+diff --git a/app/src/main/kotlin/su/afk/yummy/tv/android/TvActivity.kt b/app/src/main/kotlin/su/afk/yummy/tv/android/TvActivity.kt
+index 166fd2769..0c88b36b4 100644
+--- a/app/src/main/kotlin/su/afk/yummy/tv/android/TvActivity.kt
++++ b/app/src/main/kotlin/su/afk/yummy/tv/android/TvActivity.kt
+@@ -1,5 +1,6 @@
+ package su.afk.yummy.tv.android
+ 
++import android.content.Context
+ import android.content.Intent
+ import android.os.Bundle
+ import androidx.activity.ComponentActivity
+@@ -8,6 +9,7 @@ import androidx.core.view.WindowCompat
+ import androidx.lifecycle.lifecycleScope
+ import dagger.hilt.android.AndroidEntryPoint
+ import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
++import su.afk.yummy.tv.core.preferences.locale.AppLocaleContext
+ import su.afk.yummy.tv.core.tv.api.ITvIntegration
+ import su.afk.yummy.tv.feature.main.TvMainGraph
+ import su.afk.yummy.tv.feature.search.android.SystemSearchIntentHandler
+@@ -32,6 +34,11 @@ class TvActivity : ComponentActivity() {
+     @Inject
+     lateinit var tvIntegration: ITvIntegration
+ 
++    override fun attachBaseContext(newBase: Context) {
++        // Interface language: ComponentActivity ignores AppCompat per-app locales.
++        super.attachBaseContext(AppLocaleContext.wrap(newBase))
++    }
++
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         WindowCompat.setDecorFitsSystemWindows(window, false)
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppLocale.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppLocale.kt
+new file mode 100644
+index 000000000..c01ddcf74
+--- /dev/null
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppLocale.kt
+@@ -0,0 +1,12 @@
++package su.afk.yummy.tv.core.model.settings
++
++/**
++ * Interface language. SYSTEM follows the device locale; the rest pin a language
++ * via AppCompatDelegate per-app locales (no restart needed, activities recreate).
++ */
++enum class AppLocale(val languageTag: String) {
++    SYSTEM(""),
++    ENGLISH("en"),
++    RUSSIAN("ru"),
++    UKRAINIAN("uk"),
++}
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
+index e0423e369..cc7e7d28f 100644
+--- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/AppTheme.kt
+@@ -7,6 +7,12 @@ enum class AppTheme {
+     OCEAN,
+     GRAPHITE,
+ 
++    /**
++     * Classic social-app look: Twitter-blue accent on neutral black/white,
++     * sharp rectangular surfaces.
++     */
++    CLASSIC,
++
+     /**
+      * Системная палитра Material You: цвета берутся из обоев/акцента системы (Android 12+).
+      * Доступна только на мобильном интерфейсе; на более старых версиях тема откатывается
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/DetailsButtonAction.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/DetailsButtonAction.kt
+index b4126f96f..e12d7e48c 100644
+--- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/DetailsButtonAction.kt
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/DetailsButtonAction.kt
+@@ -15,5 +15,6 @@ enum class DetailsButtonAction {
+     COMMENTS,
+     REVIEWS,
+     BLOGGER_VIDEOS,
++    ANILIST,
+     SCREENSHOTS,
+ }
+diff --git a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
+index f189d3d5b..b2cacdbb7 100644
+--- a/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
++++ b/core/model/src/main/kotlin/su/afk/yummy/tv/core/model/settings/SettingsSnapshot.kt
+@@ -3,6 +3,7 @@ package su.afk.yummy.tv.core.model.settings
+ data class SettingsSnapshot(
+     val appTheme: AppTheme,
+     val backgroundStyle: BackgroundStyle,
++    val backdropBlurEnabled: Boolean = true,
+     val posterQuality: PosterQuality,
+     val posterCardSize: PosterCardSize,
+     val showTopTitleYear: Boolean,
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/di/PreferencesModule.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/di/PreferencesModule.kt
+index 9d6ac29b6..03199e30a 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/di/PreferencesModule.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/di/PreferencesModule.kt
+@@ -8,6 +8,8 @@ import su.afk.yummy.tv.core.preferences.auth.SecureYaniAuthPreferences
+ import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
+ import su.afk.yummy.tv.core.preferences.interface_mode.SharedPreferencesAppInterfaceModePreferences
++import su.afk.yummy.tv.core.preferences.locale.AppLocalePreferences
++import su.afk.yummy.tv.core.preferences.locale.SharedPreferencesAppLocalePreferences
+ import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
+ import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
+ import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
+@@ -80,6 +82,12 @@ internal interface PreferencesModule {
+         impl: SharedPreferencesAppInterfaceModePreferences,
+     ): AppInterfaceModePreferences
+ 
++    @Binds
++    @Singleton
++    fun bindAppLocalePreferences(
++        impl: SharedPreferencesAppLocalePreferences,
++    ): AppLocalePreferences
++
+     @Binds
+     @Singleton
+     fun bindYaniAuthPreferences(impl: SecureYaniAuthPreferences): YaniAuthPreferences
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocaleContext.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocaleContext.kt
+new file mode 100644
+index 000000000..ca7e64ea5
+--- /dev/null
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocaleContext.kt
+@@ -0,0 +1,33 @@
++package su.afk.yummy.tv.core.preferences.locale
++
++import android.content.Context
++import android.content.res.Configuration
++import su.afk.yummy.tv.core.model.settings.AppLocale
++import java.util.Locale
++
++/**
++ * Applies the stored interface language below the AppCompat layer: the app runs
++ * on plain ComponentActivity, where AppCompatDelegate per-app locales never take
++ * effect. Activities wrap their base context here in attachBaseContext; language
++ * changes apply through the existing RestartApplication effect.
++ */
++object AppLocaleContext {
++
++    const val PREFS_NAME = "app_locale"
++    const val LOCALE_KEY = "locale"
++
++    fun storedLocale(context: Context): AppLocale {
++        val raw = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
++            .getString(LOCALE_KEY, null)
++            ?: return AppLocale.SYSTEM
++        return runCatching { AppLocale.valueOf(raw) }.getOrNull() ?: AppLocale.SYSTEM
++    }
++
++    fun wrap(base: Context): Context {
++        val locale = storedLocale(base)
++        if (locale == AppLocale.SYSTEM) return base
++        val config = Configuration(base.resources.configuration)
++        config.setLocale(Locale.forLanguageTag(locale.languageTag))
++        return base.createConfigurationContext(config)
++    }
++}
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocalePreferences.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocalePreferences.kt
+new file mode 100644
+index 000000000..0f2dd4d65
+--- /dev/null
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/AppLocalePreferences.kt
+@@ -0,0 +1,11 @@
++package su.afk.yummy.tv.core.preferences.locale
++
++import su.afk.yummy.tv.core.model.settings.AppLocale
++
++/** Synchronous storage: read at startup before setContent, hence not DataStore. */
++interface AppLocalePreferences {
++
++    val selectedLocale: AppLocale
++
++    fun select(locale: AppLocale)
++}
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/SharedPreferencesAppLocalePreferences.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/SharedPreferencesAppLocalePreferences.kt
+new file mode 100644
+index 000000000..5601d2ade
+--- /dev/null
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/locale/SharedPreferencesAppLocalePreferences.kt
+@@ -0,0 +1,25 @@
++package su.afk.yummy.tv.core.preferences.locale
++
++import android.content.Context
++import dagger.hilt.android.qualifiers.ApplicationContext
++import su.afk.yummy.tv.core.model.settings.AppLocale
++import javax.inject.Inject
++import javax.inject.Singleton
++
++@Singleton
++internal class SharedPreferencesAppLocalePreferences @Inject constructor(
++    @ApplicationContext context: Context,
++) : AppLocalePreferences {
++
++    private val preferences =
++        context.getSharedPreferences(AppLocaleContext.PREFS_NAME, Context.MODE_PRIVATE)
++
++    override val selectedLocale: AppLocale
++        get() = preferences.getString(AppLocaleContext.LOCALE_KEY, null)?.let { value ->
++            runCatching { AppLocale.valueOf(value) }.getOrNull()
++        } ?: AppLocale.SYSTEM
++
++    override fun select(locale: AppLocale) {
++        preferences.edit().putString(AppLocaleContext.LOCALE_KEY, locale.name).apply()
++    }
++}
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
+index 2fd327958..9cefe36cb 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/AppearanceSettingsStore.kt
+@@ -24,6 +24,8 @@ interface AppearanceSettingsStore {
+     val librarySortDirection: Flow<LibrarySortDirection>
+     val appTheme: Flow<AppTheme>
+     val backgroundStyle: Flow<BackgroundStyle>
++    /** Blurred poster backdrops (hero banners). Off saves GPU on weak devices. */
++    val backdropBlurEnabled: Flow<Boolean>
+     val detailsButtonOrder: Flow<List<DetailsButtonAction>>
+ 
+     /** Порядок вкладок на экране библиотеки. */
+@@ -47,6 +49,7 @@ interface AppearanceSettingsStore {
+     suspend fun setLibrarySortDirection(direction: LibrarySortDirection)
+     suspend fun setAppTheme(theme: AppTheme)
+     suspend fun setBackgroundStyle(style: BackgroundStyle)
++    suspend fun setBackdropBlurEnabled(enabled: Boolean)
+     suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>)
+     suspend fun setLibraryTabOrder(order: List<LibraryTabKind>)
+     suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
+@@ -71,6 +74,7 @@ interface AppearanceSettingsStore {
+             DetailsButtonAction.COMMENTS,
+             DetailsButtonAction.REVIEWS,
+             DetailsButtonAction.BLOGGER_VIDEOS,
++            DetailsButtonAction.ANILIST,
+             DetailsButtonAction.SCREENSHOTS,
+         )
+     }
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
+index 6b27ab2de..b24029bce 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/SettingsPreferenceKeys.kt
+@@ -70,6 +70,7 @@ internal object SettingsPreferenceKeys {
+     val hiddenRecommendationIdsKey = stringSetPreferencesKey("hidden_recommendation_ids")
+     val appThemeKey = stringPreferencesKey("app_theme")
+     val backgroundStyleKey = stringPreferencesKey("background_style")
++    val backdropBlurEnabledKey = booleanPreferencesKey("backdrop_blur_enabled")
+     val yaniApplicationTokenKey = stringPreferencesKey("yani_application_token")
+     val yaniAccessTokenKey = stringPreferencesKey("yani_access_token")
+     val yaniUserIdKey = intPreferencesKey("yani_user_id")
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
+index f0180cdb9..32f1c50f2 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreAppearanceSettingsStore.kt
+@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
+ import su.afk.yummy.tv.core.model.settings.PosterQuality
+ import su.afk.yummy.tv.core.preferences.settings.AppearanceSettingsStore
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backdropBlurEnabledKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backgroundStyleKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.detailsButtonOrderKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryContinueWatchingCardSizeKey
+@@ -70,6 +71,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
+     override val backgroundStyle: Flow<BackgroundStyle> =
+         store.enumFlow(backgroundStyleKey, BackgroundStyle.DARK)
+ 
++    override val backdropBlurEnabled: Flow<Boolean> =
++        store.boolean(backdropBlurEnabledKey, true)
++
+     override val detailsButtonOrder: Flow<List<DetailsButtonAction>> =
+         store.data.map { prefs -> prefs[detailsButtonOrderKey].toDetailsButtonOrder() }
+ 
+@@ -112,6 +116,9 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
+     override suspend fun setBackgroundStyle(style: BackgroundStyle) =
+         store.setEnum(backgroundStyleKey, style)
+ 
++    override suspend fun setBackdropBlurEnabled(enabled: Boolean) =
++        store.setBoolean(backdropBlurEnabledKey, enabled)
++
+     override suspend fun setDetailsButtonOrder(order: List<DetailsButtonAction>) {
+         store.edit { prefs ->
+             prefs[detailsButtonOrderKey] = order.normalizedDetailsButtonOrder()
+diff --git a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
+index 640e7424b..120a293d6 100644
+--- a/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
++++ b/core/preferences/src/main/kotlin/su/afk/yummy/tv/core/preferences/settings/datastore/DataStoreSettingsStore.kt
+@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
+ import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
++import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.backdropBlurEnabledKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.askDubbingOnWatchKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
+ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
+@@ -92,6 +93,7 @@ internal class DataStoreSettingsStore @Inject constructor(
+         SettingsSnapshot(
+             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
+             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
++            backdropBlurEnabled = prefs[backdropBlurEnabledKey] ?: true,
+             posterQuality = prefs.enum(posterQualityKey, defaultPosterQuality),
+             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
+             showTopTitleYear = prefs[showTopTitleYearKey] ?: false,
+diff --git a/feature/details/presentation/build.gradle.kts b/feature/details/presentation/build.gradle.kts
+index 84af639df..f1a623d77 100644
+--- a/feature/details/presentation/build.gradle.kts
++++ b/feature/details/presentation/build.gradle.kts
+@@ -29,6 +29,7 @@ dependencies {
+     implementation(project(":feature:player:api"))
+     implementation(project(":feature:reviews:api"))
+     implementation(project(":feature:player:domain"))
++    implementation(project(":feature:tracker:api"))
+     implementation(project(":feature:video-download:api"))
+     implementation(project(":feature:video-download:domain"))
+     implementation(project(":feature:watch-later:domain"))
+diff --git a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsState.kt b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsState.kt
+index fe2df55a0..175865540 100644
+--- a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsState.kt
++++ b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsState.kt
+@@ -39,6 +39,7 @@ class DetailsState {
+         val isSubscriptionsLoading: Boolean = false,
+         val detailsButtonOrder: ImmutableList<DetailsButtonAction> =
+             SettingsStore.defaultDetailsButtonOrder.toImmutableList(),
++        val backdropBlurEnabled: Boolean = true,
+     ) : UiState
+ 
+     /** Пользовательские действия на основном экране деталей аниме. */
+@@ -86,6 +87,9 @@ class DetailsState {
+ 
+         data object BloggerVideosSelected : Event
+ 
++        /** Пользователь открыл привязку тайтла к AniList. */
++        data object AniListSelected : Event
++
+         /** Пользователь переключил наличие тайтла в библиотеке. */
+         data object LibraryToggled : Event
+ 
+diff --git a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsViewModel.kt b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsViewModel.kt
+index 1ccab8274..3aa8c689e 100644
+--- a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsViewModel.kt
++++ b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsViewModel.kt
+@@ -50,6 +50,7 @@ import su.afk.yummy.tv.feature.details.utils.playerPosterUrl
+ import su.afk.yummy.tv.feature.details.utils.screenshotByEpisode
+ import su.afk.yummy.tv.feature.player.PlayerVideoSource
+ import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
++import su.afk.yummy.tv.feature.tracker.ITrackerNavigator
+ 
+ @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
+ class DetailsViewModel @AssistedInject internal constructor(
+@@ -61,6 +62,7 @@ class DetailsViewModel @AssistedInject internal constructor(
+     private val commentsNavigator: ICommentsNavigator,
+     private val reviewsNavigator: IReviewsNavigator,
+     private val bloggerVideosNavigator: IBloggerVideosNavigator,
++    private val trackerNavigator: ITrackerNavigator,
+     private val imageViewNavigator: IImageViewNavigator,
+     private val stringProvider: StringProvider,
+     private val screenDataHandler: DetailsScreenDataHandler,
+@@ -120,6 +122,9 @@ class DetailsViewModel @AssistedInject internal constructor(
+         screenDataHandler.detailsButtonOrder
+             .onEach { order -> setState { copy(detailsButtonOrder = order.toImmutableList()) } }
+             .launchIn(viewModelScope)
++        screenDataHandler.backdropBlurEnabled
++            .onEach { enabled -> setState { copy(backdropBlurEnabled = enabled) } }
++            .launchIn(viewModelScope)
+         screenDataHandler.observeAccountSession()
+             .onEach { session ->
+                 val wasSignedIn = currentState.isSignedIn
+@@ -219,6 +224,11 @@ class DetailsViewModel @AssistedInject internal constructor(
+                 ),
+             )
+ 
++            DetailsState.Event.AniListSelected -> {
++                val details = currentState.details ?: return
++                trackerNavigator.openAnimeTrack(details.id.toLong(), details.title)
++            }
++
+             DetailsState.Event.LibraryToggled ->
+                 viewModelScope.launch { toggleLibrary() }
+ 
+diff --git a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/handler/DetailsScreenDataHandler.kt b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/handler/DetailsScreenDataHandler.kt
+index 1733e6b64..711fb02aa 100644
+--- a/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/handler/DetailsScreenDataHandler.kt
++++ b/feature/details/presentation/src/main/kotlin/su/afk/yummy/tv/feature/details/details/handler/DetailsScreenDataHandler.kt
+@@ -30,6 +30,7 @@ class DetailsScreenDataHandler @Inject constructor(
+     val yaniUserId: Flow<Int> = settingsStore.yaniUserId
+     val detailsButtonOrder: Flow<List<DetailsButtonAction>> = settingsStore.detailsButtonOrder
+ 
++    val backdropBlurEnabled: Flow<Boolean> = settingsStore.backdropBlurEnabled
+     /** Спрашивать озвучку при нажатии "Смотреть", вместо автовыбора самой популярной. */
+     val askDubbingOnWatch: Flow<Boolean> = settingsStore.askDubbingOnWatch
+ 
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
+index a845e9323..2299adc7c 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
+@@ -143,6 +143,7 @@ fun DetailsMobileScreen(
+                     onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
+                     onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                     onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
++                    onAniListSelected = { onEvent(DetailsState.Event.AniListSelected) },
+                     modifier = Modifier.padding(horizontal = 16.dp),
+                 )
+             }
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsMobileHero.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsMobileHero.kt
+index 5b18191bc..4c5c96183 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsMobileHero.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsMobileHero.kt
+@@ -63,7 +63,7 @@ internal fun DetailsMobileHero(
+             contentScale = ContentScale.Crop,
+             modifier = Modifier
+                 .matchParentSize()
+-                .blur(28.dp)
++                .then(if (state.backdropBlurEnabled) Modifier.blur(28.dp) else Modifier)
+                 .background(MaterialTheme.colorScheme.surfaceVariant),
+         )
+         Box(
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsSecondaryActions.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsSecondaryActions.kt
+index 254cf4401..86bd757c9 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsSecondaryActions.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/DetailsSecondaryActions.kt
+@@ -34,6 +34,7 @@ internal fun DetailsSecondaryActions(
+     onCollectionsSelected: () -> Unit,
+     onReviewsSelected: () -> Unit,
+     onBloggerVideosSelected: () -> Unit,
++    onAniListSelected: () -> Unit,
+     modifier: Modifier = Modifier,
+ ) {
+     val actions = buildMobileActions(
+@@ -50,6 +51,7 @@ internal fun DetailsSecondaryActions(
+         onCollectionsSelected = onCollectionsSelected,
+         onReviewsSelected = onReviewsSelected,
+         onBloggerVideosSelected = onBloggerVideosSelected,
++        onAniListSelected = onAniListSelected,
+     )
+     if (actions.isEmpty()) return
+ 
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/buildMobileActions.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/buildMobileActions.kt
+index 67649e2a3..c15f2b732 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/buildMobileActions.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/view/buildMobileActions.kt
+@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
+ import androidx.compose.material.icons.filled.CollectionsBookmark
+ import androidx.compose.material.icons.filled.FormatListNumbered
+ import androidx.compose.material.icons.filled.Info
++import androidx.compose.material.icons.filled.Link
+ import androidx.compose.material.icons.filled.Movie
+ import androidx.compose.material.icons.filled.Notifications
+ import androidx.compose.material.icons.filled.PhotoLibrary
+@@ -35,6 +36,7 @@ internal fun buildMobileActions(
+     onCollectionsSelected: () -> Unit,
+     onReviewsSelected: () -> Unit,
+     onBloggerVideosSelected: () -> Unit,
++    onAniListSelected: () -> Unit,
+ ): List<MobileDetailsAction> {
+     val availableActions = buildList {
+         add(
+@@ -122,6 +124,14 @@ internal fun buildMobileActions(
+                 onBloggerVideosSelected,
+             )
+         )
++        add(
++            MobileDetailsAction(
++                DetailsButtonAction.ANILIST,
++                stringResource(R.string.details_mobile_anilist),
++                Icons.Filled.Link,
++                onAniListSelected,
++            )
++        )
+         if (details.screenshots.isNotEmpty()) {
+             add(
+                 MobileDetailsAction(
+diff --git a/feature/details/ui-mobile/src/main/res/values-ru/strings.xml b/feature/details/ui-mobile/src/main/res/values-ru/strings.xml
+index 02badb910..20640c825 100644
+--- a/feature/details/ui-mobile/src/main/res/values-ru/strings.xml
++++ b/feature/details/ui-mobile/src/main/res/values-ru/strings.xml
+@@ -5,6 +5,7 @@
+     <string name="details_mobile_similar_like">Нравится похожий тайтл</string>
+     <string name="details_mobile_similar_dislike">Не нравится похожий тайтл</string>
+     <string name="details_mobile_blogger_videos">Видео блогеров</string>
++    <string name="details_mobile_anilist">AniList</string>
+     <string name="details_mobile_reviews">Отзывы</string>
+     <string name="details_mobile_reviews_count">Отзывы (%1$d)</string>
+     <string name="details_mobile_title">Детали</string>
+diff --git a/feature/details/ui-mobile/src/main/res/values-uk/strings.xml b/feature/details/ui-mobile/src/main/res/values-uk/strings.xml
+index 132c5ab72..80212c6d2 100644
+--- a/feature/details/ui-mobile/src/main/res/values-uk/strings.xml
++++ b/feature/details/ui-mobile/src/main/res/values-uk/strings.xml
+@@ -5,6 +5,7 @@
+     <string name="details_mobile_similar_like">Подобається схожий тайтл</string>
+     <string name="details_mobile_similar_dislike">Не подобається схожий тайтл</string>
+     <string name="details_mobile_blogger_videos">Відео блогерів</string>
++    <string name="details_mobile_anilist">AniList</string>
+     <string name="details_mobile_reviews">Відгуки</string>
+     <string name="details_mobile_reviews_count">Відгуки (%1$d)</string>
+     <string name="details_mobile_title">Деталі</string>
+diff --git a/feature/details/ui-mobile/src/main/res/values/strings.xml b/feature/details/ui-mobile/src/main/res/values/strings.xml
+index f07a0ea55..4a0305739 100644
+--- a/feature/details/ui-mobile/src/main/res/values/strings.xml
++++ b/feature/details/ui-mobile/src/main/res/values/strings.xml
+@@ -5,6 +5,7 @@
+     <string name="details_mobile_similar_like">Like similar title</string>
+     <string name="details_mobile_similar_dislike">Dislike similar title</string>
+     <string name="details_mobile_blogger_videos">Blogger videos</string>
++    <string name="details_mobile_anilist">AniList</string>
+     <string name="details_mobile_reviews">Reviews</string>
+     <string name="details_mobile_reviews_count">Reviews (%1$d)</string>
+     <string name="details_mobile_title">Details</string>
+diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsTvScreen.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsTvScreen.kt
+index 9b68f77d6..8a1cb2f15 100644
+--- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsTvScreen.kt
++++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/DetailsTvScreen.kt
+@@ -142,6 +142,8 @@ fun DetailsTvScreen(
+                     onCommentsSelected = { onEvent(DetailsState.Event.CommentsSelected) },
+                     onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
+                     onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
++                    onAniListSelected = { onEvent(DetailsState.Event.AniListSelected) },
++                    backdropBlurEnabled = state.backdropBlurEnabled,
+                 )
+             }
+         }
+diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsBody.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsBody.kt
+index 0aec178f3..dc0c2bd62 100644
+--- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsBody.kt
++++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsBody.kt
+@@ -41,6 +41,8 @@ internal fun DetailsBody(
+     onCommentsSelected: () -> Unit,
+     onReviewsSelected: () -> Unit,
+     onBloggerVideosSelected: () -> Unit,
++    onAniListSelected: () -> Unit,
++    backdropBlurEnabled: Boolean,
+ ) {
+     val barFocusRequester = remember { FocusRequester() }
+     Box(
+@@ -75,6 +77,8 @@ internal fun DetailsBody(
+             onCommentsSelected = onCommentsSelected,
+             onReviewsSelected = onReviewsSelected,
+             onBloggerVideosSelected = onBloggerVideosSelected,
++            onAniListSelected = onAniListSelected,
++            backdropBlurEnabled = backdropBlurEnabled,
+         )
+     }
+ }
+diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsButtonBar.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsButtonBar.kt
+index 4d5a759a6..c5842b4b1 100644
+--- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsButtonBar.kt
++++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsButtonBar.kt
+@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Favorite
+ import androidx.compose.material.icons.filled.FavoriteBorder
+ import androidx.compose.material.icons.filled.FormatListNumbered
+ import androidx.compose.material.icons.filled.Info
++import androidx.compose.material.icons.filled.Link
+ import androidx.compose.material.icons.filled.Movie
+ import androidx.compose.material.icons.filled.Notifications
+ import androidx.compose.material.icons.filled.PhotoLibrary
+@@ -108,6 +109,7 @@ internal fun DetailsButtonBar(
+     onCommentsSelected: () -> Unit,
+     onReviewsSelected: () -> Unit,
+     onBloggerVideosSelected: () -> Unit,
++    onAniListSelected: () -> Unit,
+     modifier: Modifier = Modifier,
+     height: Dp = 150.dp,
+ ) {
+@@ -245,6 +247,13 @@ internal fun DetailsButtonBar(
+             ButtonStyle.Normal,
+             onBloggerVideosSelected,
+         ),
++        ButtonData(
++            DetailsButtonAction.ANILIST,
++            stringResource(R.string.details_anilist),
++            Icons.Filled.Link,
++            ButtonStyle.Normal,
++            onAniListSelected,
++        ),
+     ) + if (details.screenshots.isNotEmpty()) {
+         listOf(
+             ButtonData(
+diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsHero.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsHero.kt
+index 19383929a..ae26c6bca 100644
+--- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsHero.kt
++++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/DetailsHero.kt
+@@ -74,6 +74,8 @@ internal fun DetailsHero(
+     onCommentsSelected: () -> Unit,
+     onReviewsSelected: () -> Unit,
+     onBloggerVideosSelected: () -> Unit,
++    onAniListSelected: () -> Unit,
++    backdropBlurEnabled: Boolean,
+ ) {
+     val titleFocusRequester = remember { FocusRequester() }
+ 
+@@ -107,7 +109,7 @@ internal fun DetailsHero(
+             .fillMaxSize()
+             .background(MaterialTheme.colorScheme.surface),
+     ) {
+-        HeroBackdrop(details)
++        HeroBackdrop(details, backdropBlurEnabled)
+ 
+         val isCompactHeight = maxHeight < 560.dp
+         val horizontalPadding = 20.dp
+@@ -199,6 +201,7 @@ internal fun DetailsHero(
+                     onCommentsSelected = onCommentsSelected,
+                     onReviewsSelected = onReviewsSelected,
+                     onBloggerVideosSelected = onBloggerVideosSelected,
++                    onAniListSelected = onAniListSelected,
+                     modifier = Modifier.padding(top = 8.dp),
+                     height = buttonBarHeight,
+                 )
+diff --git a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/HeroBackdrop.kt b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/HeroBackdrop.kt
+index 43c09cf65..21bfb80d7 100644
+--- a/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/HeroBackdrop.kt
++++ b/feature/details/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/details/details/view/HeroBackdrop.kt
+@@ -18,7 +18,7 @@ import su.afk.yummy.tv.core.model.anime.AnimeDetails
+  * blur is a no-op — the scrim alone keeps contrast.
+  */
+ @Composable
+-internal fun HeroBackdrop(details: AnimeDetails) {
++internal fun HeroBackdrop(details: AnimeDetails, blurEnabled: Boolean) {
+     val backdropUrl = details.poster?.run { big ?: medium ?: small } ?: return
+     val surface = MaterialTheme.colorScheme.surface
+     AsyncImage(
+@@ -28,7 +28,7 @@ internal fun HeroBackdrop(details: AnimeDetails) {
+         alpha = 0.38f,
+         modifier = Modifier
+             .fillMaxSize()
+-            .blur(HERO_BACKDROP_BLUR),
++            .then(if (blurEnabled) Modifier.blur(HERO_BACKDROP_BLUR) else Modifier),
+     )
+     Box(
+         modifier = Modifier
+diff --git a/feature/details/ui-tv/src/main/res/values-ru/strings.xml b/feature/details/ui-tv/src/main/res/values-ru/strings.xml
+index c03014134..ceb665654 100644
+--- a/feature/details/ui-tv/src/main/res/values-ru/strings.xml
++++ b/feature/details/ui-tv/src/main/res/values-ru/strings.xml
+@@ -5,6 +5,7 @@
+     <string name="details_similar_like">Нравится похожий тайтл</string>
+     <string name="details_similar_dislike">Не нравится похожий тайтл</string>
+     <string name="details_blogger_videos">Видео блогеров</string>
++    <string name="details_anilist">AniList</string>
+     <string name="details_reviews">Рецензии</string>
+     <string name="details_reviews_count">Рецензии (%1$d)</string>
+     <string name="details_comments">Комментарии</string>
+diff --git a/feature/details/ui-tv/src/main/res/values-uk/strings.xml b/feature/details/ui-tv/src/main/res/values-uk/strings.xml
+index 343663c11..a0ad0941d 100644
+--- a/feature/details/ui-tv/src/main/res/values-uk/strings.xml
++++ b/feature/details/ui-tv/src/main/res/values-uk/strings.xml
+@@ -5,6 +5,7 @@
+     <string name="details_similar_like">Подобається схожий тайтл</string>
+     <string name="details_similar_dislike">Не подобається схожий тайтл</string>
+     <string name="details_blogger_videos">Відео блогерів</string>
++    <string name="details_anilist">AniList</string>
+     <string name="details_reviews">Рецензії</string>
+     <string name="details_reviews_count">Рецензії (%1$d)</string>
+     <string name="details_comments">Коментарі</string>
+diff --git a/feature/details/ui-tv/src/main/res/values/strings.xml b/feature/details/ui-tv/src/main/res/values/strings.xml
+index 9bd6ec220..318ea69fb 100644
+--- a/feature/details/ui-tv/src/main/res/values/strings.xml
++++ b/feature/details/ui-tv/src/main/res/values/strings.xml
+@@ -5,6 +5,7 @@
+     <string name="details_similar_like">Like similar title</string>
+     <string name="details_similar_dislike">Dislike similar title</string>
+     <string name="details_blogger_videos">Blogger videos</string>
++    <string name="details_anilist">AniList</string>
+     <string name="details_reviews">Reviews</string>
+     <string name="details_reviews_count">Reviews (%1$d)</string>
+     <string name="details_comments">Comments</string>
+diff --git a/feature/player/presentation/build.gradle.kts b/feature/player/presentation/build.gradle.kts
+index 4f6e0fc1b..8e9a074f4 100644
+--- a/feature/player/presentation/build.gradle.kts
++++ b/feature/player/presentation/build.gradle.kts
+@@ -25,6 +25,7 @@ dependencies {
+     implementation(project(":feature:details:domain"))
+     implementation(project(":feature:player:api"))
+     implementation(project(":feature:player:domain"))
++    implementation(project(":feature:tracker:domain"))
+     implementation(project(":feature:video-download:domain"))
+ 
+     implementation(libs.androidx.core.ktx)
+diff --git a/feature/player/presentation/src/main/kotlin/su/afk/yummy/tv/feature/player/PlayerViewModel.kt b/feature/player/presentation/src/main/kotlin/su/afk/yummy/tv/feature/player/PlayerViewModel.kt
+index 3af5a5173..953d4c819 100644
+--- a/feature/player/presentation/src/main/kotlin/su/afk/yummy/tv/feature/player/PlayerViewModel.kt
++++ b/feature/player/presentation/src/main/kotlin/su/afk/yummy/tv/feature/player/PlayerViewModel.kt
+@@ -18,6 +18,7 @@ import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
+ import su.afk.yummy.tv.core.mvi.BaseViewModel
+ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+ import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
++import su.afk.yummy.tv.domain.tracker.usecase.TrackEpisodeSeenUseCase
+ import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
+ import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
+ import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
+@@ -79,6 +80,7 @@ class PlayerViewModel @AssistedInject internal constructor(
+     private val analytics: PlayerAnalytics,
+     private val allohaSource: AllohaSourceBehavior,
+     private val defaultSource: DefaultSourceBehavior,
++    private val trackEpisodeSeen: TrackEpisodeSeenUseCase,
+ ) : BaseViewModel<PlayerState.State, PlayerState.Event, PlayerState.Effect>() {
+ 
+     @AssistedFactory
+@@ -576,6 +578,15 @@ class PlayerViewModel @AssistedInject internal constructor(
+         viewModelScope.launch {
+             runSuspendCatching {
+                 playbackProgressHandler.saveProgress(request)
++                // AniList sync on a watched episode (TrackEpisode.await port).
++                // No binding/authorization is a no-op; errors stay silent here
++                // because the local progress is already saved above.
++                val episodeNumber = request.snapshot.episode.trim().toDoubleOrNull()
++                if (episodeNumber != null && request.context.animeId > 0) {
++                    runSuspendCatching {
++                        trackEpisodeSeen(request.context.animeId.toLong(), episodeNumber)
++                    }
++                }
+                 val nextTargetRequest =
+                     if (playbackProgressHandler.shouldSuggestNextEpisodeOnWatched()) {
+                         nextState?.let(playbackProgressHandler::continueTargetRequest)
+diff --git a/feature/settings/api/src/main/kotlin/su/afk/yummy/tv/feature/settings/navigator/SettingsDestination.kt b/feature/settings/api/src/main/kotlin/su/afk/yummy/tv/feature/settings/navigator/SettingsDestination.kt
+index 6cc951657..f11317a3f 100644
+--- a/feature/settings/api/src/main/kotlin/su/afk/yummy/tv/feature/settings/navigator/SettingsDestination.kt
++++ b/feature/settings/api/src/main/kotlin/su/afk/yummy/tv/feature/settings/navigator/SettingsDestination.kt
+@@ -23,6 +23,7 @@ enum class SettingsCategory {
+     SUBTITLES,
+     STORAGE,
+     API,
++    TRACKERS,
+ }
+ 
+ @Serializable
+diff --git a/feature/settings/presentation/build.gradle.kts b/feature/settings/presentation/build.gradle.kts
+index 9b729978a..7ebe3e537 100644
+--- a/feature/settings/presentation/build.gradle.kts
++++ b/feature/settings/presentation/build.gradle.kts
+@@ -18,6 +18,7 @@ dependencies {
+     implementation(project(":core:utils"))
+     implementation(project(":feature:account:api"))
+     implementation(project(":feature:settings:api"))
++    implementation(project(":feature:tracker:api"))
+     implementation(project(":feature:update:domain"))
+     implementation(project(":feature:video-download:domain"))
+ 
+diff --git a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
+index af8d04c21..323015e8c 100644
+--- a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
++++ b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsState.kt
+@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.ImmutableList
+ import kotlinx.collections.immutable.persistentListOf
+ import kotlinx.collections.immutable.toImmutableList
+ import su.afk.yummy.tv.core.model.settings.AppTheme
++import su.afk.yummy.tv.core.model.settings.AppLocale
+ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+ import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
+ import su.afk.yummy.tv.core.model.settings.DetailsButtonAction
+@@ -35,8 +36,10 @@ class SettingsState {
+     @Immutable
+     data class State(
+         val interfaceMode: AppInterfaceMode = AppInterfaceMode.MOBILE,
++        val appLocale: AppLocale = AppLocale.SYSTEM,
+         val appTheme: AppTheme = AppTheme.WARM_AMBER,
+         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
++        val backdropBlurEnabled: Boolean = true,
+         val posterQuality: PosterQuality = PosterQuality.STANDARD,
+         val posterCardSize: PosterCardSize = PosterCardSize.STANDARD,
+         val showTopTitleYear: Boolean = false,
+@@ -274,6 +277,15 @@ class SettingsState {
+         /** Пользователь открыл «Что нового»: загрузить историю релизов, если её ещё нет. */
+         data object ReleaseNotesRequested : Event
+ 
++        /** User toggled blurred poster backdrops. */
++        data object BackdropBlurToggled : Event
++
++        /** User picked the interface language. */
++        data class AppLocaleSelected(val locale: AppLocale) : Event
++
++        /** Пользователь открыл экран привязки AniList. */
++        data object AniListSelected : Event
++
+         /** Пользователь хочет передать дамп логов приложения (Share). */
+         data object ShareLogsClicked : Event
+ 
+@@ -282,8 +294,10 @@ class SettingsState {
+     }
+ 
+     sealed interface Effect : UiEffect {
+-        /** Сохранён новый тип интерфейса, приложение нужно запустить заново. */
++        /** Interface type saved, the app needs a relaunch. */
+         data object RestartApplication : Effect
++        /** Interface language saved, the host activity must recreate itself. */
++        data object ApplyAppLocale : Effect
+         data object OpenVideoExportDirectoryPicker : Effect
+         data object VideoExportDirectorySelectionFailed : Effect
+ 
+diff --git a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
+index 45d5a1a43..1060879ed 100644
+--- a/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
++++ b/feature/settings/presentation/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsViewModel.kt
+@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.preferences.auth.TokenStorageMode
+ import su.afk.yummy.tv.core.preferences.auth.YaniAuthPreferences
+ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
+ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
++import su.afk.yummy.tv.core.preferences.locale.AppLocalePreferences
+ import su.afk.yummy.tv.core.preferences.settings.SettingsStore
+ import su.afk.yummy.tv.core.tv.api.ITvIntegration
+ import su.afk.yummy.tv.core.utils.coroutines.runSuspendCatching
+@@ -32,6 +33,7 @@ import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestina
+ import su.afk.yummy.tv.feature.settings.utils.groupedByThree
+ import su.afk.yummy.tv.feature.settings.utils.moved
+ import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
++import su.afk.yummy.tv.feature.tracker.ITrackerNavigator
+ import javax.inject.Inject
+ import javax.inject.Named
+ 
+@@ -42,9 +44,11 @@ class SettingsViewModel @Inject internal constructor(
+     private val settingsStore: SettingsStore,
+     private val yaniAuthPreferences: YaniAuthPreferences,
+     private val interfaceModePreferences: AppInterfaceModePreferences,
++    private val appLocalePreferences: AppLocalePreferences,
+     private val tvIntegration: ITvIntegration,
+     private val nav: INavigationManager,
+     private val accountNavigator: IAccountNavigator,
++    private val trackerNavigator: ITrackerNavigator,
+     private val analytics: SettingsAnalytics,
+     private val observeVideoExportDestination: ObserveVideoExportDestinationUseCase,
+     private val selectVideoExportDestination: SelectVideoExportDestinationUseCase,
+@@ -57,6 +61,7 @@ class SettingsViewModel @Inject internal constructor(
+ 
+     override fun createInitialState() = SettingsState.State(
+         interfaceMode = interfaceModePreferences.selectedMode ?: AppInterfaceMode.MOBILE,
++        appLocale = appLocalePreferences.selectedLocale,
+     )
+ 
+     init {
+@@ -67,6 +72,7 @@ class SettingsViewModel @Inject internal constructor(
+                     copy(
+                         appTheme = snapshot.appTheme,
+                         backgroundStyle = snapshot.backgroundStyle,
++                        backdropBlurEnabled = snapshot.backdropBlurEnabled,
+                         posterQuality = snapshot.posterQuality,
+                         posterCardSize = snapshot.posterCardSize,
+                         showTopTitleYear = snapshot.showTopTitleYear,
+@@ -193,6 +199,10 @@ class SettingsViewModel @Inject internal constructor(
+                 settingsStore.setBackgroundStyle(event.style)
+             }
+ 
++            SettingsState.Event.BackdropBlurToggled -> viewModelScope.launch {
++                settingsStore.setBackdropBlurEnabled(!currentState.backdropBlurEnabled)
++            }
++
+             is SettingsState.Event.PosterQualitySelected -> viewModelScope.launch {
+                 analytics.eventPosterQualitySelected(event.quality)
+                 settingsStore.setPosterQuality(event.quality)
+@@ -429,6 +439,19 @@ class SettingsViewModel @Inject internal constructor(
+                 nav.navigate(accountNavigator.getLocalAuthDest())
+             }
+ 
++            is SettingsState.Event.AppLocaleSelected -> {
++                if (event.locale == currentState.appLocale) return
++                appLocalePreferences.select(event.locale)
++                setState { copy(appLocale = event.locale) }
++                // The wrapped base context picks the new locale up on recreate,
++                // no process restart needed.
++                setEffect(SettingsState.Effect.ApplyAppLocale)
++            }
++
++            SettingsState.Event.AniListSelected -> {
++                trackerNavigator.openTrackerSettings()
++            }
++
+             SettingsState.Event.DetailsButtonOrderReset -> viewModelScope.launch {
+                 analytics.eventDetailsButtonOrderReset()
+                 settingsStore.setDetailsButtonOrder(SettingsStore.defaultDetailsButtonOrder)
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
+index a7f1c5baf..9eb67f92b 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/SettingsMobileCategoryScreen.kt
+@@ -30,6 +30,7 @@ import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobilePlayb
+ import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobilePlayerContent
+ import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileStorageContent
+ import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileSubtitlesContent
++import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileTrackersContent
+ import su.afk.yummy.tv.feature.settings.mobile.view.category.SettingsMobileWatchProgressContent
+ import su.afk.yummy.tv.feature.settings.mobile.view.rememberSettingsMobileDialogs
+ import su.afk.yummy.tv.feature.settings.navigator.SettingsCategory
+@@ -102,7 +103,8 @@ fun SettingsMobileCategoryScreen(
+                     )
+ 
+                     SettingsCategory.API -> SettingsMobileApiContent(state, onEvent)
+-                }
++
++                    SettingsCategory.TRACKERS -> SettingsMobileTrackersContent(state, onEvent)                }
+             }
+         }
+     }
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobileCategoryUi.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobileCategoryUi.kt
+index eb6dd5cf0..a434ad1c1 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobileCategoryUi.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobileCategoryUi.kt
+@@ -9,6 +9,7 @@ import androidx.compose.material.icons.outlined.PlayCircle
+ import androidx.compose.material.icons.outlined.SkipNext
+ import androidx.compose.material.icons.outlined.Storage
+ import androidx.compose.material.icons.outlined.Subtitles
++import androidx.compose.material.icons.outlined.Sync
+ import androidx.compose.material.icons.outlined.Tune
+ import androidx.compose.ui.graphics.vector.ImageVector
+ import su.afk.yummy.tv.feature.settings.mobile.R
+@@ -25,6 +26,7 @@ internal val SettingsCategory.titleRes: Int
+         SettingsCategory.SUBTITLES -> R.string.settings_mobile_category_subtitles
+         SettingsCategory.STORAGE -> R.string.settings_mobile_category_storage
+         SettingsCategory.API -> R.string.settings_mobile_category_api
++        SettingsCategory.TRACKERS -> R.string.settings_mobile_category_trackers
+     }
+ 
+ @get:StringRes
+@@ -38,6 +40,7 @@ internal val SettingsCategory.hintRes: Int
+         SettingsCategory.SUBTITLES -> R.string.settings_mobile_category_subtitles_hint
+         SettingsCategory.STORAGE -> R.string.settings_mobile_category_storage_hint
+         SettingsCategory.API -> R.string.settings_mobile_category_api_hint
++        SettingsCategory.TRACKERS -> R.string.settings_mobile_category_trackers_hint
+     }
+ 
+ internal val SettingsCategory.icon: ImageVector
+@@ -50,4 +53,5 @@ internal val SettingsCategory.icon: ImageVector
+         SettingsCategory.SUBTITLES -> Icons.Outlined.Subtitles
+         SettingsCategory.STORAGE -> Icons.Outlined.Storage
+         SettingsCategory.API -> Icons.Outlined.Key
++        SettingsCategory.TRACKERS -> Icons.Outlined.Sync
+     }
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobilePicker.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobilePicker.kt
+index 7d0e33d70..8a4e1014f 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobilePicker.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/model/SettingsMobilePicker.kt
+@@ -13,4 +13,5 @@ internal enum class SettingsMobilePicker {
+     SUBTITLE_COLOR,
+     SUBTITLE_BACKGROUND,
+     CONTENT_LANGUAGE,
++    APP_LOCALE,
+ }
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
+index 297f1b7c1..33278ee7e 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/utils/SettingsMobileFormatters.kt
+@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.res.stringResource
+ import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
++import su.afk.yummy.tv.core.model.settings.AppLocale
+ import su.afk.yummy.tv.core.model.settings.AppTheme
+ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+ import su.afk.yummy.tv.core.model.settings.BrowserUserAgentProfile
+@@ -90,6 +91,7 @@ internal fun AppTheme.label(): String = stringResource(
+         AppTheme.MINT -> R.string.settings_theme_mint
+         AppTheme.OCEAN -> R.string.settings_theme_ocean
+         AppTheme.GRAPHITE -> R.string.settings_theme_graphite
++        AppTheme.CLASSIC -> R.string.settings_theme_classic
+         AppTheme.DYNAMIC -> R.string.settings_theme_dynamic
+     },
+ )
+@@ -102,6 +104,7 @@ internal fun AppTheme.hint(): String = stringResource(
+         AppTheme.MINT -> R.string.settings_theme_mint_hint
+         AppTheme.OCEAN -> R.string.settings_theme_ocean_hint
+         AppTheme.GRAPHITE -> R.string.settings_theme_graphite_hint
++        AppTheme.CLASSIC -> R.string.settings_theme_classic_hint
+         AppTheme.DYNAMIC -> R.string.settings_theme_dynamic_hint
+     },
+ )
+@@ -141,6 +144,7 @@ internal fun DetailsButtonAction.label(): String = stringResource(
+         DetailsButtonAction.COMMENTS -> R.string.settings_details_button_comments
+         DetailsButtonAction.REVIEWS -> R.string.settings_details_button_reviews
+         DetailsButtonAction.BLOGGER_VIDEOS -> R.string.settings_details_button_blogger_videos
++        DetailsButtonAction.ANILIST -> R.string.settings_details_button_anilist
+         DetailsButtonAction.SCREENSHOTS -> R.string.settings_details_button_screenshots
+     },
+ )
+@@ -302,6 +306,14 @@ internal fun YaniContentLanguage.label(): String = stringResource(
+     },
+ )
+ 
++@Composable
++internal fun AppLocale.label(): String = when (this) {
++    AppLocale.SYSTEM -> stringResource(R.string.settings_app_locale_system)
++    AppLocale.ENGLISH -> "English"
++    AppLocale.RUSSIAN -> "Русский"
++    AppLocale.UKRAINIAN -> "Українська"
++}
++
+ /** Дружелюбная подпись папки кэша; неизвестные имена показываются как есть. */
+ @Composable
+ internal fun cacheStorageFolderLabel(id: String): String = when (id) {
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDialogsHost.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDialogsHost.kt
+index 13c05d5c0..a31ce27c5 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDialogsHost.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileDialogsHost.kt
+@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.remember
+ import androidx.compose.runtime.setValue
+ import androidx.compose.ui.res.stringResource
++import su.afk.yummy.tv.core.model.settings.AppLocale
+ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+ import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+ import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
+@@ -245,6 +246,22 @@ internal fun SettingsMobileDialogsHost(
+             },
+         )
+ 
++        SettingsMobilePicker.APP_LOCALE -> SettingsMobilePickerSheet(
++            title = stringResource(R.string.settings_app_locale_title),
++            selectedValue = state.appLocale,
++            options = AppLocale.entries.map {
++                SettingsMobilePickerOption(
++                    it,
++                    it.label(),
++                )
++            },
++            onDismiss = { dialogs.activePicker = null },
++            onSelected = {
++                onEvent(SettingsState.Event.AppLocaleSelected(it))
++                dialogs.activePicker = null
++            },
++        )
++
+         null -> Unit
+     }
+ 
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileEffects.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileEffects.kt
+index 411e99b33..427a26921 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileEffects.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/SettingsMobileEffects.kt
+@@ -1,5 +1,6 @@
+ package su.afk.yummy.tv.feature.settings.mobile.view
+ 
++import android.app.Activity
+ import android.content.Intent
+ import android.widget.Toast
+ import androidx.activity.compose.rememberLauncherForActivityResult
+@@ -41,6 +42,10 @@ internal fun SettingsMobileEffects(
+                     }
+                 }
+ 
++                SettingsState.Effect.ApplyAppLocale -> {
++                    (context as? Activity)?.recreate()
++                }
++
+                 SettingsState.Effect.OpenVideoExportDirectoryPicker ->
+                     videoExportDirectoryPicker.launch(null)
+ 
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
+index c06b6a55a..73b05e813 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileAppearanceContent.kt
+@@ -76,6 +76,16 @@ internal fun SettingsMobileAppearanceContent(
+                 enabled = state.showLibraryTitleYear,
+                 onClick = { onEvent(SettingsState.Event.ShowLibraryTitleYearToggled) },
+             )
++            SettingsMobileToggleRow(
++                label = stringResource(R.string.settings_backdrop_blur_label),
++                hint = if (state.backdropBlurEnabled) {
++                    stringResource(R.string.settings_backdrop_blur_enabled)
++                } else {
++                    stringResource(R.string.settings_disabled)
++                },
++                enabled = state.backdropBlurEnabled,
++                onClick = { onEvent(SettingsState.Event.BackdropBlurToggled) },
++            )
+         }
+         SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_library)) {
+             SettingsMobileNavigationRow(
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileGeneralContent.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileGeneralContent.kt
+index 1a4be0086..8b5908766 100644
+--- a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileGeneralContent.kt
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileGeneralContent.kt
+@@ -34,6 +34,11 @@ internal fun SettingsMobileGeneralContent(
+                 value = state.contentLanguage.label(),
+                 onClick = { onPickerRequested(SettingsMobilePicker.CONTENT_LANGUAGE) },
+             )
++            SettingsMobileOptionRow(
++                label = stringResource(R.string.settings_app_locale_title),
++                value = state.appLocale.label(),
++                onClick = { onPickerRequested(SettingsMobilePicker.APP_LOCALE) },
++            )
+             SettingsMobileToggleRow(
+                 label = stringResource(R.string.settings_save_last_search_label),
+                 hint = if (state.saveLastSearchEnabled) {
+diff --git a/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileTrackersContent.kt b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileTrackersContent.kt
+new file mode 100644
+index 000000000..7c19d006c
+--- /dev/null
++++ b/feature/settings/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/settings/mobile/view/category/SettingsMobileTrackersContent.kt
+@@ -0,0 +1,30 @@
++package su.afk.yummy.tv.feature.settings.mobile.view.category
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.Link
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.feature.settings.SettingsState
++import su.afk.yummy.tv.feature.settings.mobile.R
++import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
++import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
++
++@Composable
++internal fun SettingsMobileTrackersContent(
++    state: SettingsState.State,
++    onEvent: (SettingsState.Event) -> Unit,
++) {
++    Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
++        SettingsMobileSection {
++            SettingsMobileNavigationRow(
++                label = stringResource(R.string.settings_anilist_title),
++                hint = stringResource(R.string.settings_anilist_hint),
++                icon = Icons.Filled.Link,
++                onClick = { onEvent(SettingsState.Event.AniListSelected) },
++            )
++        }
++    }
++}
+diff --git a/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml b/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
+index 49cb85179..317cae61b 100644
+--- a/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
++++ b/feature/settings/ui-mobile/src/main/res/values-ru/strings.xml
+@@ -17,6 +17,12 @@
+     <string name="settings_mobile_category_storage_hint">Кэш превью, экспорт видео, размер кэша</string>
+     <string name="settings_mobile_category_api">API</string>
+     <string name="settings_mobile_category_api_hint">Токен приложения yani</string>
++    <string name="settings_mobile_category_trackers">Трекеры</string>
++    <string name="settings_mobile_category_trackers_hint">Синхронизация AniList</string>
++    <string name="settings_app_locale_title">Язык интерфейса</string>
++    <string name="settings_app_locale_system">Системный</string>
++    <string name="settings_backdrop_blur_label">Размытие фонов</string>
++    <string name="settings_backdrop_blur_enabled">Постеры под шапками размыты</string>
+     <string name="settings_mobile_section_devices">Устройства</string>
+     <string name="settings_mobile_login_on_tv">Войти на ТВ</string>
+     <string name="settings_mobile_login_on_tv_hint">Передать текущую сессию в приложение на ТВ по локальной сети</string>
+@@ -123,6 +129,8 @@
+     <string name="settings_theme_ocean_hint">Глубокие синие поверхности и прохладный светлый акцент</string>
+     <string name="settings_theme_graphite">Графит</string>
+     <string name="settings_theme_graphite_hint">Минимальная серая тема со сдержанным контрастом</string>
++    <string name="settings_theme_classic">Material Design 2</string>
++    <string name="settings_theme_classic_hint">Классический вид, рекомендуется на слабых и старых устройствах</string>
+     <string name="settings_theme_dynamic">Dynamic color</string>
+     <string name="settings_theme_dynamic_hint">Палитра Material You из обоев системы (Android 12+)</string>
+     <string name="settings_poster_card_size_compact">Компактный</string>
+@@ -205,6 +213,9 @@
+     <string name="settings_content_language_english">Английский</string>
+     <string name="settings_content_language_ukrainian">Украинский</string>
+     <string name="settings_yani_application_token_label">X-Application</string>
++    <string name="settings_anilist_title">AniList</string>
++    <string name="settings_anilist_hint">Синхронизация прогресса просмотра с AniList</string>
++    <string name="settings_details_button_anilist">AniList</string>
+     <string name="settings_yani_application_token_placeholder">Токен приложения</string>
+     <string name="settings_yani_application_token_hint">По умолчанию используется публичный токен. Укажите свой публичный токен из https://yummyani.me/dev/applications/, чтобы заменить его.</string>
+     <string name="settings_version_label">Версия</string>
+diff --git a/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml b/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
+index 159e3672b..61e8b6153 100644
+--- a/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
++++ b/feature/settings/ui-mobile/src/main/res/values-uk/strings.xml
+@@ -17,6 +17,12 @@
+     <string name="settings_mobile_category_storage_hint">Кеш прев’ю, експорт відео, розмір кешу</string>
+     <string name="settings_mobile_category_api">API</string>
+     <string name="settings_mobile_category_api_hint">Токен застосунку yani</string>
++    <string name="settings_mobile_category_trackers">Трекери</string>
++    <string name="settings_mobile_category_trackers_hint">Синхронізація AniList</string>
++    <string name="settings_app_locale_title">Мова інтерфейсу</string>
++    <string name="settings_app_locale_system">Системна</string>
++    <string name="settings_backdrop_blur_label">Розмиття фонів</string>
++    <string name="settings_backdrop_blur_enabled">Постери під шапками розмиті</string>
+     <string name="settings_mobile_section_devices">Пристрої</string>
+     <string name="settings_mobile_login_on_tv">Увійти на ТВ</string>
+     <string name="settings_mobile_login_on_tv_hint">Передати поточну сесію в застосунок на ТВ локальною мережею</string>
+@@ -123,6 +129,8 @@
+     <string name="settings_theme_ocean_hint">Глибокі сині поверхні та прохолодний світлий акцент</string>
+     <string name="settings_theme_graphite">Графіт</string>
+     <string name="settings_theme_graphite_hint">Мінімальна сіра тема зі стриманим контрастом</string>
++    <string name="settings_theme_classic">Material Design 2</string>
++    <string name="settings_theme_classic_hint">Класичний вигляд, рекомендовано для слабких і старих пристроїв</string>
+     <string name="settings_theme_dynamic">Dynamic color</string>
+     <string name="settings_theme_dynamic_hint">Палітра Material You з шпалер системи (Android 12+)</string>
+     <string name="settings_poster_card_size_compact">Компактний</string>
+@@ -205,6 +213,9 @@
+     <string name="settings_content_language_english">Англійська</string>
+     <string name="settings_content_language_ukrainian">Українська</string>
+     <string name="settings_yani_application_token_label">X-Application</string>
++    <string name="settings_anilist_title">AniList</string>
++    <string name="settings_anilist_hint">Синхронізація прогресу перегляду з AniList</string>
++    <string name="settings_details_button_anilist">AniList</string>
+     <string name="settings_yani_application_token_placeholder">Токен застосунку</string>
+     <string name="settings_yani_application_token_hint">За замовчуванням використовується публічний токен. Вкажіть свій публічний токен із https://yummyani.me/dev/applications/, щоб замінити його.</string>
+     <string name="settings_version_label">Версія</string>
+diff --git a/feature/settings/ui-mobile/src/main/res/values/strings.xml b/feature/settings/ui-mobile/src/main/res/values/strings.xml
+index 48bf16d2f..ba77b64c3 100644
+--- a/feature/settings/ui-mobile/src/main/res/values/strings.xml
++++ b/feature/settings/ui-mobile/src/main/res/values/strings.xml
+@@ -17,6 +17,12 @@
+     <string name="settings_mobile_category_storage_hint">Preview cache, video export, cache size</string>
+     <string name="settings_mobile_category_api">API</string>
+     <string name="settings_mobile_category_api_hint">Yani application token</string>
++    <string name="settings_mobile_category_trackers">Trackers</string>
++    <string name="settings_mobile_category_trackers_hint">AniList sync</string>
++    <string name="settings_app_locale_title">Interface language</string>
++    <string name="settings_app_locale_system">System</string>
++    <string name="settings_backdrop_blur_label">Blurred backdrops</string>
++    <string name="settings_backdrop_blur_enabled">Posters behind headers are blurred</string>
+     <string name="settings_mobile_section_devices">Devices</string>
+     <string name="settings_mobile_login_on_tv">Sign in on TV</string>
+     <string name="settings_mobile_login_on_tv_hint">Transfer this session to the TV app over the local network</string>
+@@ -123,6 +129,8 @@
+     <string name="settings_theme_ocean_hint">Deep blue surfaces with a cool bright accent</string>
+     <string name="settings_theme_graphite">Graphite</string>
+     <string name="settings_theme_graphite_hint">Minimal grayscale theme with restrained contrast</string>
++    <string name="settings_theme_classic">Material Design 2</string>
++    <string name="settings_theme_classic_hint">Classic look, recommended for slow and old devices</string>
+     <string name="settings_theme_dynamic">Dynamic color</string>
+     <string name="settings_theme_dynamic_hint">Material You palette from your wallpaper (Android 12+)</string>
+     <string name="settings_poster_card_size_compact">Compact</string>
+@@ -205,6 +213,9 @@
+     <string name="settings_content_language_english">English</string>
+     <string name="settings_content_language_ukrainian">Ukrainian</string>
+     <string name="settings_yani_application_token_label">X-Application</string>
++    <string name="settings_anilist_title">AniList</string>
++    <string name="settings_anilist_hint">Sync watch progress with AniList</string>
++    <string name="settings_details_button_anilist">AniList</string>
+     <string name="settings_yani_application_token_placeholder">Application token</string>
+     <string name="settings_yani_application_token_hint">A public token is used by default. Add your own public token from https://yummyani.me/dev/applications/ to override it.</string>
+     <string name="settings_version_label">Version</string>
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsTvScreen.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsTvScreen.kt
+index 798e3ee19..bc6679b6b 100644
+--- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsTvScreen.kt
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/SettingsTvScreen.kt
+@@ -1,5 +1,6 @@
+ package su.afk.yummy.tv.feature.settings
+ 
++import android.app.Activity
+ import android.content.Intent
+ import android.widget.Toast
+ import androidx.activity.compose.BackHandler
+@@ -99,6 +100,10 @@ fun SettingsTvScreen(
+                     ).show()
+                 }
+ 
++                SettingsState.Effect.ApplyAppLocale -> {
++                    (context as? Activity)?.recreate()
++                }
++
+                 // На приставках часто нет приложений для ACTION_SEND: тогда сохраняем файл в память.
+                 is SettingsState.Effect.ShareLogs -> {
+                     val send = Intent(Intent.ACTION_SEND).apply {
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTab.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTab.kt
+index bb1fee816..ae976c3fd 100644
+--- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTab.kt
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTab.kt
+@@ -13,5 +13,6 @@ internal enum class SettingsTab(@param:StringRes val labelRes: Int) {
+     SUBTITLES(R.string.settings_tv_category_subtitles),
+     STORAGE(R.string.settings_tv_category_storage),
+     API(R.string.settings_tv_category_api),
++    TRACKERS(R.string.settings_tv_category_trackers),
+     ABOUT(R.string.settings_tv_category_about),
+ }
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTvPicker.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTvPicker.kt
+index 7621c926c..361104e42 100644
+--- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTvPicker.kt
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/model/SettingsTvPicker.kt
+@@ -7,6 +7,7 @@ import su.afk.yummy.tv.feature.settings.R
+ internal enum class SettingsTvPicker(@param:StringRes val titleRes: Int) {
+     INTERFACE_MODE(R.string.settings_tab_interface),
+     CONTENT_LANGUAGE(R.string.settings_tab_language),
++    APP_LOCALE(R.string.settings_app_locale_title),
+     THEME(R.string.settings_tab_theme),
+     BACKGROUND(R.string.settings_tab_background),
+     POSTER_SIZE(R.string.settings_poster_size_title),
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
+index 6f03d387e..7884158a7 100644
+--- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/utils/SettingsUiFormatters.kt
+@@ -21,6 +21,7 @@ import su.afk.yummy.tv.core.model.settings.PosterCardSize
+ import su.afk.yummy.tv.core.model.settings.PosterQuality
+ import su.afk.yummy.tv.core.model.settings.PreferredPlayer
+ import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
++import su.afk.yummy.tv.core.model.settings.AppLocale
+ import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
+ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
+ import su.afk.yummy.tv.feature.settings.R
+@@ -92,6 +93,7 @@ internal fun AppTheme.label(): String = stringResource(
+         AppTheme.MINT -> R.string.settings_theme_mint
+         AppTheme.OCEAN -> R.string.settings_theme_ocean
+         AppTheme.GRAPHITE -> R.string.settings_theme_graphite
++        AppTheme.CLASSIC -> R.string.settings_theme_classic
+         AppTheme.DYNAMIC -> R.string.settings_theme_dynamic
+     },
+ )
+@@ -104,6 +106,7 @@ internal fun AppTheme.hint(): String = stringResource(
+         AppTheme.MINT -> R.string.settings_theme_mint_hint
+         AppTheme.OCEAN -> R.string.settings_theme_ocean_hint
+         AppTheme.GRAPHITE -> R.string.settings_theme_graphite_hint
++        AppTheme.CLASSIC -> R.string.settings_theme_classic_hint
+         AppTheme.DYNAMIC -> R.string.settings_theme_dynamic_hint
+     },
+ )
+@@ -143,6 +146,7 @@ internal fun DetailsButtonAction.label(): String = stringResource(
+         DetailsButtonAction.COMMENTS -> R.string.settings_details_button_comments
+         DetailsButtonAction.REVIEWS -> R.string.settings_details_button_reviews
+         DetailsButtonAction.BLOGGER_VIDEOS -> R.string.settings_details_button_blogger_videos
++        DetailsButtonAction.ANILIST -> R.string.settings_details_button_anilist
+         DetailsButtonAction.SCREENSHOTS -> R.string.settings_details_button_screenshots
+     },
+ )
+@@ -286,6 +290,14 @@ internal fun YaniContentLanguage.label(): String = stringResource(
+     },
+ )
+ 
++@Composable
++internal fun AppLocale.label(): String = when (this) {
++    AppLocale.SYSTEM -> stringResource(R.string.settings_app_locale_system)
++    AppLocale.ENGLISH -> "English"
++    AppLocale.RUSSIAN -> "Русский"
++    AppLocale.UKRAINIAN -> "Українська"
++}
++
+ /** Дружелюбная подпись папки кэша; неизвестные имена показываются как есть. */
+ @Composable
+ internal fun cacheStorageFolderLabel(id: String): String = when (id) {
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPanelHost.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPanelHost.kt
+index 70040a724..f73fe6ac9 100644
+--- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPanelHost.kt
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPanelHost.kt
+@@ -33,6 +33,7 @@ import su.afk.yummy.tv.feature.settings.view.category.SettingsTvPlaybackContent
+ import su.afk.yummy.tv.feature.settings.view.category.SettingsTvPlayerContent
+ import su.afk.yummy.tv.feature.settings.view.category.SettingsTvStorageContent
+ import su.afk.yummy.tv.feature.settings.view.category.SettingsTvSubtitlesContent
++import su.afk.yummy.tv.feature.settings.view.category.SettingsTvTrackersContent
+ import su.afk.yummy.tv.feature.settings.view.category.SettingsTvWatchProgressContent
+ 
+ @OptIn(ExperimentalComposeUiApi::class)
+@@ -137,6 +138,13 @@ internal fun SettingsTvPanelHost(
+                         onEvent,
+                     )
+ 
++                    SettingsTab.TRACKERS -> SettingsTvTrackersContent(
++                        state,
++                        tabFocusRequester,
++                        tabContentFocusRequester,
++                        onEvent,
++                    )
++
+                     SettingsTab.ABOUT -> SettingsTvAboutContent(
+                         state,
+                         tabFocusRequester,
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPickerPanel.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPickerPanel.kt
+index ab3f3c5ac..95bae4cb8 100644
+--- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPickerPanel.kt
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/SettingsTvPickerPanel.kt
+@@ -19,6 +19,7 @@ import androidx.compose.ui.focus.focusRequester
+ import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.model.settings.AppLocale
+ import su.afk.yummy.tv.core.model.settings.BackgroundStyle
+ import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
+ import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
+@@ -43,6 +44,7 @@ import su.afk.yummy.tv.feature.settings.utils.toDetailsButtonOrderItems
+ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = when (this) {
+     SettingsTvPicker.INTERFACE_MODE -> state.interfaceMode.label()
+     SettingsTvPicker.CONTENT_LANGUAGE -> state.contentLanguage.label()
++    SettingsTvPicker.APP_LOCALE -> state.appLocale.label()
+     SettingsTvPicker.THEME -> state.appTheme.label()
+     SettingsTvPicker.BACKGROUND -> state.backgroundStyle.label()
+     SettingsTvPicker.POSTER_SIZE -> state.posterCardSize.label()
+@@ -121,6 +123,14 @@ internal fun SettingsTvPickerPanel(
+                 onSelected = { select(SettingsState.Event.ContentLanguageSelected(it)) },
+             )
+ 
++            SettingsTvPicker.APP_LOCALE -> PickerOptions(
++                values = AppLocale.entries,
++                selected = state.appLocale,
++                labelOf = { it.label() },
++                focusRequester = entryFocusRequester,
++                onSelected = { select(SettingsState.Event.AppLocaleSelected(it)) },
++            )
++
+             SettingsTvPicker.THEME -> PickerOptions(
+                 values = availableAppThemes,
+                 selected = state.appTheme,
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
+index 5d28b1bff..6bd2af29c 100644
+--- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvAppearanceContent.kt
+@@ -63,6 +63,18 @@ internal fun SettingsTvAppearanceContent(
+     SettingsDivider()
+     pickerRow(SettingsTvPicker.LIBRARY_TAB_ORDER, Modifier)
+     SettingsDivider()
++    ToggleRow(
++        label = stringResource(R.string.settings_backdrop_blur_label),
++        hint = if (state.backdropBlurEnabled) {
++            stringResource(R.string.settings_backdrop_blur_enabled)
++        } else {
++            stringResource(R.string.settings_disabled)
++        },
++        enabled = state.backdropBlurEnabled,
++        onClick = { onEvent(SettingsState.Event.BackdropBlurToggled) },
++        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
++    )
++    SettingsDivider()
+     pickerRow(SettingsTvPicker.DETAILS_BUTTON_ORDER, Modifier)
+     SettingsBlockGap()
+     SettingsSectionTitle(text = stringResource(R.string.settings_tv_section_new_episodes))
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvGeneralContent.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvGeneralContent.kt
+index a591785af..83a430540 100644
+--- a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvGeneralContent.kt
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvGeneralContent.kt
+@@ -31,6 +31,8 @@ internal fun SettingsTvGeneralContent(
+     SettingsDivider()
+     pickerRow(SettingsTvPicker.CONTENT_LANGUAGE, Modifier)
+     SettingsDivider()
++    pickerRow(SettingsTvPicker.APP_LOCALE, Modifier)
++    SettingsDivider()
+     ToggleRow(
+         label = stringResource(R.string.settings_save_last_search_label),
+         hint = if (state.saveLastSearchEnabled) {
+diff --git a/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvTrackersContent.kt b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvTrackersContent.kt
+new file mode 100644
+index 000000000..8527566a1
+--- /dev/null
++++ b/feature/settings/ui-tv/src/main/kotlin/su/afk/yummy/tv/feature/settings/view/category/SettingsTvTrackersContent.kt
+@@ -0,0 +1,28 @@
++package su.afk.yummy.tv.feature.settings.view.category
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.focus.FocusRequester
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.feature.settings.R
++import su.afk.yummy.tv.feature.settings.SettingsState
++import su.afk.yummy.tv.feature.settings.view.SettingsTvValueRow
++
++@Composable
++internal fun SettingsTvTrackersContent(
++    state: SettingsState.State,
++    tabFocusRequester: FocusRequester,
++    tabContentFocusRequester: FocusRequester,
++    onEvent: (SettingsState.Event) -> Unit,
++) {
++    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
++        SettingsTvValueRow(
++            label = stringResource(R.string.settings_anilist_title),
++            value = stringResource(R.string.settings_anilist_hint),
++            opened = false,
++            onOpen = { onEvent(SettingsState.Event.AniListSelected) },
++        )
++    }
++}
+diff --git a/feature/settings/ui-tv/src/main/res/values-ru/strings.xml b/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
+index c8724ff60..0f6e65a29 100644
+--- a/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
++++ b/feature/settings/ui-tv/src/main/res/values-ru/strings.xml
+@@ -8,6 +8,11 @@
+     <string name="settings_tv_category_subtitles">Субтитры</string>
+     <string name="settings_tv_category_storage">Хранилище</string>
+     <string name="settings_tv_category_api">API</string>
++    <string name="settings_tv_category_trackers">Трекеры</string>
++    <string name="settings_app_locale_title">Язык интерфейса</string>
++    <string name="settings_app_locale_system">Системный</string>
++    <string name="settings_backdrop_blur_label">Размытие фонов</string>
++    <string name="settings_backdrop_blur_enabled">Постеры под шапками размыты</string>
+     <string name="settings_tv_category_about">О приложении</string>
+     <string name="settings_tv_details_buttons_order">Порядок кнопок</string>
+     <string name="settings_tv_section_sound">Звук</string>
+@@ -101,6 +106,8 @@
+     <string name="settings_theme_ocean_hint">Глубокие синие поверхности и прохладный светлый акцент</string>
+     <string name="settings_theme_graphite">Графит</string>
+     <string name="settings_theme_graphite_hint">Минимальная серая тема со сдержанным контрастом</string>
++    <string name="settings_theme_classic">Material Design 2</string>
++    <string name="settings_theme_classic_hint">Классический вид, рекомендуется на слабых и старых устройствах</string>
+     <string name="settings_theme_dynamic">Dynamic color</string>
+     <string name="settings_theme_dynamic_hint">Палитра Material You из обоев системы (Android 12+)</string>
+     <string name="settings_poster_card_size_compact">Компактный</string>
+@@ -195,6 +202,9 @@
+     <string name="settings_content_language_english">Английский</string>
+     <string name="settings_content_language_ukrainian">Украинский</string>
+     <string name="settings_yani_application_token_label">X-Application</string>
++    <string name="settings_anilist_title">AniList</string>
++    <string name="settings_anilist_hint">Синхронизация прогресса просмотра с AniList</string>
++    <string name="settings_details_button_anilist">AniList</string>
+     <string name="settings_yani_application_token_placeholder">Токен приложения</string>
+     <string name="settings_yani_application_token_hint">По умолчанию используется публичный токен. Укажите свой публичный токен из https://yummyani.me/dev/applications/, чтобы заменить его.\nОн нужен для авторизации приложения и отправляется в заголовке X-Application. Все запросы API используют JSON, включая тело запроса.</string>
+     <string name="settings_account_signed_in">Аккаунт Yani</string>
+diff --git a/feature/settings/ui-tv/src/main/res/values-uk/strings.xml b/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
+index 06c80754d..3d65d9372 100644
+--- a/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
++++ b/feature/settings/ui-tv/src/main/res/values-uk/strings.xml
+@@ -8,6 +8,11 @@
+     <string name="settings_tv_category_subtitles">Субтитри</string>
+     <string name="settings_tv_category_storage">Сховище</string>
+     <string name="settings_tv_category_api">API</string>
++    <string name="settings_tv_category_trackers">Трекери</string>
++    <string name="settings_app_locale_title">Мова інтерфейсу</string>
++    <string name="settings_app_locale_system">Системна</string>
++    <string name="settings_backdrop_blur_label">Розмиття фонів</string>
++    <string name="settings_backdrop_blur_enabled">Постери під шапками розмиті</string>
+     <string name="settings_tv_category_about">Про застосунок</string>
+     <string name="settings_tv_details_buttons_order">Порядок кнопок</string>
+     <string name="settings_tv_section_sound">Звук</string>
+@@ -101,6 +106,8 @@
+     <string name="settings_theme_ocean_hint">Глибокі сині поверхні з прохолодним світлим акцентом</string>
+     <string name="settings_theme_graphite">Графіт</string>
+     <string name="settings_theme_graphite_hint">Мінімалістична сіра тема зі стриманим контрастом</string>
++    <string name="settings_theme_classic">Material Design 2</string>
++    <string name="settings_theme_classic_hint">Класичний вигляд, рекомендовано для слабких і старих пристроїв</string>
+     <string name="settings_theme_dynamic">Dynamic color</string>
+     <string name="settings_theme_dynamic_hint">Палітра Material You з шпалер системи (Android 12+)</string>
+     <string name="settings_poster_card_size_compact">Компактний</string>
+@@ -195,6 +202,9 @@
+     <string name="settings_content_language_english">Англійська</string>
+     <string name="settings_content_language_ukrainian">Українська</string>
+     <string name="settings_yani_application_token_label">X-Application</string>
++    <string name="settings_anilist_title">AniList</string>
++    <string name="settings_anilist_hint">Синхронізація прогресу перегляду з AniList</string>
++    <string name="settings_details_button_anilist">AniList</string>
+     <string name="settings_yani_application_token_placeholder">Токен застосунку</string>
+     <string name="settings_yani_application_token_hint">За замовчуванням використовується публічний токен. Вкажіть свій публічний токен із https://yummyani.me/dev/applications/, щоб замінити його.\nВін потрібен для авторизації застосунку та надсилається в заголовку X-Application. Усі запити API використовують JSON, включно з тілом запиту.</string>
+     <string name="settings_account_signed_in">Акаунт Yani</string>
+diff --git a/feature/settings/ui-tv/src/main/res/values/strings.xml b/feature/settings/ui-tv/src/main/res/values/strings.xml
+index c1fc8e61b..6ff6dfe42 100644
+--- a/feature/settings/ui-tv/src/main/res/values/strings.xml
++++ b/feature/settings/ui-tv/src/main/res/values/strings.xml
+@@ -8,6 +8,11 @@
+     <string name="settings_tv_category_subtitles">Subtitles</string>
+     <string name="settings_tv_category_storage">Storage</string>
+     <string name="settings_tv_category_api">API</string>
++    <string name="settings_tv_category_trackers">Trackers</string>
++    <string name="settings_app_locale_title">Interface language</string>
++    <string name="settings_app_locale_system">System</string>
++    <string name="settings_backdrop_blur_label">Blurred backdrops</string>
++    <string name="settings_backdrop_blur_enabled">Posters behind headers are blurred</string>
+     <string name="settings_tv_category_about">About</string>
+     <string name="settings_tv_details_buttons_order">Button order</string>
+     <string name="settings_tv_section_sound">Sound</string>
+@@ -101,6 +106,8 @@
+     <string name="settings_theme_ocean_hint">Deep blue surfaces with a cool bright accent</string>
+     <string name="settings_theme_graphite">Graphite</string>
+     <string name="settings_theme_graphite_hint">Minimal grayscale theme with restrained contrast</string>
++    <string name="settings_theme_classic">Material Design 2</string>
++    <string name="settings_theme_classic_hint">Classic look, recommended for slow and old devices</string>
+     <string name="settings_theme_dynamic">Dynamic color</string>
+     <string name="settings_theme_dynamic_hint">Material You palette from your wallpaper (Android 12+)</string>
+     <string name="settings_poster_card_size_compact">Compact</string>
+@@ -195,6 +202,9 @@
+     <string name="settings_content_language_english">English</string>
+     <string name="settings_content_language_ukrainian">Ukrainian</string>
+     <string name="settings_yani_application_token_label">X-Application</string>
++    <string name="settings_anilist_title">AniList</string>
++    <string name="settings_anilist_hint">Sync watch progress with AniList</string>
++    <string name="settings_details_button_anilist">AniList</string>
+     <string name="settings_yani_application_token_placeholder">Application token</string>
+     <string name="settings_yani_application_token_hint">A public token is used by default. Add your own public token from https://yummyani.me/dev/applications/ to override it.\nRequired for authorizing the app: the token is sent in the X-Application header. All API requests use JSON, including request bodies.</string>
+     <string name="settings_account_signed_in">Yani account</string>
+diff --git a/gradle.properties b/gradle.properties
+index 9943d5998..d3422ec98 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -8,6 +8,9 @@ org.gradle.caching=true
+ #Android
+ android.nonTransitiveRClass=true
+ android.useAndroidX=true
++# resValue search_suggest_authority задаётся в каждом buildType осознанно
++# (суффикс пакета отличается) — это не конфликт, а замена по дизайну.
++android.sync.suppressAgpWarnings=RES_VALUE_REPLACED
+ #YummyTV id
+ yummytv.applicationId=su.afk.yummy.tv
+ # Version
+@@ -21,6 +24,10 @@ yummytv.versionName=1.25
+ yummytv.versionCode=128
+ #
+ # metrica: yummytv.appmetricaApiKey / yummytv.varioqubClientId — в local.properties
++# anilist: yummytv.anilistClientId / yummytv.anilistClientSecret / yummytv.anilistRedirectUri —
++# в local.properties (клиент: https://anilist.co/settings/developer,
++# redirect yummytv://anilist-auth). Без них сборка идёт, упадёт только начало
++# OAuth (см. AniListConfig).
+ #
+ # AVD для ./gradlew generateBaselineProfiles / runProfileBenchmarks (телефон + Android TV).
+ # Свои имена — в ~/.gradle/gradle.properties или -Pyummytv.profile.avds=...

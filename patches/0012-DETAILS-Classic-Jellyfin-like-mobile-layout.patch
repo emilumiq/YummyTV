@@ -1,0 +1,742 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 19:54:01 +0300
+Subject: [DETAILS] Classic Jellyfin-like mobile layout
+
+---
+ feature/details/ui-mobile/build.gradle.kts    |   2 +
+ .../mobile/details/DetailsMobileScreen.kt     |   6 +
+ .../details/classic/ClassicDetailsCard.kt     |  53 +++++
+ .../details/classic/ClassicDetailsHero.kt     | 197 ++++++++++++++++++
+ .../details/classic/ClassicDetailsMeta.kt     |  65 ++++++
+ .../details/classic/ClassicDetailsRating.kt   | 137 ++++++++++++
+ .../details/classic/ClassicDetailsScreen.kt   |  96 +++++++++
+ .../details/classic/ClassicDetailsSections.kt |  81 +++++++
+ 8 files changed, 637 insertions(+)
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsRating.kt
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt
+ create mode 100644 feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
+
+diff --git a/feature/details/ui-mobile/build.gradle.kts b/feature/details/ui-mobile/build.gradle.kts
+index 639bd98fa..825768e10 100644
+--- a/feature/details/ui-mobile/build.gradle.kts
++++ b/feature/details/ui-mobile/build.gradle.kts
+@@ -17,10 +17,12 @@ dependencies {
+     implementation(project(":core:model"))
+     implementation(project(":feature:details:presentation"))
+     implementation(project(":feature:player:api"))
++    implementation(project(":feature:classic:ui"))
+ 
+     implementation(libs.bundles.compose.screen)
+     implementation(libs.bundles.navigation.serialization)
+ 
+     implementation(libs.androidx.material.icons.extended)
++    implementation(libs.androidx.material2)
+     implementation(libs.coil.compose)
+ }
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
+index 2299adc7c..37ed57d2a 100644
+--- a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/DetailsMobileScreen.kt
+@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
+ import kotlinx.coroutines.flow.emptyFlow
+ import kotlinx.coroutines.launch
+ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
++import su.afk.yummy.tv.core.designsystem.classic.LocalClassicUi
+ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileTopBar
+ import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
+ import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
+@@ -36,6 +37,7 @@ import su.afk.yummy.tv.feature.details.details.DetailsState
+ import su.afk.yummy.tv.feature.details.mobile.R
+ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsDescriptionSection
+ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsMobileHero
++import su.afk.yummy.tv.feature.details.mobile.details.classic.ClassicDetailsScreen
+ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
+ import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsSecondaryActions
+ 
+@@ -102,6 +104,9 @@ fun DetailsMobileScreen(
+         },
+     ) {
+         val details = requireNotNull(state.details)
++        if (LocalClassicUi.current) {
++            ClassicDetailsScreen(state = state, details = details, onEvent = onEvent)
++        } else {
+         LazyColumn(
+             state = listState,
+             modifier = Modifier
+@@ -184,6 +189,7 @@ fun DetailsMobileScreen(
+             onDubbingSelected = { onEvent(DetailsState.Event.DubbingSelected(it.video)) },
+             onDubbingDismiss = { onEvent(DetailsState.Event.DubbingPickerDismissed) },
+         )
++        }
+ 
+     }
+ }
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt
+new file mode 100644
+index 000000000..ebaaeac36
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsCard.kt
+@@ -0,0 +1,53 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.material.Icon
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Surface
++import androidx.compose.material.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.style.TextOverflow
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.feature.details.mobile.details.model.MobileDetailsAction
++
++@Composable
++internal fun ClassicDetailsCard(
++    action: MobileDetailsAction,
++    modifier: Modifier = Modifier,
++) {
++    Surface(
++        onClick = action.onClick,
++        modifier = modifier,
++        color = MaterialTheme.colors.surface,
++    ) {
++        Row(
++            modifier = Modifier
++                .fillMaxSize()
++                .padding(horizontal = 14.dp),
++            horizontalArrangement = Arrangement.spacedBy(10.dp),
++            verticalAlignment = Alignment.CenterVertically,
++        ) {
++            Icon(
++                imageVector = action.icon,
++                contentDescription = null,
++                tint = MaterialTheme.colors.primary,
++                modifier = Modifier.size(20.dp),
++            )
++            Text(
++                text = action.label,
++                style = MaterialTheme.typography.body2,
++                fontWeight = FontWeight.SemiBold,
++                color = MaterialTheme.colors.onSurface,
++                maxLines = 1,
++                overflow = TextOverflow.Ellipsis,
++            )
++        }
++    }
++}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt
+new file mode 100644
+index 000000000..47017de0c
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsHero.kt
+@@ -0,0 +1,197 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.background
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.Spacer
++import androidx.compose.foundation.layout.aspectRatio
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.statusBarsPadding
++import androidx.compose.foundation.layout.width
++import androidx.compose.material.Button
++import androidx.compose.material.Icon
++import androidx.compose.material.IconButton
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.OutlinedButton
++import androidx.compose.material.Text
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.automirrored.filled.ArrowBack
++import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
++import androidx.compose.material.icons.automirrored.filled.PlaylistAddCheck
++import androidx.compose.material.icons.filled.Favorite
++import androidx.compose.material.icons.filled.FavoriteBorder
++import androidx.compose.material.icons.filled.PlayArrow
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.Brush
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.layout.ContentScale
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.style.TextOverflow
++import androidx.compose.ui.unit.dp
++import coil3.compose.AsyncImage
++import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.details.DetailsState
++import su.afk.yummy.tv.feature.details.mobile.R
++import su.afk.yummy.tv.feature.details.mobile.details.utils.bestUrl
++import su.afk.yummy.tv.feature.details.mobile.details.utils.libraryLabel
++import su.afk.yummy.tv.feature.details.mobile.details.utils.watchLabel
++
++@Composable
++internal fun ClassicDetailsHero(
++    state: DetailsState.State,
++    details: AnimeDetails,
++    onEvent: (DetailsState.Event) -> Unit,
++) {
++    val posterUrl = details.poster.bestUrl()
++    Column(modifier = Modifier.fillMaxWidth()) {
++        Box(
++            modifier = Modifier
++                .fillMaxWidth()
++                .height(190.dp)
++                .background(MaterialTheme.colors.surface),
++        ) {
++            AsyncImage(
++                model = posterUrl,
++                contentDescription = null,
++                contentScale = ContentScale.Crop,
++                modifier = Modifier.matchParentSize(),
++            )
++            Box(
++                modifier = Modifier
++                    .matchParentSize()
++                    .background(
++                        Brush.verticalGradient(
++                            0f to Color.Black.copy(alpha = 0.45f),
++                            0.5f to Color.Black.copy(alpha = 0.10f),
++                            1f to MaterialTheme.colors.background,
++                        ),
++                    ),
++            )
++            IconButton(
++                onClick = { onEvent(DetailsState.Event.BackSelected) },
++                modifier = Modifier
++                    .align(Alignment.TopStart)
++                    .statusBarsPadding()
++                    .padding(start = 4.dp),
++            ) {
++                Icon(
++                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
++                    contentDescription = null,
++                    tint = Color.White,
++                )
++            }
++        }
++        Row(
++            modifier = Modifier
++                .fillMaxWidth()
++                .padding(horizontal = 16.dp)
++                .padding(top = 12.dp),
++            verticalAlignment = Alignment.Top,
++        ) {
++            AsyncImage(
++                model = posterUrl,
++                contentDescription = details.title,
++                contentScale = ContentScale.Crop,
++                modifier = Modifier
++                    .width(112.dp)
++                    .aspectRatio(2f / 3f)
++                    .background(MaterialTheme.colors.surface)
++                    .clickable(onClick = { onEvent(DetailsState.Event.PosterClicked) }),
++            )
++            Column(
++                modifier = Modifier
++                    .weight(1f)
++                    .padding(start = 12.dp),
++            ) {
++                Text(
++                    text = details.title,
++                    style = MaterialTheme.typography.h6,
++                    fontWeight = FontWeight.Bold,
++                    color = MaterialTheme.colors.onBackground,
++                    maxLines = 4,
++                    overflow = TextOverflow.Ellipsis,
++                )
++                ClassicDetailsRating(
++                    details = details,
++                    modifier = Modifier.padding(top = 8.dp),
++                )
++            }
++        }
++        Button(
++            onClick = { onEvent(DetailsState.Event.WatchSelected) },
++            modifier = Modifier
++                .fillMaxWidth()
++                .padding(horizontal = 16.dp)
++                .padding(top = 12.dp)
++                .height(48.dp),
++        ) {
++            Icon(Icons.Filled.PlayArrow, contentDescription = null)
++            Spacer(Modifier.width(8.dp))
++            Text(
++                text = state.watchLabel(details),
++                maxLines = 1,
++                overflow = TextOverflow.Ellipsis,
++            )
++        }
++        Row(
++            modifier = Modifier
++                .fillMaxWidth()
++                .padding(horizontal = 16.dp)
++                .padding(top = 8.dp),
++        ) {
++            OutlinedButton(
++                onClick = { onEvent(DetailsState.Event.LibraryToggled) },
++                modifier = Modifier
++                    .weight(1f)
++                    .height(44.dp),
++            ) {
++                Icon(
++                    imageVector = if (state.isInLibrary) {
++                        Icons.AutoMirrored.Filled.PlaylistAddCheck
++                    } else {
++                        Icons.AutoMirrored.Filled.PlaylistAdd
++                    },
++                    contentDescription = null,
++                )
++                Spacer(Modifier.width(8.dp))
++                Text(
++                    text = state.libraryLabel(),
++                    maxLines = 1,
++                    overflow = TextOverflow.Ellipsis,
++                )
++            }
++            Spacer(Modifier.width(8.dp))
++            OutlinedButton(
++                onClick = { onEvent(DetailsState.Event.FavoriteToggled) },
++                modifier = Modifier
++                    .weight(1f)
++                    .height(44.dp),
++            ) {
++                Icon(
++                    imageVector = if (state.isFavorite) {
++                        Icons.Filled.Favorite
++                    } else {
++                        Icons.Filled.FavoriteBorder
++                    },
++                    contentDescription = null,
++                )
++                Spacer(Modifier.width(8.dp))
++                Text(
++                    text = stringResource(
++                        if (state.isFavorite) R.string.details_mobile_favorite_on
++                        else R.string.details_mobile_favorite_off,
++                    ),
++                    maxLines = 1,
++                    overflow = TextOverflow.Ellipsis,
++                )
++            }
++        }
++    }
++}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt
+new file mode 100644
+index 000000000..b0fca2a23
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsMeta.kt
+@@ -0,0 +1,65 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.style.TextOverflow
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.mobile.details.utils.formatAiredProgress
++import su.afk.yummy.tv.feature.details.mobile.details.utils.formatViews
++
++@Composable
++internal fun ClassicDetailsMeta(
++    details: AnimeDetails,
++    modifier: Modifier = Modifier,
++) {
++    val metaLine = buildList {
++        details.year?.let { add(it.toString()) }
++        details.type?.takeIf { it.isNotBlank() }?.let { add(it) }
++        details.status?.takeIf { it.isNotBlank() }?.let { add(it) }
++        details.ageRating?.takeIf { it.isNotBlank() }?.let { add(it) }
++        details.views?.let { add(it.formatViews()) }
++    }.joinToString(" • ")
++    val genresLine = details.genres.take(5).joinToString(" • ") { it.title }
++    val progressLine = details.episodes?.formatAiredProgress(details.status)
++    if (metaLine.isBlank() && genresLine.isBlank() && progressLine == null) return
++
++    Column(
++        modifier = modifier.fillMaxWidth(),
++        verticalArrangement = Arrangement.spacedBy(4.dp),
++    ) {
++        if (metaLine.isNotBlank()) {
++            Text(
++                text = metaLine,
++                style = MaterialTheme.typography.body2,
++                fontWeight = FontWeight.Medium,
++                color = MaterialTheme.colors.onBackground.copy(alpha = 0.78f),
++                maxLines = 2,
++                overflow = TextOverflow.Ellipsis,
++            )
++        }
++        if (genresLine.isNotBlank()) {
++            Text(
++                text = genresLine,
++                style = MaterialTheme.typography.body2,
++                color = MaterialTheme.colors.onBackground.copy(alpha = 0.66f),
++                maxLines = 2,
++                overflow = TextOverflow.Ellipsis,
++            )
++        }
++        progressLine?.let { progress ->
++            Text(
++                text = progress,
++                style = MaterialTheme.typography.body2,
++                fontWeight = FontWeight.Bold,
++                color = MaterialTheme.colors.onBackground.copy(alpha = 0.86f),
++            )
++        }
++    }
++}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsRating.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsRating.kt
+new file mode 100644
+index 000000000..b7bcc9f80
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsRating.kt
+@@ -0,0 +1,137 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.background
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.ExperimentalLayoutApi
++import androidx.compose.foundation.layout.FlowRow
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.material.Icon
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Text
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.Star
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.designsystem.components.toRatingColor
++import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.mobile.R
++import su.afk.yummy.tv.feature.details.mobile.details.model.RatingLabel
++import su.afk.yummy.tv.feature.details.mobile.details.utils.formatRating
++
++@OptIn(ExperimentalLayoutApi::class)
++@Composable
++internal fun ClassicDetailsRating(
++    details: AnimeDetails,
++    modifier: Modifier = Modifier,
++) {
++    val average = details.rating.average
++    val externalLabels = buildList {
++        details.rating.kinopoisk?.let {
++            add(
++                RatingLabel(
++                    label = stringResource(R.string.details_mobile_kinopoisk_rating, it.formatRating()),
++                    isPrimary = false,
++                    rating = it,
++                ),
++            )
++        }
++        details.rating.shikimori?.let {
++            add(
++                RatingLabel(
++                    stringResource(R.string.details_mobile_shikimori_rating, it.formatRating()),
++                    false,
++                    it,
++                ),
++            )
++        }
++        details.rating.myAnimeList?.let {
++            add(
++                RatingLabel(
++                    stringResource(R.string.details_mobile_mal_rating, it.formatRating()),
++                    false,
++                    it,
++                ),
++            )
++        }
++    }
++    if (average == null && externalLabels.isEmpty()) return
++
++    var showExternalRatings by remember(externalLabels) { mutableStateOf(false) }
++    val color = average?.toRatingColor()
++
++    Column(
++        modifier = modifier,
++        verticalArrangement = Arrangement.spacedBy(6.dp),
++    ) {
++        Row(
++            modifier = Modifier
++                .fillMaxWidth()
++                .clickable(
++                    enabled = externalLabels.isNotEmpty(),
++                    onClick = { showExternalRatings = !showExternalRatings },
++                ),
++            horizontalArrangement = Arrangement.spacedBy(6.dp),
++            verticalAlignment = Alignment.CenterVertically,
++        ) {
++            Icon(
++                imageVector = Icons.Filled.Star,
++                contentDescription = null,
++                tint = color ?: Color(0xFFFF8A00),
++                modifier = Modifier.size(22.dp),
++            )
++            Text(
++                text = average?.formatRating() ?: stringResource(R.string.details_mobile_rating),
++                style = MaterialTheme.typography.h6,
++                fontWeight = FontWeight.Bold,
++                color = color ?: MaterialTheme.colors.onBackground,
++                maxLines = 1,
++            )
++        }
++        if (showExternalRatings && externalLabels.isNotEmpty()) {
++            FlowRow(
++                modifier = Modifier.fillMaxWidth(),
++                horizontalArrangement = Arrangement.spacedBy(6.dp),
++                verticalArrangement = Arrangement.spacedBy(6.dp),
++            ) {
++                externalLabels.forEach { item ->
++                    val itemColor = item.rating?.toRatingColor() ?: Color.White
++                    Row(
++                        modifier = Modifier
++                            .background(MaterialTheme.colors.onBackground.copy(alpha = 0.10f))
++                            .padding(horizontal = 8.dp, vertical = 5.dp),
++                        horizontalArrangement = Arrangement.spacedBy(4.dp),
++                        verticalAlignment = Alignment.CenterVertically,
++                    ) {
++                        Icon(
++                            imageVector = Icons.Filled.Star,
++                            contentDescription = null,
++                            tint = itemColor,
++                            modifier = Modifier.size(13.dp),
++                        )
++                        Text(
++                            text = item.label,
++                            style = MaterialTheme.typography.caption,
++                            fontWeight = FontWeight.Bold,
++                            color = itemColor,
++                            maxLines = 1,
++                        )
++                    }
++                }
++            }
++        }
++    }
++}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt
+new file mode 100644
+index 000000000..6e6c26172
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsScreen.kt
+@@ -0,0 +1,96 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.PaddingValues
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.navigationBarsPadding
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.lazy.LazyColumn
++import androidx.compose.material.Button
++import androidx.compose.material.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.platform.testTag
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
++import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.details.DetailsState
++import su.afk.yummy.tv.feature.details.mobile.R
++import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsDescriptionSection
++import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsPickerSheets
++
++@Composable
++internal fun ClassicDetailsScreen(
++    state: DetailsState.State,
++    details: AnimeDetails,
++    onEvent: (DetailsState.Event) -> Unit,
++) {
++    LazyColumn(
++        modifier = Modifier
++            .fillMaxSize()
++            .testTag("details_root")
++            .navigationBarsPadding(),
++        contentPadding = PaddingValues(bottom = 24.dp),
++        verticalArrangement = Arrangement.spacedBy(16.dp),
++    ) {
++        item(key = "hero") {
++            ClassicDetailsHero(
++                state = state,
++                details = details,
++                onEvent = onEvent,
++            )
++        }
++        item(key = "meta") {
++            ClassicDetailsMeta(
++                details = details,
++                modifier = Modifier.padding(horizontal = 16.dp),
++            )
++        }
++        item(key = "sections") {
++            ClassicDetailsSections(
++                state = state,
++                details = details,
++                onEvent = onEvent,
++                modifier = Modifier.padding(horizontal = 16.dp),
++            )
++        }
++        item(key = "description") {
++            DetailsDescriptionSection(
++                description = details.description,
++                modifier = Modifier.padding(horizontal = 16.dp),
++            )
++        }
++        item(key = "comments") {
++            Button(
++                onClick = { onEvent(DetailsState.Event.CommentsSelected) },
++                modifier = Modifier
++                    .padding(horizontal = 16.dp)
++                    .fillMaxWidth(),
++            ) {
++                Text(stringResource(R.string.details_mobile_show_comments))
++            }
++        }
++        state.error?.let { error ->
++            item(key = "soft_error") {
++                MobileMessage(
++                    title = error,
++                    actionLabel = stringResource(R.string.details_mobile_retry),
++                    onAction = { onEvent(DetailsState.Event.RetrySelected) },
++                )
++            }
++        }
++    }
++    DetailsPickerSheets(
++        state = state,
++        onLibraryListSelected = { onEvent(DetailsState.Event.LibraryListSelected(it)) },
++        onLibraryDismiss = { onEvent(DetailsState.Event.LibraryListPickerDismissed) },
++        onSubscriptionToggle = { onEvent(DetailsState.Event.SubscriptionToggled(it)) },
++        onSubscriptionsDismiss = { onEvent(DetailsState.Event.SubscriptionsDismissed) },
++        onBalancerConfirmed = { onEvent(DetailsState.Event.BalancerConfirmed(it)) },
++        onBalancerDismiss = { onEvent(DetailsState.Event.BalancerPickerDismissed) },
++        onDubbingSelected = { onEvent(DetailsState.Event.DubbingSelected(it.video)) },
++        onDubbingDismiss = { onEvent(DetailsState.Event.DubbingPickerDismissed) },
++    )
++}
+diff --git a/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
+new file mode 100644
+index 000000000..2a517f86d
+--- /dev/null
++++ b/feature/details/ui-mobile/src/main/kotlin/su/afk/yummy/tv/feature/details/mobile/details/classic/ClassicDetailsSections.kt
+@@ -0,0 +1,81 @@
++package su.afk.yummy.tv.feature.details.mobile.details.classic
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.ExperimentalLayoutApi
++import androidx.compose.foundation.layout.FlowRow
++import androidx.compose.foundation.layout.Spacer
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.height
++import androidx.compose.material.MaterialTheme
++import androidx.compose.material.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.unit.dp
++import su.afk.yummy.tv.core.model.anime.AnimeDetails
++import su.afk.yummy.tv.feature.details.details.DetailsState
++import su.afk.yummy.tv.feature.details.mobile.R
++import su.afk.yummy.tv.feature.details.mobile.details.view.buildMobileActions
++
++@OptIn(ExperimentalLayoutApi::class)
++@Composable
++internal fun ClassicDetailsSections(
++    state: DetailsState.State,
++    details: AnimeDetails,
++    onEvent: (DetailsState.Event) -> Unit,
++    modifier: Modifier = Modifier,
++) {
++    val actions = buildMobileActions(
++        state = state,
++        details = details,
++        onSubscriptionsSelected = { onEvent(DetailsState.Event.SubscriptionsRouteSelected) },
++        onFullDetailsSelected = { onEvent(DetailsState.Event.FullDetailsSelected) },
++        onEpisodesSelected = { onEvent(DetailsState.Event.EpisodesSelected) },
++        onTrailersSelected = { onEvent(DetailsState.Event.TrailersSelected) },
++        onSimilarSelected = { onEvent(DetailsState.Event.SimilarSelected) },
++        onViewingOrderSelected = { onEvent(DetailsState.Event.ViewingOrderSelected) },
++        onScreenshotsSelected = { onEvent(DetailsState.Event.ScreenshotsSelected) },
++        onRatingScreenSelected = { onEvent(DetailsState.Event.RatingScreenSelected) },
++        onCollectionsSelected = { onEvent(DetailsState.Event.CollectionsSelected) },
++        onReviewsSelected = { onEvent(DetailsState.Event.ReviewsSelected) },
++        onBloggerVideosSelected = { onEvent(DetailsState.Event.BloggerVideosSelected) },
++        onAniListSelected = { onEvent(DetailsState.Event.AniListSelected) },
++    )
++    if (actions.isEmpty()) return
++
++    Column(
++        modifier = modifier.fillMaxWidth(),
++        verticalArrangement = Arrangement.spacedBy(10.dp),
++    ) {
++        Text(
++            text = stringResource(R.string.details_mobile_sections),
++            style = MaterialTheme.typography.subtitle1,
++            fontWeight = FontWeight.Bold,
++            color = MaterialTheme.colors.onBackground,
++        )
++        FlowRow(
++            modifier = Modifier.fillMaxWidth(),
++            horizontalArrangement = Arrangement.spacedBy(8.dp),
++            verticalArrangement = Arrangement.spacedBy(8.dp),
++            maxItemsInEachRow = 2,
++        ) {
++            actions.forEach { action ->
++                ClassicDetailsCard(
++                    action = action,
++                    modifier = Modifier
++                        .weight(1f)
++                        .height(56.dp),
++                )
++            }
++            if (actions.size % 2 != 0) {
++                Spacer(
++                    modifier = Modifier
++                        .weight(1f)
++                        .height(56.dp),
++                )
++            }
++        }
++    }
++}

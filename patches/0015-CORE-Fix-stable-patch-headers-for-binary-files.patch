@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: emilumiq <emilumiq@gmail.com>
+Date: Thu, 8 Oct 2026 20:49:00 +0300
+Subject: [CORE] Fix stable patch headers for binary files
+
+---
+ scripts/lib.ts | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/lib.ts b/scripts/lib.ts
+index 88a912240..8c528833a 100644
+--- a/scripts/lib.ts
++++ b/scripts/lib.ts
+@@ -34,8 +34,13 @@ export async function writePinnedUpstreamCommit(commit: string): Promise<void> {
+ }
+ 
+ export async function generateStablePatch(repoDir: string, commitId: string): Promise<string> {
+-  const patch = await cd(repoDir)`git format-patch --stdout --no-signature --zero-commit --subject-prefix= -1 ${commitId}`
+-  return patch.stdout.replace(/^index [0-9a-f]+\.\.[0-9a-f]+( \d+)?$/gm, 'index 0000000..0000000$1')
++  // Scrub only the From commit SHA (unstable across rebases). Index lines keep
++  // real blob SHAs: content-deterministic (stable) and required by binary patches.
++  const patch = await cd(repoDir)`git format-patch --stdout --no-signature --subject-prefix= -1 ${commitId}`
++  return patch.stdout.replace(
++    /^From [0-9a-f]{40}( Mon Sep 17 00:00:00 2001)$/m,
++    'From 0000000000000000000000000000000000000000$1',
++  )
+ }
+ 
+ export async function stackCommits(repoDir: string, base: string): Promise<string[]> {
