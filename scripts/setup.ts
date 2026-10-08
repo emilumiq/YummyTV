@@ -1,16 +1,34 @@
 import { existsSync } from 'node:fs'
+import fs from 'node:fs/promises'
 import { join } from 'node:path'
-import { patchesDir, stackBranch, upstreamUrl, worktreeDir } from './config.js'
+import { patchesDir, rootDir, stackBranch, upstreamUrl, worktreeDir } from './config.js'
 import { cd, patchFiles, readPinnedUpstreamCommit, step, success, warn } from './lib.js'
+
+// Local-only secrets, never committed. Copied into worktree/ so builds
+// pick them up; CI writes its own from GitHub Secrets instead.
+const LOCAL_SECRETS = ['local.properties', 'keystore.properties', 'release.jks']
+
+async function syncLocalSecrets() {
+  for (const name of LOCAL_SECRETS) {
+    const from = join(rootDir, name)
+    const to = join(worktreeDir, name)
+    if (!existsSync(from)) continue
+    const fresh =
+      !existsSync(to) ||
+      (await fs.stat(from)).mtimeMs > (await fs.stat(to)).mtimeMs
+    if (fresh) {
+      await fs.copyFile(from, to)
+      step(`Synced ${name} into worktree/`)
+    }
+  }
+}
 
 const pin = await readPinnedUpstreamCommit()
 
 if (!existsSync(join(worktreeDir, '.git'))) {
   step(`Cloning upstream into worktree/ (history without blobs)`)
-  const parent = cd(rootDir)
-  await parent`git clone --filter=blob:none ${upstreamUrl} worktree`
-  const git = cd(worktreeDir)
-  await git`git checkout ${pin}`
+  await cd(rootDir)`git clone --filter=blob:none ${upstreamUrl} worktree`
+  await cd(worktreeDir)`git checkout ${pin}`
 } else {
   step('Reusing existing worktree/')
 }
@@ -28,4 +46,5 @@ if (files.length === 0) {
     await repo`git am --empty=drop ${join(patchesDir, file)}`
   }
 }
+await syncLocalSecrets()
 success(`Assembled worktree/ on ${pin} with ${files.length} patches`)
